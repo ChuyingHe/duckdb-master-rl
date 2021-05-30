@@ -3,6 +3,8 @@
 #include <fstream>
 #include <filesystem>
 #include <chrono>
+#include <thread>
+
 #include "imdb_constants.hpp"
 
 using namespace duckdb;
@@ -40,28 +42,37 @@ void addIndexes(Connection con) {
     return;
 }
 
+void limitBatch(Connection con, std::string job_profiling, std::string job_query) {
+    // con.Query("PRAGMA disable_optimizer");
+    con.Query("PRAGMA enable_progress_bar");
+    con.Query("PRAGMA enable_profiling='json'");
+    con.Query(job_profiling);
+    std::cout<<job_query<<std::endl;
+    con.Query(job_query);
+    /*auto result = con.Query(job_query);
+    result->Print();*/
+    return;
+}
 
 void runJOBQuerys(Connection con) {
     std::cout <<"\n 🌈 runJOBQuerys \n";
 
     std::string path = getRootPath() + "/chuying/job-query";
     for (const auto & entry : std::filesystem::directory_iterator(path)) {
-        // con.Query("PRAGMA disable_optimizer");
-        con.Query("PRAGMA enable_progress_bar");
-        con.Query("PRAGMA enable_profiling='json'");
+        if (entry.path().u8string().find(".sql")!= std::string::npos) { //only take *.sql files
+            std::string job_file = entry.path().filename().string();
+            std::cout <<" 📒 job_file:" << job_file <<"\n";
 
-		std::string job_file = entry.path().filename().string();
-        std::cout <<" 📒 job_file:" << job_file <<"\n";
+            std::string job_profiling = "PRAGMA profile_output='" + getRootPath() +"/chuying/profiling/" + job_file + ".json';";
+            std::string job_query = readFileIntoString(entry.path());
 
-        std::string job_query = "PRAGMA profile_output='" + getRootPath() +"/chuying/profiling/" + job_file + ".json';";
-        con.Query(job_query);
+            std::cout <<"entry_path" <<entry.path() <<"\n JOB query = " << job_query;
 
-		//con.Query("SELECT * FROM info_type;");
-        std::string sql_from_file = readFileIntoString(entry.path());
-		std::cout << "current query: " << sql_from_file;
-        auto result = con.Query(sql_from_file);
-		result->Print();
-        // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            limitBatch(con, job_profiling, job_query);
+            /*std::thread t(limitBatch, con, job_profiling, job_query);
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            t.join();*/
+        }
     }
 }
 

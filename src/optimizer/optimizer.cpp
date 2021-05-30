@@ -11,6 +11,7 @@
 #include "duckdb/optimizer/filter_pushdown.hpp"
 #include "duckdb/optimizer/in_clause_rewriter.hpp"
 #include "duckdb/optimizer/join_order_optimizer.hpp"
+#include "duckdb/optimizer/rl_join_order_optimizer.hpp"
 #include "duckdb/optimizer/regex_range_filter.hpp"
 #include "duckdb/optimizer/remove_unused_columns.hpp"
 #include "duckdb/optimizer/rule/list.hpp"
@@ -19,6 +20,9 @@
 #include "duckdb/planner/binder.hpp"
 
 #include "duckdb/optimizer/rule/in_clause_simplification.hpp"
+
+/*if define, duckdb will use Reinforcement Learning to optimize the join order*/
+//#define RL_JOIN_ORDER_OPT
 
 namespace duckdb {
 
@@ -76,8 +80,14 @@ unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan
 	// then we perform the join ordering optimization
 	// this also rewrites cross products + filters into joins and performs filter pushdowns
 	context.profiler.StartPhase("join_order");
+#ifdef RL_JOIN_ORDER_OPT
+	// call RL optimizer
+	printf("🐈.. 🐈.. 🐈.. RL Optimizer placeholder");
+#else
+    printf("🐈.. duckdb Optimizer");
 	JoinOrderOptimizer optimizer(context);
 	plan = optimizer.Optimize(move(plan));
+#endif
 	context.profiler.EndPhase();
 
 	// removes any redundant DelimGets/DelimJoins

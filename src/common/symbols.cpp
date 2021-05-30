@@ -16,6 +16,7 @@
 #include "duckdb/main/relation.hpp"
 #include "duckdb/main/stream_query_result.hpp"
 #include "duckdb/optimizer/join_order_optimizer.hpp"
+#include "duckdb/optimizer/rl_join_order_optimizer.hpp"
 #include "duckdb/optimizer/rule.hpp"
 #include "duckdb/parallel/pipeline.hpp"
 #include "duckdb/parser/constraint.hpp"

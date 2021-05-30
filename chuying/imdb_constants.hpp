@@ -16,8 +16,6 @@ std::string getBuildPath() {
     char buffer[MAXPATH];
     getcwd(buffer, MAXPATH);
     std::string build_path = duckdb::string_t(buffer).GetString();
-    std::cout << "\n build_path"<<build_path <<std::endl;
-
     return build_path;
 }
 

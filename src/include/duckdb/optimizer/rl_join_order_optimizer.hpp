@@ -15,10 +15,10 @@
 #include "duckdb/planner/logical_operator.hpp"
 #include "duckdb/planner/logical_operator_visitor.hpp"
 
-
 #include <functional>
 
 namespace duckdb {
+
 class RLJoinOrderOptimizer {
 public:
     //! Represents a node in the join plan
@@ -41,7 +41,8 @@ public:
         }
     };
 
-    explicit RLJoinOrderOptimizer(ClientContext &context): context(context) {}
+    explicit RLJoinOrderOptimizer(ClientContext &context) : context(context) { /*constructor, explicit prevent other type of parameter*/
+    }
     unique_ptr<LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan); /*only public function -  THE ENTRANCE*/
 
 private:

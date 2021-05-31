@@ -22,7 +22,7 @@
 #include "duckdb/optimizer/rule/in_clause_simplification.hpp"
 
 /*if define, duckdb will use Reinforcement Learning to optimize the join order*/
-//#define RL_JOIN_ORDER_OPT
+// #define RL_JOIN_ORDER_OPT
 
 namespace duckdb {
 
@@ -83,6 +83,8 @@ unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan
 #ifdef RL_JOIN_ORDER_OPT
 	// call RL optimizer
 	printf("🐈.. 🐈.. 🐈.. RL Optimizer placeholder");
+	RLJoinOrderOptimizer rl_optimizer(context);
+	plan = rl_optimizer.Optimize(move(plan));
 #else
     printf("🐈.. duckdb Optimizer");
 	JoinOrderOptimizer optimizer(context);

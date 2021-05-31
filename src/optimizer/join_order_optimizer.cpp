@@ -6,6 +6,7 @@
 #include "duckdb/common/pair.hpp"
 
 #include <algorithm>
+#include <iostream>
 
 namespace duckdb {
 
@@ -492,7 +493,7 @@ JoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extracted
 	JoinRelationSet *left_node = nullptr, *right_node = nullptr;
 	JoinRelationSet *result_relation;
 	unique_ptr<LogicalOperator> result_operator;
-	if (node->left && node->right) {
+	if (node->left && node->right) {    /*both left and right exist*/
 		// generate the left and right children
 		auto left = GenerateJoins(extracted_relations, node->left);
 		auto right = GenerateJoins(extracted_relations, node->right);
@@ -629,6 +630,7 @@ JoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extracted
 unique_ptr<LogicalOperator> JoinOrderOptimizer::RewritePlan(unique_ptr<LogicalOperator> plan, JoinNode *node) {
 	// now we have to rewrite the plan
 	bool root_is_join = plan->children.size() > 1;
+    std::cout << plan->children.size() << "\n";
 
 	// first we will extract all relations from the main plan
 	vector<unique_ptr<LogicalOperator>> extracted_relations;
@@ -648,7 +650,7 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::RewritePlan(unique_ptr<LogicalOp
 
 	// find the first join in the relation to know where to place this node
 	if (root_is_join) {
-		// first node is the join, return it immediately
+		// first node is the join, return it immediately ---> WHY?
 		return move(join_tree.second);
 	}
 	D_ASSERT(plan->children.size() == 1);
@@ -671,6 +673,7 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::RewritePlan(unique_ptr<LogicalOp
 // https://db.in.tum.de/teaching/ws1415/queryopt/chapter3.pdf?lang=de
 // FIXME: incorporate cardinality estimation into the plans, possibly by pushing samples?
 unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOperator> plan) {
+    std::cout <<"⭕️-1" <<std::endl;
 	D_ASSERT(filters.empty() && relations.empty()); // assert that the JoinOrderOptimizer has not been used before
 	LogicalOperator *op = plan.get();   /*get the raw pointer of plan (unique_ptr)*/
 	// now we optimize the current plan
@@ -683,14 +686,17 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 		// do not support reordering this type of plan
 		return plan;
 	}
+	std::cout <<"⭕️-2" <<std::endl;
 	if (relations.size() <= 1) {
 		// at most one relation, nothing to reorder
 		return plan;
 	}
+	std::cout <<"⭕️-3" <<std::endl;
 	// now that we know we are going to perform join ordering we actually extract the filters, eliminating duplicate
 	// filters in the process
 	expression_set_t filter_set;    /*unordered_set<BaseExpression *, ExpressionHashFunction, ExpressionEquality>;*/
 	for (auto &op : filter_operators) { /*filter_operators is updated in function ExtractJoinRelations()*/
+        std::cout <<"⭕️-4" <<std::endl;
 		if (op->type == LogicalOperatorType::LOGICAL_COMPARISON_JOIN) {
             /* (1) if operator == LOGICAL_COMPARISON_JOIN*/
 			auto &join = (LogicalComparisonJoin &)*op;
@@ -706,6 +712,7 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 			}
 			join.conditions.clear();
 		} else {
+            std::cout <<"⭕️-5" <<std::endl;
 			/* (2) if no comparison_join, then add op->expressions instead op->conditions */
 			for (auto &expression : op->expressions) {
 				if (filter_set.find(expression.get()) == filter_set.end()) {
@@ -716,6 +723,7 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 			op->expressions.clear();
 		}
 	}
+	std::cout <<"⭕️-6" <<std::endl;
 	// create potential edges from the comparisons
 	for (idx_t i = 0; i < filters.size(); i++) {
 		auto &filter = filters[i];
@@ -728,6 +736,7 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 		filter_info->set = set_manager.GetJoinRelation(bindings);
 		filter_info->filter_index = i;
 		// now check if it can be used as a join predicate
+        std::cout <<"⭕️-7" <<std::endl;
 		if (filter->GetExpressionClass() == ExpressionClass::BOUND_COMPARISON) {
 			auto comparison = (BoundComparisonExpression *)filter.get();
 			// extract the bindings that are required for the left and right side of the comparison
@@ -764,6 +773,7 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 			}
 		}
 	}
+	std::cout <<"⭕️-8" <<std::endl;
 	// now use dynamic programming to figure out the optimal join order
 	// First we initialize each of the single-node plans with themselves and with their cardinalities these are the leaf
 	// nodes of the join tree NOTE: we can just use pointers to JoinRelationSet* here because the GetJoinRelation
@@ -774,6 +784,7 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 		plans[node] = make_unique<JoinNode>(node, rel.op->EstimateCardinality(context));    /*add nodes to the plan*/
 	}
 	// now we perform the actual dynamic programming to compute the final result
+    std::cout <<"⭕️-9" <<std::endl;
 	SolveJoinOrder();
 	// now the optimal join path should have been found
 	// get it from the node
@@ -781,6 +792,7 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 	for (idx_t i = 0; i < relations.size(); i++) {
 		bindings.insert(i);
 	}
+	std::cout <<"⭕️-10" <<std::endl;
 	auto total_relation = set_manager.GetJoinRelation(bindings);
 	auto final_plan = plans.find(total_relation);
 	if (final_plan == plans.end()) {
@@ -794,6 +806,7 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 		final_plan = plans.find(total_relation);
 		D_ASSERT(final_plan != plans.end());
 	}
+	std::cout <<"⭕️-11" <<std::endl;
 	// now perform the actual reordering
 	return RewritePlan(move(plan), final_plan->second.get());
 }

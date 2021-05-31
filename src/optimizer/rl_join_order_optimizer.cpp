@@ -12,7 +12,12 @@
 
 namespace duckdb {
 
-using JoinNode = JoinOrderOptimizer::JoinNode;
+using RL_JoinNode = RLJoinOrderOptimizer::JoinNode;
 
+unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOperator> plan) {
+    /*original plan has n elements (n=amount of relations)*/
+
+    return plan;
+}
 
 }

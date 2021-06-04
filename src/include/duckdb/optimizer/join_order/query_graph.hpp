@@ -59,6 +59,8 @@ public:
 	vector<idx_t> GetNeighbors(JoinRelationSet *node, unordered_set<idx_t> &exclusion_set);
 	//! Enumerate all neighbors of a given JoinRelationSet node
 	void EnumerateNeighbors(JoinRelationSet *node, const std::function<bool(NeighborInfo *)> &callback);
+	// get all connected neighbors
+    vector<idx_t> GetAllNeighbors(JoinRelationSet *node);
 
 private:
 	//! Get the QueryEdge of a specific node

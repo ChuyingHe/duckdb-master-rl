@@ -225,7 +225,7 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 		progress_bar->Start();
 	}
 	// store the physical plan in the context for calls to Fetch()
-	executor.Initialize(statement.plan.get());
+	executor.Initialize(statement.plan.get());  /*initialize the physical plan in Executor*/
 
 	auto types = executor.GetTypes();
 
@@ -352,7 +352,7 @@ unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &l
                                                             bool allow_stream_result) {
 	printf("unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &lock, const string &query,\n");
 	// prepare the query for execution
-	auto prepared = CreatePreparedStatement(lock, query, move(statement));
+	auto prepared = CreatePreparedStatement(lock, query, move(statement));  /*return optimized physical plan*/
 	// by default, no values are bound
 	vector<Value> bound_values;
 	// execute the prepared statement

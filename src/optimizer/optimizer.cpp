@@ -22,7 +22,7 @@
 #include "duckdb/optimizer/rule/in_clause_simplification.hpp"
 
 /*if define, duckdb will use Reinforcement Learning to optimize the join order*/
-// #define RL_JOIN_ORDER_OPT
+#define RL_JOIN_ORDER_OPT
 
 namespace duckdb {
 

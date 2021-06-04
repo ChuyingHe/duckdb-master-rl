@@ -127,4 +127,24 @@ void QueryGraph::Print() {
 	Printer::Print(ToString());
 }
 
+/*get all connected neighbor*/
+vector<idx_t> QueryGraph::GetAllNeighbors(JoinRelationSet *node) {
+    vector<idx_t> all_neighbors;
+    QueryEdge *edge = &root;
+    vector<idx_t> upstream_node;
+    upstream_node.insert(upstream_node.end(), node->relations[0]);
+
+    auto entry = edge->children.find(node->relations[0]);
+    if (entry != edge->children.end()) {    //make sure node is in query-graph
+        edge = entry->second.get();
+        for (auto &neighbor:edge->neighbors) {  // level 1: neigbors = {[2], [3]}
+            // auto test = neighbor->neighbor->ToString();
+            all_neighbors.insert(all_neighbors.end(), neighbor->neighbor->relations[0]);
+            GetAllNeighbors(neighbor->neighbor);
+        }
+    }
+    return all_neighbors;
+}
+
+
 } // namespace duckdb

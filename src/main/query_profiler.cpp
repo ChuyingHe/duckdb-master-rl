@@ -97,7 +97,7 @@ void QueryProfiler::EndQuery() {
 }
 
 void QueryProfiler::StartPhase(string new_phase) {
-    printf("void QueryProfiler::StartPhase(string new_phase) {\n");
+    std::cout<< "void QueryProfiler::StartPhase(string new_phase) { " << new_phase << "\n";
 	if (!enabled || !running) {
 		return;
 	}

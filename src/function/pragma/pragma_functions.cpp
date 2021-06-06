@@ -118,6 +118,14 @@ static void PragmaSetThreads(ClientContext &context, const FunctionParameters &p
 	TaskScheduler::GetScheduler(context).SetThreads(nr_threads);
 }
 
+// RL join order optimizer
+static void PragmaEnableRLJoinOrderOptimizer(ClientContext &context, const FunctionParameters &parameters) {
+    context.enable_rl_join_order_optimizer = true;
+}
+static void PragmaDisableRLJoinOrderOptimizer(ClientContext &context, const FunctionParameters &parameters) {
+    context.enable_rl_join_order_optimizer = false;
+}
+
 static void PragmaEnableProgressBar(ClientContext &context, const FunctionParameters &parameters) {
 	context.enable_progress_bar = true;
 }
@@ -288,7 +296,11 @@ void PragmaFunctions::RegisterFunction(BuiltinFunctions &set) {
 	set.AddFunction(PragmaFunction::PragmaStatement("enable_progress_bar", PragmaEnableProgressBar));
 	set.AddFunction(PragmaFunction::PragmaStatement("disable_progress_bar", PragmaDisableProgressBar));
 
-	set.AddFunction(PragmaFunction::PragmaStatement("enable_print_progress_bar", PragmaEnablePrintProgressBar));
+	// RL join order optimizer
+	set.AddFunction(PragmaFunction::PragmaStatement("enable_rl_join_order_optimizer", PragmaEnableRLJoinOrderOptimizer));
+    set.AddFunction(PragmaFunction::PragmaStatement("disable_rl_join_order_optimizer", PragmaDisableRLJoinOrderOptimizer));
+
+    set.AddFunction(PragmaFunction::PragmaStatement("enable_print_progress_bar", PragmaEnablePrintProgressBar));
 	set.AddFunction(PragmaFunction::PragmaStatement("disable_print_progress_bar", PragmaDisablePrintProgressBar));
 
 	set.AddFunction(

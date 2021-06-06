@@ -35,6 +35,17 @@ bool JoinRelationSet::IsSubset(JoinRelationSet *super, JoinRelationSet *sub) {
 	return false;
 }
 
+string JoinRelationSet::GetIdentifier() {
+    string result = "";
+    result += StringUtil::Join(relations, count, "", [](const idx_t &relation) { return to_string(relation); });
+    return result;
+}
+
+//FIXME: do do
+bool JoinRelationSet::operator==(const JoinRelationSet &set) const {
+    return false;
+}
+
 JoinRelationSet *JoinRelationSetManager::GetJoinRelation(unique_ptr<idx_t[]> relations, idx_t count) { /*(R4, 1)*/
 	// now look it up in the tree
 	JoinRelationTreeNode *info = &root;

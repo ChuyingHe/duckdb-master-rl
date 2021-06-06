@@ -69,6 +69,9 @@ public:
 	//! The wait time before showing the progress bar
 	int wait_time = 2000;
 
+    // Reinforcement learning join order optimizer.
+    bool enable_rl_join_order_optimizer;
+
 	unique_ptr<SchemaCatalogEntry> temporary_objects;
 	unordered_map<string, shared_ptr<PreparedStatementData>> prepared_statements;
 

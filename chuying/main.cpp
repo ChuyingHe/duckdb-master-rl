@@ -46,7 +46,9 @@ void limitBatch(Connection con, std::string job_profiling, std::string job_query
     // con.Query("PRAGMA disable_optimizer");
     con.Query("PRAGMA enable_progress_bar");
     con.Query("PRAGMA enable_profiling='json'");
+   // con.Query("PRAGMA enable_rl_join_order_optimizer");
     con.Query(job_profiling);
+
     std::cout<<job_query<<std::endl;
     con.Query(job_query);
     /*auto result = con.Query(job_query);

@@ -28,6 +28,7 @@ public:
 private:
     ClientContext &context;
     idx_t pairs = 0;
+    idx_t counter = 0;
     vector<unique_ptr<SingleJoinRelation>> relations;
     unordered_map<idx_t, idx_t> relation_mapping;
     JoinRelationSetManager set_manager;

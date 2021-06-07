@@ -186,50 +186,45 @@ static unique_ptr<JoinNode> RLCreateJoinTree(JoinRelationSet *set, NeighborInfo 
     return make_unique<JoinNode>(set, info, left, right, expected_cardinality, cost);
 }*/
 
+
 void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set<idx_t> exclusion_set) {
     auto neighbors = query_graph.GetNeighbors(union_set, exclusion_set);        // Get neighbor of current plan: returns vector<idx_t>
 
-    std::cout <<"\n 🏖️ union_set: count = "<< union_set->count << ", ToString = "<< union_set->ToString() <<", GetIdentifier = "<< union_set->GetIdentifier();
-
-    //FIXME: 我们最终只添加了一条tree
     // Depth-First Traversal 无向图的深度优先搜索
     if (!neighbors.empty()) {                                                       // if there is relations left
         for (auto neighbor:neighbors) {
+            order_of_rel.append(std::to_string(neighbor));
+
             auto *neighbor_relation = set_manager.GetJoinRelation(neighbor);        //returns JoinRelationSet*
             auto info = query_graph.GetConnection(union_set, neighbor_relation);    //NeighborInfo
-            auto &left = intermediate_plans[union_set];
+            auto &left = plans[union_set];
 
-            //auto new_set = set_manager.Union(union_set, neighbor_relation);
             auto new_set = set_manager.Union(union_set, neighbor_relation);
 
-            auto &right = intermediate_plans[neighbor_relation];
+            auto &right = plans[neighbor_relation];
             auto new_plan = CreateJoinTree(new_set, info, left.get(), right.get());// unique_ptr<JoinNode>
 
-            auto entry = intermediate_plans.find(new_set);
-            if(entry == intermediate_plans.end()) {
-                intermediate_plans[new_set] = move(new_plan); //add intermediate results to intermediate_plans
+            //FIXME: add to plan but do not replace the old one, apparently plan take Relations as identifier
+            auto entry = plans.find(new_set);
+            if(entry == plans.end()) {
+                plans[new_set] = move(new_plan); //add intermediate results to plans
             }
-
-            // if current neighbor is not the first one, remoce the first neighb
 
             exclusion_set.clear();
             for (idx_t i = 0; i < new_set->count; ++i) {
                 exclusion_set.insert(new_set->relations[i]);
             }
-            exclusion_set.insert(neighbor);
 
             IterateTree(new_set, exclusion_set);
 
+            order_of_rel = order_of_rel.substr(0, order_of_rel.size()-1);
         }
 
     } else {
         // if all the relations are in the plan, a.k.a. we reached a leaf node
-        //FIXME: add to plan but do not replace the old one, apparently plan take Relations as identifier
-        // exclusion_set.clear();
-        counter += 1;
-        //plans[union_set] = move()
-    }
 
+        std::cout <<"add plan which join-order = " << order_of_rel <<std::endl;
+    }
 }
 
 void RLJoinOrderOptimizer::GeneratePlans() {
@@ -237,20 +232,15 @@ void RLJoinOrderOptimizer::GeneratePlans() {
     //the number of possible plan depends on the Join-Graph (ONLY use cross-product if there is no other choice)
     //@todo: have a look in join_order_optimizer.cpp, see how they generate the plan and add into this->plans
     for (idx_t i = relations.size(); i > 0; i--) {
-        std::cout<< "2) after adding plans start with relation "<< i-1 ;
+
         auto start_node = set_manager.GetJoinRelation(i - 1);
         unordered_set<idx_t> exclusion_set;
         exclusion_set.insert(i-1);    // put current one relation in the exclusion_set
 
-        counter = 0;
+        order_of_rel.clear();
+        order_of_rel.append(std::to_string(i-1));
         IterateTree(start_node, exclusion_set);
-        std::cout<< ", intermediate_plans = "<<intermediate_plans.size()<< "\n";
 
-        // find the neighbors given this exclusion set
-        //auto all_neighbors = query_graph.GetAllNeighbors(start_node);
-
-        // now create plans
-        std::cout<<"\n counter = " <<counter <<"\n";
     }
 
     //TODO: put all items in this->intermediate_plan which contains all the relations in this->plan
@@ -270,7 +260,16 @@ void RLJoinOrderOptimizer::ContinueJoin(unique_ptr<LogicalOperator> plan, std::c
 }
 
 void RLJoinOrderOptimizer::RestoreState() {
-    //restore execution state for this join order
+    /*
+     * Goal:
+     * 1) restore execution state for this join order
+     * 2) share as much progress as possible among different join orders
+     *
+     * TODO:
+     * 1) offset counters: to count tuples for each table, record how many tuples have been executed
+     * 2) check whether partial join-order has been executed or not, if yes, fast-forward it, use the generated result instead of executing it again
+     * */
+
 }
 
 void RLJoinOrderOptimizer::BackupState() {
@@ -289,12 +288,6 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     if (!ExtractJoinRelations(*op, filter_operators)) {
         return plan;
     }
-
-/*    //@TODO: to be deleted
-    std::cout<< "❓RL JOIN ORDER: relations.size = "<<relations.size()<< std::endl;
-    if (relations.size() == 5) {
-        printf("for debugging");
-    }*/
 
     // at most one relation, nothing to reorder
     if (relations.size() <= 1) {
@@ -384,10 +377,9 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
         auto node = set_manager.GetJoinRelation(i); /*returns a JoinRelationSet*/
 
         // plans[node] = make_unique<JoinNode>(node, rel.op->EstimateCardinality(context));    /*add nodes to the plan*/
-        intermediate_plans[node] = make_unique<JoinNode>(node, rel.op->EstimateCardinality(context));    /*add nodes to the intermediate plan*/
+        plans[node] = make_unique<JoinNode>(node, rel.op->EstimateCardinality(context));    /*add nodes to the intermediate plan*/
     }
-    std::cout<<"\n 1) size of intermediate_plans = " <<intermediate_plans.size()<<"\n";
-    std::cout<<"\n counter = " << counter <<"\n";
+
 
     // plans generation: 2) generate all the possible plans
 

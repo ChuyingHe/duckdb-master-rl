@@ -87,6 +87,7 @@ unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan
         JoinOrderOptimizer optimizer(context);
         plan = optimizer.Optimize(move(plan));
     }
+
 	context.profiler.EndPhase();
 
 	// removes any redundant DelimGets/DelimJoins

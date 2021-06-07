@@ -627,10 +627,13 @@ JoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extracted
 	return make_pair(result_relation, move(result_operator));
 }
 
+/* @plan: optimized plan from previous optimizer
+ * @node: best plan chosen by Dynamic Programming
+ * */
 unique_ptr<LogicalOperator> JoinOrderOptimizer::RewritePlan(unique_ptr<LogicalOperator> plan, JoinNode *node) {
 	// now we have to rewrite the plan
 	bool root_is_join = plan->children.size() > 1;
-    std::cout << plan->children.size() << "\n";
+    std::cout << "children of plan (provided by previous optimizer) = " << plan->children.size() << "\n";
 
 	// first we will extract all relations from the main plan
 	vector<unique_ptr<LogicalOperator>> extracted_relations;

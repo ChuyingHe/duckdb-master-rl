@@ -38,8 +38,6 @@ struct JoinRelationSet {
 
 	static bool IsSubset(JoinRelationSet *super, JoinRelationSet *sub);
 
-	string GetIdentifier();
-	bool operator==(const JoinRelationSet &set) const;
 };
 
 //! The JoinRelationTree is a structure holding all the created JoinRelationSet objects and allowing fast lookup on to

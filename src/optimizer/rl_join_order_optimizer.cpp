@@ -198,6 +198,7 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
             auto *neighbor_relation = set_manager.GetJoinRelation(neighbor);        //returns JoinRelationSet*
             auto info = query_graph.GetConnection(union_set, neighbor_relation);    //NeighborInfo
             auto &left = plans[union_set];
+            // auto &left = rl_plans[union_set];
 
             auto new_set = set_manager.Union(union_set, neighbor_relation);
 
@@ -247,13 +248,14 @@ void RLJoinOrderOptimizer::GeneratePlans() {
 }
 
 void RLJoinOrderOptimizer::RewardUpdate() {
+    //updates tree T by registering reward r for join order j
 
 }
 
-/*unique_ptr<LogicalOperator> RLJoinOrderOptimizer::UCTChoice() {
+unique_ptr<LogicalOperator> RLJoinOrderOptimizer::UCTChoice() {
     //choose a plan using UCT algorithm and return it
-    ;
-}*/
+
+}
 
 void RLJoinOrderOptimizer::ContinueJoin(unique_ptr<LogicalOperator> plan, std::chrono::seconds duration) {
     //execute join order during time budget
@@ -378,12 +380,14 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
 
         // plans[node] = make_unique<JoinNode>(node, rel.op->EstimateCardinality(context));    /*add nodes to the plan*/
         plans[node] = make_unique<JoinNode>(node, rel.op->EstimateCardinality(context));    /*add nodes to the intermediate plan*/
+        //[std::to_string(i)] = make_unique<JoinNode>(node, rel.op->EstimateCardinality(context));
     }
 
 
     // plans generation: 2) generate all the possible plans
 
     GeneratePlans();
+    std::cout<< "\n 🐶 amount of plans = "<<plans.size()<<"\n";
     // auto final_plan = UCTChoice();
 
     // TODO: add plans which include all the relations into this->plans.

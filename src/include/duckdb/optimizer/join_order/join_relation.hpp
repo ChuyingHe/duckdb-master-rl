@@ -37,6 +37,7 @@ struct JoinRelationSet {
 	idx_t count;
 
 	static bool IsSubset(JoinRelationSet *super, JoinRelationSet *sub);
+	bool operator==(JoinRelationSet *set);
 
 };
 

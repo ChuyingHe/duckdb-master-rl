@@ -26,6 +26,7 @@
 #include <random>
 #include "duckdb/common/atomic.hpp"
 
+
 namespace duckdb {
 class Appender;
 class Catalog;
@@ -35,6 +36,11 @@ class Relation;
 class BufferedFileWriter;
 
 class ClientContextLock;
+
+extern bool enable_rl_join_order_optimizer; // to avoid duplication linker error
+
+// Reinforcement learning join order optimizer.
+
 
 //! The ClientContext holds information relevant to the current client session
 //! during execution
@@ -69,8 +75,7 @@ public:
 	//! The wait time before showing the progress bar
 	int wait_time = 2000;
 
-    // Reinforcement learning join order optimizer.
-    bool enable_rl_join_order_optimizer;
+
 
 	unique_ptr<SchemaCatalogEntry> temporary_objects;
 	unordered_map<string, shared_ptr<PreparedStatementData>> prepared_statements;

@@ -77,7 +77,7 @@ unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan
 	// then we perform the join ordering optimization
 	// this also rewrites cross products + filters into joins and performs filter pushdowns
 	context.profiler.StartPhase("join_order");
-    if (context.enable_rl_join_order_optimizer) {
+    if (enable_rl_join_order_optimizer) {
         // call RL optimizer
         printf("🐈.. 🐈.. 🐈.. RL Optimizer placeholder");
         RLJoinOrderOptimizer rl_optimizer(context);

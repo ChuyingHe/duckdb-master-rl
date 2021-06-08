@@ -12,6 +12,8 @@
 
 namespace duckdb {
 
+bool enable_rl_join_order_optimizer;
+
 static void PragmaEnableProfilingStatement(ClientContext &context, const FunctionParameters &parameters) {
 	context.profiler.automatic_print_format = ProfilerPrintFormat::QUERY_TREE;
 	context.profiler.Enable();
@@ -120,10 +122,10 @@ static void PragmaSetThreads(ClientContext &context, const FunctionParameters &p
 
 // RL join order optimizer
 static void PragmaEnableRLJoinOrderOptimizer(ClientContext &context, const FunctionParameters &parameters) {
-    context.enable_rl_join_order_optimizer = true;
+    enable_rl_join_order_optimizer = true;
 }
 static void PragmaDisableRLJoinOrderOptimizer(ClientContext &context, const FunctionParameters &parameters) {
-    context.enable_rl_join_order_optimizer = false;
+    enable_rl_join_order_optimizer = false;
 }
 
 static void PragmaEnableProgressBar(ClientContext &context, const FunctionParameters &parameters) {

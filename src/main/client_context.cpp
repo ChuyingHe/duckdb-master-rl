@@ -182,13 +182,16 @@ shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement(ClientC
 		profiler.EndPhase();
 	}
 
-	profiler.StartPhase("physical_planner");
-	// now convert logical query plan into a physical query plan
-	PhysicalPlanGenerator physical_planner(*this);
-	auto physical_plan = physical_planner.CreatePlan(move(plan));
-	profiler.EndPhase();
 
-	result->plan = move(physical_plan);
+    profiler.StartPhase("physical_planner");
+    // now convert logical query plan into a physical query plan
+    PhysicalPlanGenerator physical_planner(*this);
+    auto physical_plan = physical_planner.CreatePlan(move(plan));
+    profiler.EndPhase();
+
+    result->plan = move(physical_plan);
+
+
 	return result;
 }
 
@@ -204,7 +207,8 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
                                                                 shared_ptr<PreparedStatementData> statement_p,
                                                                 vector<Value> bound_values, bool allow_stream_result) {
 	printf("unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLock &lock, const string &query,\n");
-	auto &statement = *statement_p;
+	std::cout<< "\n\n optimized logical plan = " <<statement_p<<"\n";
+	auto &statement = *statement_p;     // optimized logical plan
 	if (ActiveTransaction().IsInvalidated() && statement.requires_valid_transaction) {
 		throw Exception("Current transaction is aborted (please ROLLBACK)");
 	}
@@ -215,7 +219,7 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 	}
 
 	// bind the bound values before execution
-	statement.Bind(move(bound_values));
+	statement.Bind(move(bound_values)); //bound_values: empty vector
 
 	bool create_stream_result = statement.allow_stream_result && allow_stream_result;
 	if (enable_progress_bar) {
@@ -350,13 +354,21 @@ unique_ptr<QueryResult> ClientContext::Execute(const string &query, shared_ptr<P
 unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &lock, const string &query,
                                                             unique_ptr<SQLStatement> statement,
                                                             bool allow_stream_result) {
-	printf("unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &lock, const string &query,\n");
-	// prepare the query for execution
-	auto prepared = CreatePreparedStatement(lock, query, move(statement));  /*return optimized physical plan*/
-	// by default, no values are bound
-	vector<Value> bound_values;
-	// execute the prepared statement
-	return ExecutePreparedStatement(lock, query, move(prepared), move(bound_values), allow_stream_result);
+    //FIXME: clearner way?
+    //duckdb join order optimizer
+    if (!enable_rl_join_order_optimizer) {
+        printf("RunStatementInternal: use duckdb-optimizer\n");
+        // prepare the query for execution
+        auto prepared = CreatePreparedStatement(lock, query, move(statement));  /*return optimized physical plan*/
+        // by default, no values are bound
+        vector<Value> bound_values;
+        // execute the prepared statement
+        return ExecutePreparedStatement(lock, query, move(prepared), move(bound_values), allow_stream_result);
+    } else {    //duckdb join order optimizer
+        printf("RunStatementInternal: use rl-optimizer\n");
+
+    }
+
 }
 
 unique_ptr<QueryResult> ClientContext::RunStatementOrPreparedStatement(ClientContextLock &lock, const string &query,

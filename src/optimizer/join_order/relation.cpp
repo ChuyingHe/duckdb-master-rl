@@ -35,10 +35,14 @@ bool JoinRelationSet::IsSubset(JoinRelationSet *super, JoinRelationSet *sub) {
 	return false;
 }
 
+bool JoinRelationSet::operator==(JoinRelationSet *set) {
+    return false;
+}
+
 JoinRelationSet *JoinRelationSetManager::GetJoinRelation(unique_ptr<idx_t[]> relations, idx_t count) { /*(R4, 1)*/
 	// now look it up in the tree
 	JoinRelationTreeNode *info = &root;
-	for (idx_t i = 0; i < count; i++) {
+	for (idx_t i = 0; i < count; i++) {     // count = 2
 		auto entry = info->children.find(relations[i]);
 		if (entry == info->children.end()) {    /*if R4 is not in the tree*/
 			// node not found, create it

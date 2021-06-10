@@ -187,6 +187,145 @@ static unique_ptr<JoinNode> RLCreateJoinTree(JoinRelationSet *set, NeighborInfo 
 }*/
 
 
+pair<JoinRelationSet *, unique_ptr<LogicalOperator>>
+RLJoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extracted_relations, JoinNode *node) {
+    JoinRelationSet *left_node = nullptr, *right_node = nullptr;
+    JoinRelationSet *result_relation;
+    unique_ptr<LogicalOperator> result_operator;
+    if (node->left && node->right) {    /*both left and right exist*/
+        // generate the left and right children
+        auto left = GenerateJoins(extracted_relations, node->left);
+        auto right = GenerateJoins(extracted_relations, node->right);
+
+        if (node->info->filters.empty()) {
+            // no filters, create a cross product
+            auto join = make_unique<LogicalCrossProduct>();
+            join->children.push_back(move(left.second));
+            join->children.push_back(move(right.second));
+            result_operator = move(join);
+        } else {
+            // we have filters, create a join node
+            auto join = make_unique<LogicalComparisonJoin>(JoinType::INNER);
+            join->children.push_back(move(left.second));
+            join->children.push_back(move(right.second));
+            // set the join conditions from the join node
+            for (auto &f : node->info->filters) {
+                // extract the filter from the operator it originally belonged to
+                D_ASSERT(filters[f->filter_index]);
+                auto condition = move(filters[f->filter_index]);
+                // now create the actual join condition
+                D_ASSERT((JoinRelationSet::IsSubset(left.first, f->left_set) &&
+                          JoinRelationSet::IsSubset(right.first, f->right_set)) ||
+                         (JoinRelationSet::IsSubset(left.first, f->right_set) &&
+                          JoinRelationSet::IsSubset(right.first, f->left_set)));
+                JoinCondition cond;
+                D_ASSERT(condition->GetExpressionClass() == ExpressionClass::BOUND_COMPARISON);
+                auto &comparison = (BoundComparisonExpression &)*condition;
+                // we need to figure out which side is which by looking at the relations available to us
+                bool invert = !JoinRelationSet::IsSubset(left.first, f->left_set);
+                cond.left = !invert ? move(comparison.left) : move(comparison.right);
+                cond.right = !invert ? move(comparison.right) : move(comparison.left);
+                if (condition->type == ExpressionType::COMPARE_NOT_DISTINCT_FROM) {
+                    cond.comparison = ExpressionType::COMPARE_EQUAL;
+                    cond.null_values_are_equal = true;
+                } else {
+                    cond.comparison = condition->type;
+                }
+                if (invert) {
+                    // reverse comparison expression if we reverse the order of the children
+                    cond.comparison = FlipComparisionExpression(cond.comparison);
+                }
+                join->conditions.push_back(move(cond));
+            }
+            D_ASSERT(!join->conditions.empty());
+            result_operator = move(join);
+        }
+        left_node = left.first;
+        right_node = right.first;
+        result_relation = set_manager.Union(left_node, right_node);
+    } else {
+        // base node, get the entry from the list of extracted relations
+        D_ASSERT(node->set->count == 1);
+        D_ASSERT(extracted_relations[node->set->relations[0]]);
+        result_relation = node->set;
+        result_operator = move(extracted_relations[node->set->relations[0]]);
+    }
+    // check if we should do a pushdown on this node
+    // basically, any remaining filter that is a subset of the current relation will no longer be used in joins
+    // hence we should push it here
+    for (auto &filter_info : filter_infos) {
+        // check if the filter has already been extracted
+        auto info = filter_info.get();
+        if (filters[info->filter_index]) {
+            // now check if the filter is a subset of the current relation
+            // note that infos with an empty relation set are a special case and we do not push them down
+            if (info->set->count > 0 && JoinRelationSet::IsSubset(result_relation, info->set)) {
+                auto filter = move(filters[info->filter_index]);
+                // if it is, we can push the filter
+                // we can push it either into a join or as a filter
+                // check if we are in a join or in a base table
+                if (!left_node || !info->left_set) {
+                    // base table or non-comparison expression, push it as a filter
+                    result_operator = PushFilter(move(result_operator), move(filter));
+                    continue;
+                }
+                // the node below us is a join or cross product and the expression is a comparison
+                // check if the nodes can be split up into left/right
+                bool found_subset = false;
+                bool invert = false;
+                if (JoinRelationSet::IsSubset(left_node, info->left_set) &&
+                    JoinRelationSet::IsSubset(right_node, info->right_set)) {
+                    found_subset = true;
+                } else if (JoinRelationSet::IsSubset(right_node, info->left_set) &&
+                           JoinRelationSet::IsSubset(left_node, info->right_set)) {
+                    invert = true;
+                    found_subset = true;
+                }
+                if (!found_subset) {
+                    // could not be split up into left/right
+                    result_operator = PushFilter(move(result_operator), move(filter));
+                    continue;
+                }
+                // create the join condition
+                JoinCondition cond;
+                D_ASSERT(filter->GetExpressionClass() == ExpressionClass::BOUND_COMPARISON);
+                auto &comparison = (BoundComparisonExpression &)*filter;
+                // we need to figure out which side is which by looking at the relations available to us
+                cond.left = !invert ? move(comparison.left) : move(comparison.right);
+                cond.right = !invert ? move(comparison.right) : move(comparison.left);
+                cond.comparison = comparison.type;
+                if (invert) {
+                    // reverse comparison expression if we reverse the order of the children
+                    cond.comparison = FlipComparisionExpression(comparison.type);
+                }
+                // now find the join to push it into
+                auto node = result_operator.get();
+                if (node->type == LogicalOperatorType::LOGICAL_FILTER) {
+                    node = node->children[0].get();
+                }
+                if (node->type == LogicalOperatorType::LOGICAL_CROSS_PRODUCT) {
+                    // turn into comparison join
+                    auto comp_join = make_unique<LogicalComparisonJoin>(JoinType::INNER);
+                    comp_join->children.push_back(move(node->children[0]));
+                    comp_join->children.push_back(move(node->children[1]));
+                    comp_join->conditions.push_back(move(cond));
+                    if (node == result_operator.get()) {
+                        result_operator = move(comp_join);
+                    } else {
+                        D_ASSERT(result_operator->type == LogicalOperatorType::LOGICAL_FILTER);
+                        result_operator->children[0] = move(comp_join);
+                    }
+                } else {
+                    D_ASSERT(node->type == LogicalOperatorType::LOGICAL_COMPARISON_JOIN);
+                    auto &comp_join = (LogicalComparisonJoin &)*node;
+                    comp_join.conditions.push_back(move(cond));
+                }
+            }
+        }
+    }
+    return make_pair(result_relation, move(result_operator));
+}
+
 void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set<idx_t> exclusion_set) {
     auto neighbors = query_graph.GetNeighbors(union_set, exclusion_set);        // Get neighbor of current plan: returns vector<idx_t>
 
@@ -206,10 +345,19 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
             auto new_plan = CreateJoinTree(new_set, info, left.get(), right.get());// unique_ptr<JoinNode>
 
             //FIXME: add to plan but do not replace the old one, apparently plan take Relations as identifier
-            auto entry = plans.find(new_set);
-            if(entry == plans.end()) {
-                plans[new_set] = move(new_plan); //add intermediate results to plans
-            }
+            if (new_set->count == 5) {
+                counter++;
+                //FIXME: just for debug, delete later
+                if (counter == 36) {
+                    std::cout <<"\n 🌈 Our final join-order = " << order_of_rel <<std::endl;
+                    plans[new_set] = move(new_plan);
+                }
+            } else {
+                auto entry = plans.find(new_set);
+                if(entry == plans.end()) {
+                    plans[new_set] = move(new_plan); //add intermediate results to plans
+                }
+            };
 
             exclusion_set.clear();
             for (idx_t i = 0; i < new_set->count; ++i) {
@@ -241,9 +389,7 @@ void RLJoinOrderOptimizer::GeneratePlans() {
         order_of_rel.clear();
         order_of_rel.append(std::to_string(i-1));
         IterateTree(start_node, exclusion_set);
-
     }
-
     //TODO: put all items in this->intermediate_plan which contains all the relations in this->plan
 }
 
@@ -276,6 +422,48 @@ void RLJoinOrderOptimizer::RestoreState() {
 
 void RLJoinOrderOptimizer::BackupState() {
     //backup execution state for join order
+}
+
+
+unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<LogicalOperator> plan, JoinNode *node) {
+    // now we have to rewrite the plan
+    bool root_is_join = plan->children.size() > 1;
+    std::cout << "children of plan (provided by previous optimizer) = " << plan->children.size() << "\n";
+
+    // first we will extract all relations from the main plan
+    vector<unique_ptr<LogicalOperator>> extracted_relations;
+    for (auto &relation : relations) {
+        extracted_relations.push_back(ExtractJoinRelation(*relation));  // all relations we have in the Query
+    }
+    // now we generate the actual joins, returns pair<JoinRelationSet *, unique_ptr<LogicalOperator>>
+    auto join_tree = GenerateJoins(extracted_relations, node);  // node comes from final_plan->second.get()
+    // perform the final pushdown of remaining filters
+    for (auto &filter : filters) {
+        // check if the filter has already been extracted
+        if (filter) {
+            // if not we need to push it
+            join_tree.second = PushFilter(move(join_tree.second), move(filter));
+        }
+    }
+
+    // find the first join in the relation to know where to place this node
+    if (root_is_join) {
+        // first node is the join, return it immediately ---> WHY?
+        return move(join_tree.second);
+    }
+    D_ASSERT(plan->children.size() == 1);
+    // have to move up through the relations
+    auto op = plan.get();
+    auto parent = plan.get();
+    while (op->type != LogicalOperatorType::LOGICAL_CROSS_PRODUCT &&
+           op->type != LogicalOperatorType::LOGICAL_COMPARISON_JOIN) {
+        D_ASSERT(op->children.size() == 1);
+        parent = op;
+        op = op->children[0].get();
+    }
+    // have to replace at this node
+    parent->children[0] = move(join_tree.second);
+    return plan;
 }
 
 
@@ -388,6 +576,25 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
 
     GeneratePlans();
     std::cout<< "\n 🐶 amount of plans = "<<plans.size()<<"\n";
+
+    unordered_set<idx_t> bindings;
+    for (idx_t i = 0; i < relations.size(); i++) {
+        bindings.insert(i);
+    }
+    auto total_relation = set_manager.GetJoinRelation(bindings);
+    auto final_plan = plans.find(total_relation);
+    if (final_plan == plans.end()) {
+        // could not find the final plan
+        // this should only happen in case the sets are actually disjunct
+        // in this case we need to generate cross product to connect the disjoint sets
+        // GenerateCrossProducts();
+        //! solve the join order again
+        //SolveJoinOrder(); //FIXME
+        // now we can obtain the final plan!
+        final_plan = plans.find(total_relation);
+        D_ASSERT(final_plan != plans.end());
+    }
+
     // auto final_plan = UCTChoice();
 
     // TODO: add plans which include all the relations into this->plans.
@@ -396,7 +603,9 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     // function ensures that a unique combination of relations will have a unique JoinRelationSet object.
     // TODO: execute plan instead of returning a plan
 
-    return plan;
+    // return plan;
+    return RewritePlan(move(plan), final_plan->second.get());
+
 }
 
 }

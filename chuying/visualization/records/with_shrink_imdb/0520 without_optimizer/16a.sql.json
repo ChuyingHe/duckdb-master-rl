@@ -1,0 +1,147 @@
+{
+   "result": 0.002633,
+   "timings": {
+      "physical_planner": 0.000362,
+      "physical_planner > column_binding": 0.000115,
+      "physical_planner > create_plan": 0.000095,
+      "physical_planner > resolve_types": 0.000103,
+      "planner": 0.000811,
+      "planner > binder": 0.000798
+   },
+   "tree": {
+   "name": "SIMPLE_AGGREGATE",
+   "timing":0.00,
+   "cardinality":1,
+   "extra_info": "min(#0)\nmin(#1)",
+   "children": [
+   {
+      "name": "PROJECTION",
+      "timing":0.00,
+      "cardinality":0,
+      "extra_info": "name\ntitle\n",
+      "children": [
+      {
+         "name": "FILTER",
+         "timing":0.00,
+         "cardinality":0,
+         "extra_info": "(country_code=[us] AND keyword=character-name-in-title AND episode_nr>=50 AND episode_nr<100 AND person_id=id AND id=person_id AND movie_id=id AND id=movie_id AND keyword_id=id AND id=movie_id AND company_id=id AND person_id=person_id AND movie_id=movie_id AND movie_id=movie_id AND movie_id=movie_id)",
+         "children": [
+         {
+            "name": "CROSS_PRODUCT",
+            "timing":0.00,
+            "cardinality":1,
+            "extra_info": "",
+            "children": [
+            {
+               "name": "CROSS_PRODUCT",
+               "timing":0.00,
+               "cardinality":1,
+               "extra_info": "",
+               "children": [
+               {
+                  "name": "CROSS_PRODUCT",
+                  "timing":0.00,
+                  "cardinality":1,
+                  "extra_info": "",
+                  "children": [
+                  {
+                     "name": "CROSS_PRODUCT",
+                     "timing":0.00,
+                     "cardinality":1,
+                     "extra_info": "",
+                     "children": [
+                     {
+                        "name": "CROSS_PRODUCT",
+                        "timing":0.00,
+                        "cardinality":1,
+                        "extra_info": "",
+                        "children": [
+                        {
+                           "name": "CROSS_PRODUCT",
+                           "timing":0.00,
+                           "cardinality":1,
+                           "extra_info": "",
+                           "children": [
+                           {
+                              "name": "CROSS_PRODUCT",
+                              "timing":0.00,
+                              "cardinality":1,
+                              "extra_info": "",
+                              "children": [
+                              {
+                                 "name": "SEQ_SCAN",
+                                 "timing":0.00,
+                                 "cardinality":1,
+                                 "extra_info": "aka_name\n[INFOSEPARATOR]\nname\nperson_id",
+                                 "children": []
+                                 },
+                              {
+                                 "name": "SEQ_SCAN",
+                                 "timing":0.00,
+                                 "cardinality":1,
+                                 "extra_info": "cast_info\n[INFOSEPARATOR]\nperson_id\nmovie_id",
+                                 "children": []
+                                 }
+                              ]
+                              },
+                           {
+                              "name": "SEQ_SCAN",
+                              "timing":0.00,
+                              "cardinality":1,
+                              "extra_info": "company_name\n[INFOSEPARATOR]\ncountry_code\nid",
+                              "children": []
+                              }
+                           ]
+                           },
+                        {
+                           "name": "SEQ_SCAN",
+                           "timing":0.00,
+                           "cardinality":1,
+                           "extra_info": "keyword\n[INFOSEPARATOR]\nkeyword\nid",
+                           "children": []
+                           }
+                        ]
+                        },
+                     {
+                        "name": "SEQ_SCAN",
+                        "timing":0.00,
+                        "cardinality":1,
+                        "extra_info": "movie_companies\n[INFOSEPARATOR]\nmovie_id\ncompany_id",
+                        "children": []
+                        }
+                     ]
+                     },
+                  {
+                     "name": "SEQ_SCAN",
+                     "timing":0.00,
+                     "cardinality":1,
+                     "extra_info": "movie_keyword\n[INFOSEPARATOR]\nmovie_id\nkeyword_id",
+                     "children": []
+                     }
+                  ]
+                  },
+               {
+                  "name": "SEQ_SCAN",
+                  "timing":0.00,
+                  "cardinality":1,
+                  "extra_info": "name\n[INFOSEPARATOR]\nid",
+                  "children": []
+                  }
+               ]
+               },
+            {
+               "name": "SEQ_SCAN",
+               "timing":0.00,
+               "cardinality":1,
+               "extra_info": "title\n[INFOSEPARATOR]\ntitle\nepisode_nr\nid",
+               "children": []
+               }
+            ]
+            }
+         ]
+         }
+      ]
+      }
+   ]
+   }
+}

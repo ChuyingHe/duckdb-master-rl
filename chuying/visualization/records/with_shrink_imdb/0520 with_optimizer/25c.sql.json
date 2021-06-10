@@ -1,0 +1,64 @@
+{
+   "result": 0.093047,
+   "timings": {
+      "optimizer": 0.089997,
+      "optimizer > column_lifetime": 0.000043,
+      "optimizer > common_aggregate": 0.000033,
+      "optimizer > common_subexpressions": 0.000022,
+      "optimizer > deliminator": 0.000006,
+      "optimizer > expression_rewriter": 0.000542,
+      "optimizer > filter_pullup": 0.000012,
+      "optimizer > filter_pushdown": 0.003815,
+      "optimizer > in_clause": 0.000576,
+      "optimizer > join_order": 0.083974,
+      "optimizer > regex_range": 0.000010,
+      "optimizer > reorder_filter": 0.000027,
+      "optimizer > statistics_propagation": 0.000676,
+      "optimizer > top_n": 0.000001,
+      "optimizer > unused_columns": 0.000159,
+      "physical_planner": 0.000140,
+      "physical_planner > column_binding": 0.000041,
+      "physical_planner > create_plan": 0.000041,
+      "physical_planner > resolve_types": 0.000024,
+      "planner": 0.001536,
+      "planner > binder": 0.001510
+   },
+   "tree": {
+   "name": "SIMPLE_AGGREGATE",
+   "timing":0.00,
+   "cardinality":1,
+   "extra_info": "min(#0)\nmin(#1)\nmin(#2)\nmin(#3)",
+   "children": [
+   {
+      "name": "PROJECTION",
+      "timing":0.00,
+      "cardinality":0,
+      "extra_info": "info\ninfo\nname\ntitle\n",
+      "children": [
+      {
+         "name": "HASH_JOIN",
+         "timing":0.00,
+         "cardinality":0,
+         "extra_info": "INNER\nmovie_id=movie_id\nid=movie_id\nid=movie_id\nid=movie_id\nmovie_id=movie_id\nmovie_id=movie_id\n",
+         "children": [
+         {
+            "name": "EMPTY_RESULT",
+            "timing":0.00,
+            "cardinality":0,
+            "extra_info": "",
+            "children": []
+            },
+         {
+            "name": "EMPTY_RESULT",
+            "timing":0.00,
+            "cardinality":0,
+            "extra_info": "",
+            "children": []
+            }
+         ]
+         }
+      ]
+      }
+   ]
+   }
+}

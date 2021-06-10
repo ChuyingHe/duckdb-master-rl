@@ -356,19 +356,20 @@ unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &l
                                                             bool allow_stream_result) {
     //FIXME: clearner way?
     //duckdb join order optimizer
-    if (!enable_rl_join_order_optimizer) {
-        printf("RunStatementInternal: use duckdb-optimizer\n");
-        // prepare the query for execution
-        auto prepared = CreatePreparedStatement(lock, query, move(statement));  /*return optimized physical plan*/
-        // by default, no values are bound
-        vector<Value> bound_values;
-        // execute the prepared statement
-        return ExecutePreparedStatement(lock, query, move(prepared), move(bound_values), allow_stream_result);
+    /*if (!enable_rl_join_order_optimizer) {
+
     } else {    //duckdb join order optimizer
         printf("RunStatementInternal: use rl-optimizer\n");
 
-    }
+    }*/
 
+    printf("RunStatementInternal: use duckdb-optimizer\n");
+    // prepare the query for execution
+    auto prepared = CreatePreparedStatement(lock, query, move(statement));  //return optimized physical plan
+    // by default, no values are bound
+    vector<Value> bound_values;
+    // execute the prepared statement
+    return ExecutePreparedStatement(lock, query, move(prepared), move(bound_values), allow_stream_result);
 }
 
 unique_ptr<QueryResult> ClientContext::RunStatementOrPreparedStatement(ClientContextLock &lock, const string &query,

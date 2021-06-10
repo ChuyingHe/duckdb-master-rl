@@ -1,0 +1,262 @@
+{
+   "result": 10.475203,
+   "timings": {
+      "optimizer": 0.007795,
+      "optimizer > column_lifetime": 0.000044,
+      "optimizer > common_aggregate": 0.000004,
+      "optimizer > common_subexpressions": 0.000003,
+      "optimizer > deliminator": 0.000001,
+      "optimizer > expression_rewriter": 0.000047,
+      "optimizer > filter_pullup": 0.000001,
+      "optimizer > filter_pushdown": 0.000344,
+      "optimizer > in_clause": 0.000094,
+      "optimizer > join_order": 0.007172,
+      "optimizer > regex_range": 0.000001,
+      "optimizer > reorder_filter": 0.000005,
+      "optimizer > statistics_propagation": 0.000039,
+      "optimizer > top_n": 0.000001,
+      "optimizer > unused_columns": 0.000021,
+      "physical_planner": 0.000112,
+      "physical_planner > column_binding": 0.000044,
+      "physical_planner > create_plan": 0.000040,
+      "physical_planner > resolve_types": 0.000012,
+      "planner": 0.000248,
+      "planner > binder": 0.000241
+   },
+   "tree": {
+   "name": "SIMPLE_AGGREGATE",
+   "timing":0.00,
+   "cardinality":1,
+   "extra_info": "min(#0)\nmin(#1)\nmin(#2)\nmin(#3)",
+   "children": [
+   {
+      "name": "PROJECTION",
+      "timing":0.00,
+      "cardinality":26153,
+      "extra_info": "info\ninfo\nname\ntitle\n",
+      "children": [
+      {
+         "name": "HASH_JOIN",
+         "timing":0.22,
+         "cardinality":26153,
+         "extra_info": "INNER\nmovie_id=movie_id\nmovie_id=id\nmovie_id=movie_id\nmovie_id=movie_id\n",
+         "children": [
+         {
+            "name": "HASH_JOIN",
+            "timing":0.11,
+            "cardinality":558518,
+            "extra_info": "INNER\nperson_id=id\n",
+            "children": [
+            {
+               "name": "PROJECTION",
+               "timing":0.01,
+               "cardinality":1244716,
+               "extra_info": "#1\n#2\n",
+               "children": [
+               {
+                  "name": "FILTER",
+                  "timing":0.03,
+                  "cardinality":1244716,
+                  "extra_info": "IN (...)",
+                  "children": [
+                  {
+                     "name": "HASH_JOIN",
+                     "timing":0.29,
+                     "cardinality":8576862,
+                     "extra_info": "MARK\nnote=#0\n",
+                     "children": [
+                     {
+                        "name": "SEQ_SCAN",
+                        "timing":1.17,
+                        "cardinality":8576862,
+                        "extra_info": "cast_info\n[INFOSEPARATOR]\nnote\nmovie_id\nperson_id\n[INFOSEPARATOR]\nFilters: \nnote>=(head writer)\nnote<=(written by)",
+                        "children": []
+                        },
+                     {
+                        "name": "CHUNK_SCAN",
+                        "timing":0.00,
+                        "cardinality":5,
+                        "extra_info": "",
+                        "children": []
+                        }
+                     ]
+                     }
+                  ]
+                  }
+               ]
+               },
+            {
+               "name": "SEQ_SCAN",
+               "timing":0.06,
+               "cardinality":1739579,
+               "extra_info": "name\n[INFOSEPARATOR]\nname\ngender\nid\n[INFOSEPARATOR]\nFilters: \ngender=m",
+               "children": []
+               }
+            ]
+            },
+         {
+            "name": "HASH_JOIN",
+            "timing":0.00,
+            "cardinality":63386,
+            "extra_info": "INNER\ninfo_type_id=id\n",
+            "children": [
+            {
+               "name": "HASH_JOIN",
+               "timing":0.00,
+               "cardinality":67732,
+               "extra_info": "INNER\ninfo_type_id=id\n",
+               "children": [
+               {
+                  "name": "HASH_JOIN",
+                  "timing":0.17,
+                  "cardinality":204379,
+                  "extra_info": "INNER\nkeyword_id=id\n",
+                  "children": [
+                  {
+                     "name": "HASH_JOIN",
+                     "timing":4.32,
+                     "cardinality":7405374,
+                     "extra_info": "INNER\nmovie_id=id\nmovie_id=movie_id\nmovie_id=movie_id\n",
+                     "children": [
+                     {
+                        "name": "PROJECTION",
+                        "timing":0.00,
+                        "cardinality":188971,
+                        "extra_info": "#0\n#1\n#2\n",
+                        "children": [
+                        {
+                           "name": "FILTER",
+                           "timing":0.02,
+                           "cardinality":188971,
+                           "extra_info": "IN (...)",
+                           "children": [
+                           {
+                              "name": "HASH_JOIN",
+                              "timing":0.70,
+                              "cardinality":13379005,
+                              "extra_info": "MARK\ninfo=#0\n",
+                              "children": [
+                              {
+                                 "name": "SEQ_SCAN",
+                                 "timing":1.61,
+                                 "cardinality":13379005,
+                                 "extra_info": "movie_info\n[INFOSEPARATOR]\ninfo\nmovie_id\ninfo_type_id\n[INFOSEPARATOR]\nFilters: \ninfo>=Action\ninfo<=War",
+                                 "children": []
+                                 },
+                              {
+                                 "name": "CHUNK_SCAN",
+                                 "timing":0.00,
+                                 "cardinality":6,
+                                 "extra_info": "",
+                                 "children": []
+                                 }
+                              ]
+                              }
+                           ]
+                           }
+                        ]
+                        },
+                     {
+                        "name": "HASH_JOIN",
+                        "timing":0.69,
+                        "cardinality":10424626,
+                        "extra_info": "INNER\nid=movie_id\nmovie_id=movie_id\n",
+                        "children": [
+                        {
+                           "name": "HASH_JOIN",
+                           "timing":0.21,
+                           "cardinality":4523930,
+                           "extra_info": "INNER\nmovie_id=id\n",
+                           "children": [
+                           {
+                              "name": "SEQ_SCAN",
+                              "timing":0.01,
+                              "cardinality":4523930,
+                              "extra_info": "movie_keyword\n[INFOSEPARATOR]\nmovie_id\nkeyword_id",
+                              "children": []
+                              },
+                           {
+                              "name": "SEQ_SCAN",
+                              "timing":0.03,
+                              "cardinality":2528312,
+                              "extra_info": "title\n[INFOSEPARATOR]\ntitle\nid",
+                              "children": []
+                              }
+                           ]
+                           },
+                        {
+                           "name": "SEQ_SCAN",
+                           "timing":0.02,
+                           "cardinality":1380035,
+                           "extra_info": "movie_info_idx\n[INFOSEPARATOR]\ninfo\nmovie_id\ninfo_type_id",
+                           "children": []
+                           }
+                        ]
+                        }
+                     ]
+                     },
+                  {
+                     "name": "PROJECTION",
+                     "timing":0.00,
+                     "cardinality":7,
+                     "extra_info": "#1\n",
+                     "children": [
+                     {
+                        "name": "FILTER",
+                        "timing":0.00,
+                        "cardinality":7,
+                        "extra_info": "IN (...)",
+                        "children": [
+                        {
+                           "name": "HASH_JOIN",
+                           "timing":0.00,
+                           "cardinality":116083,
+                           "extra_info": "MARK\nkeyword=#0\n",
+                           "children": [
+                           {
+                              "name": "SEQ_SCAN",
+                              "timing":0.01,
+                              "cardinality":116083,
+                              "extra_info": "keyword\n[INFOSEPARATOR]\nkeyword\nid\n[INFOSEPARATOR]\nFilters: \nkeyword>=blood\nkeyword<=violence",
+                              "children": []
+                              },
+                           {
+                              "name": "CHUNK_SCAN",
+                              "timing":0.00,
+                              "cardinality":7,
+                              "extra_info": "",
+                              "children": []
+                              }
+                           ]
+                           }
+                        ]
+                        }
+                     ]
+                     }
+                  ]
+                  },
+               {
+                  "name": "SEQ_SCAN",
+                  "timing":0.00,
+                  "cardinality":1,
+                  "extra_info": "info_type\n[INFOSEPARATOR]\ninfo\nid\n[INFOSEPARATOR]\nFilters: \ninfo=votes",
+                  "children": []
+                  }
+               ]
+               },
+            {
+               "name": "SEQ_SCAN",
+               "timing":0.00,
+               "cardinality":1,
+               "extra_info": "info_type\n[INFOSEPARATOR]\ninfo\nid\n[INFOSEPARATOR]\nFilters: \ninfo=genres",
+               "children": []
+               }
+            ]
+            }
+         ]
+         }
+      ]
+      }
+   ]
+   }
+}

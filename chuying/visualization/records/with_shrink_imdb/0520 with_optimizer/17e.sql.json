@@ -1,0 +1,49 @@
+{
+   "result": 0.075894,
+   "timings": {
+      "optimizer": 0.074210,
+      "optimizer > column_lifetime": 0.000011,
+      "optimizer > common_aggregate": 0.000023,
+      "optimizer > common_subexpressions": 0.000017,
+      "optimizer > deliminator": 0.000005,
+      "optimizer > expression_rewriter": 0.000245,
+      "optimizer > filter_pullup": 0.000008,
+      "optimizer > filter_pushdown": 0.009301,
+      "optimizer > in_clause": 0.000009,
+      "optimizer > join_order": 0.063748,
+      "optimizer > regex_range": 0.000004,
+      "optimizer > reorder_filter": 0.000049,
+      "optimizer > statistics_propagation": 0.000547,
+      "optimizer > top_n": 0.000002,
+      "optimizer > unused_columns": 0.000155,
+      "physical_planner": 0.000055,
+      "physical_planner > column_binding": 0.000014,
+      "physical_planner > create_plan": 0.000018,
+      "physical_planner > resolve_types": 0.000008,
+      "planner": 0.000883,
+      "planner > binder": 0.000866
+   },
+   "tree": {
+   "name": "SIMPLE_AGGREGATE",
+   "timing":0.00,
+   "cardinality":1,
+   "extra_info": "min(#0)",
+   "children": [
+   {
+      "name": "PROJECTION",
+      "timing":0.00,
+      "cardinality":0,
+      "extra_info": "name\n",
+      "children": [
+      {
+         "name": "EMPTY_RESULT",
+         "timing":0.00,
+         "cardinality":0,
+         "extra_info": "",
+         "children": []
+         }
+      ]
+      }
+   ]
+   }
+}

@@ -28,6 +28,7 @@ public:
 private:
     ClientContext &context;
     idx_t pairs = 0;
+    int counter = 0;
 
     vector<unique_ptr<SingleJoinRelation>> relations;
     unordered_map<idx_t, idx_t> relation_mapping;
@@ -35,6 +36,8 @@ private:
     QueryGraph query_graph;
     unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>> plans;   // includes all the relations, to return
     // FIXME: unordered_map<unordered_set<idx_t>, unique_ptr<JoinOrderOptimizer::JoinNode>> final_plans;
+    unordered_map<std::string, unique_ptr<JoinOrderOptimizer::JoinNode>> final_plans;
+
     std::string order_of_rel = "";
     unordered_map<std::string, unique_ptr<JoinOrderOptimizer::JoinNode>> rl_plans;
 

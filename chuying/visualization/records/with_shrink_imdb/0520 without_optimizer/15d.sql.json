@@ -1,0 +1,162 @@
+{
+   "result": 0.003071,
+   "timings": {
+      "physical_planner": 0.000426,
+      "physical_planner > column_binding": 0.000140,
+      "physical_planner > create_plan": 0.000107,
+      "physical_planner > resolve_types": 0.000124,
+      "planner": 0.000934,
+      "planner > binder": 0.000919
+   },
+   "tree": {
+   "name": "SIMPLE_AGGREGATE",
+   "timing":0.00,
+   "cardinality":1,
+   "extra_info": "min(#0)\nmin(#1)",
+   "children": [
+   {
+      "name": "PROJECTION",
+      "timing":0.00,
+      "cardinality":0,
+      "extra_info": "title\ntitle\n",
+      "children": [
+      {
+         "name": "FILTER",
+         "timing":0.00,
+         "cardinality":0,
+         "extra_info": "(country_code=[us] AND info=release dates AND ~~(note, %internet%) AND production_year>1990 AND id=movie_id AND id=movie_id AND id=movie_id AND id=movie_id AND movie_id=movie_id AND movie_id=movie_id AND movie_id=movie_id AND movie_id=movie_id AND movie_id=movie_id AND movie_id=movie_id AND id=keyword_id AND id=info_type_id AND id=company_id AND id=company_type_id)",
+         "children": [
+         {
+            "name": "CROSS_PRODUCT",
+            "timing":0.00,
+            "cardinality":1,
+            "extra_info": "",
+            "children": [
+            {
+               "name": "CROSS_PRODUCT",
+               "timing":0.00,
+               "cardinality":1,
+               "extra_info": "",
+               "children": [
+               {
+                  "name": "CROSS_PRODUCT",
+                  "timing":0.00,
+                  "cardinality":1,
+                  "extra_info": "",
+                  "children": [
+                  {
+                     "name": "CROSS_PRODUCT",
+                     "timing":0.00,
+                     "cardinality":1,
+                     "extra_info": "",
+                     "children": [
+                     {
+                        "name": "CROSS_PRODUCT",
+                        "timing":0.00,
+                        "cardinality":1,
+                        "extra_info": "",
+                        "children": [
+                        {
+                           "name": "CROSS_PRODUCT",
+                           "timing":0.00,
+                           "cardinality":1,
+                           "extra_info": "",
+                           "children": [
+                           {
+                              "name": "CROSS_PRODUCT",
+                              "timing":0.00,
+                              "cardinality":1,
+                              "extra_info": "",
+                              "children": [
+                              {
+                                 "name": "CROSS_PRODUCT",
+                                 "timing":0.00,
+                                 "cardinality":1,
+                                 "extra_info": "",
+                                 "children": [
+                                 {
+                                    "name": "SEQ_SCAN",
+                                    "timing":0.00,
+                                    "cardinality":1,
+                                    "extra_info": "aka_title\n[INFOSEPARATOR]\ntitle\nmovie_id",
+                                    "children": []
+                                    },
+                                 {
+                                    "name": "SEQ_SCAN",
+                                    "timing":0.00,
+                                    "cardinality":1,
+                                    "extra_info": "company_name\n[INFOSEPARATOR]\ncountry_code\nid",
+                                    "children": []
+                                    }
+                                 ]
+                                 },
+                              {
+                                 "name": "SEQ_SCAN",
+                                 "timing":0.00,
+                                 "cardinality":1,
+                                 "extra_info": "company_type\n[INFOSEPARATOR]\nid",
+                                 "children": []
+                                 }
+                              ]
+                              },
+                           {
+                              "name": "SEQ_SCAN",
+                              "timing":0.00,
+                              "cardinality":1,
+                              "extra_info": "info_type\n[INFOSEPARATOR]\ninfo\nid",
+                              "children": []
+                              }
+                           ]
+                           },
+                        {
+                           "name": "SEQ_SCAN",
+                           "timing":0.00,
+                           "cardinality":1,
+                           "extra_info": "keyword\n[INFOSEPARATOR]\nid",
+                           "children": []
+                           }
+                        ]
+                        },
+                     {
+                        "name": "SEQ_SCAN",
+                        "timing":0.00,
+                        "cardinality":1,
+                        "extra_info": "movie_companies\n[INFOSEPARATOR]\nmovie_id\ncompany_id\ncompany_type_id",
+                        "children": []
+                        }
+                     ]
+                     },
+                  {
+                     "name": "SEQ_SCAN",
+                     "timing":0.00,
+                     "cardinality":1,
+                     "extra_info": "movie_info\n[INFOSEPARATOR]\nnote\nmovie_id\ninfo_type_id",
+                     "children": []
+                     }
+                  ]
+                  },
+               {
+                  "name": "SEQ_SCAN",
+                  "timing":0.00,
+                  "cardinality":1,
+                  "extra_info": "movie_keyword\n[INFOSEPARATOR]\nmovie_id\nkeyword_id",
+                  "children": []
+                  }
+               ]
+               },
+            {
+               "name": "SEQ_SCAN",
+               "timing":0.00,
+               "cardinality":1,
+               "extra_info": "title\n[INFOSEPARATOR]\ntitle\nproduction_year\nid",
+               "children": []
+               }
+            ]
+            }
+         ]
+         }
+      ]
+      }
+   ]
+   }
+}

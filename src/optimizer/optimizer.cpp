@@ -48,6 +48,7 @@ unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan
 	printf("unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan) {\n");
 	// first we perform expression rewrites using the ExpressionRewriter
 	// this does not change the logical plan structure, but only simplifies the expression trees
+	/*
 	context.profiler.StartPhase("expression_rewriter");
 	rewriter.VisitOperator(*plan);
 	context.profiler.EndPhase();
@@ -72,7 +73,7 @@ unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan
 	context.profiler.StartPhase("in_clause");
 	InClauseRewriter rewriter(*this);
 	plan = rewriter.Rewrite(move(plan));
-	context.profiler.EndPhase();
+	context.profiler.EndPhase();*/
 
 	// then we perform the join ordering optimization
 	// this also rewrites cross products + filters into joins and performs filter pushdowns
@@ -87,9 +88,9 @@ unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan
         JoinOrderOptimizer optimizer(context);
         plan = optimizer.Optimize(move(plan));
     }
-
 	context.profiler.EndPhase();
 
+    /*
 	// removes any redundant DelimGets/DelimJoins
 	context.profiler.StartPhase("deliminator");
 	Deliminator deliminator;
@@ -133,7 +134,7 @@ unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan
 	context.profiler.StartPhase("reorder_filter");
 	ExpressionHeuristics expression_heuristics(*this);
 	plan = expression_heuristics.Rewrite(move(plan));
-	context.profiler.EndPhase();
+	context.profiler.EndPhase();*/
 
 	return plan;
 }

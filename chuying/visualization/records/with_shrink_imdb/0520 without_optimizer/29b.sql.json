@@ -1,0 +1,282 @@
+{
+   "result": 0.009283,
+   "timings": {
+      "physical_planner": 0.001321,
+      "physical_planner > column_binding": 0.000452,
+      "physical_planner > create_plan": 0.000264,
+      "physical_planner > resolve_types": 0.000458,
+      "planner": 0.002117,
+      "planner > binder": 0.002096
+   },
+   "tree": {
+   "name": "SIMPLE_AGGREGATE",
+   "timing":0.00,
+   "cardinality":1,
+   "extra_info": "min(#0)\nmin(#1)\nmin(#2)",
+   "children": [
+   {
+      "name": "PROJECTION",
+      "timing":0.00,
+      "cardinality":0,
+      "extra_info": "name\nname\ntitle\n",
+      "children": [
+      {
+         "name": "FILTER",
+         "timing":0.00,
+         "cardinality":0,
+         "extra_info": "(kind=cast AND kind=complete+verified AND name=Queen AND IN(note, (voice), (voice) (uncredited), (voice: English version)) AND country_code=[us] AND info=release dates AND info=height AND keyword=computer-animation AND ~~(info, USA:%200%) AND gender=f AND ~~(name, %An%) AND role=actress AND title=Shrek 2 AND production_year>=2000 AND production_year<=2005 AND id=movie_id AND id=movie_id AND id=movie_id AND id=movie_id AND id=movie_id AND movie_id=movie_id AND movie_id=movie_id AND movie_id=movie_id AND movie_id=movie_id AND movie_id=movie_id AND movie_id=movie_id AND movie_id=movie_id AND movie_id=movie_id AND movie_id=movie_id AND movie_id=movie_id AND id=company_id AND id=info_type_id AND id=person_id AND id=role_id AND id=person_id AND person_id=person_id AND id=person_role_id AND id=person_id AND person_id=person_id AND id=info_type_id AND id=keyword_id AND id=subject_id AND id=status_id)",
+         "children": [
+         {
+            "name": "CROSS_PRODUCT",
+            "timing":0.00,
+            "cardinality":1,
+            "extra_info": "",
+            "children": [
+            {
+               "name": "CROSS_PRODUCT",
+               "timing":0.00,
+               "cardinality":1,
+               "extra_info": "",
+               "children": [
+               {
+                  "name": "CROSS_PRODUCT",
+                  "timing":0.00,
+                  "cardinality":1,
+                  "extra_info": "",
+                  "children": [
+                  {
+                     "name": "CROSS_PRODUCT",
+                     "timing":0.00,
+                     "cardinality":1,
+                     "extra_info": "",
+                     "children": [
+                     {
+                        "name": "CROSS_PRODUCT",
+                        "timing":0.00,
+                        "cardinality":1,
+                        "extra_info": "",
+                        "children": [
+                        {
+                           "name": "CROSS_PRODUCT",
+                           "timing":0.00,
+                           "cardinality":1,
+                           "extra_info": "",
+                           "children": [
+                           {
+                              "name": "CROSS_PRODUCT",
+                              "timing":0.00,
+                              "cardinality":1,
+                              "extra_info": "",
+                              "children": [
+                              {
+                                 "name": "CROSS_PRODUCT",
+                                 "timing":0.00,
+                                 "cardinality":1,
+                                 "extra_info": "",
+                                 "children": [
+                                 {
+                                    "name": "CROSS_PRODUCT",
+                                    "timing":0.00,
+                                    "cardinality":1,
+                                    "extra_info": "",
+                                    "children": [
+                                    {
+                                       "name": "CROSS_PRODUCT",
+                                       "timing":0.00,
+                                       "cardinality":1,
+                                       "extra_info": "",
+                                       "children": [
+                                       {
+                                          "name": "CROSS_PRODUCT",
+                                          "timing":0.00,
+                                          "cardinality":1,
+                                          "extra_info": "",
+                                          "children": [
+                                          {
+                                             "name": "CROSS_PRODUCT",
+                                             "timing":0.00,
+                                             "cardinality":1,
+                                             "extra_info": "",
+                                             "children": [
+                                             {
+                                                "name": "CROSS_PRODUCT",
+                                                "timing":0.00,
+                                                "cardinality":1,
+                                                "extra_info": "",
+                                                "children": [
+                                                {
+                                                   "name": "CROSS_PRODUCT",
+                                                   "timing":0.00,
+                                                   "cardinality":1,
+                                                   "extra_info": "",
+                                                   "children": [
+                                                   {
+                                                      "name": "CROSS_PRODUCT",
+                                                      "timing":0.00,
+                                                      "cardinality":1,
+                                                      "extra_info": "",
+                                                      "children": [
+                                                      {
+                                                         "name": "CROSS_PRODUCT",
+                                                         "timing":0.00,
+                                                         "cardinality":1,
+                                                         "extra_info": "",
+                                                         "children": [
+                                                         {
+                                                            "name": "SEQ_SCAN",
+                                                            "timing":0.00,
+                                                            "cardinality":1,
+                                                            "extra_info": "aka_name\n[INFOSEPARATOR]\nperson_id",
+                                                            "children": []
+                                                            },
+                                                         {
+                                                            "name": "SEQ_SCAN",
+                                                            "timing":0.00,
+                                                            "cardinality":1,
+                                                            "extra_info": "complete_cast\n[INFOSEPARATOR]\nmovie_id\nsubject_id\nstatus_id",
+                                                            "children": []
+                                                            }
+                                                         ]
+                                                         },
+                                                      {
+                                                         "name": "SEQ_SCAN",
+                                                         "timing":0.00,
+                                                         "cardinality":1,
+                                                         "extra_info": "comp_cast_type\n[INFOSEPARATOR]\nkind\nid",
+                                                         "children": []
+                                                         }
+                                                      ]
+                                                      },
+                                                   {
+                                                      "name": "SEQ_SCAN",
+                                                      "timing":0.00,
+                                                      "cardinality":1,
+                                                      "extra_info": "comp_cast_type\n[INFOSEPARATOR]\nkind\nid",
+                                                      "children": []
+                                                      }
+                                                   ]
+                                                   },
+                                                {
+                                                   "name": "SEQ_SCAN",
+                                                   "timing":0.00,
+                                                   "cardinality":1,
+                                                   "extra_info": "char_name\n[INFOSEPARATOR]\nname\nid",
+                                                   "children": []
+                                                   }
+                                                ]
+                                                },
+                                             {
+                                                "name": "SEQ_SCAN",
+                                                "timing":0.00,
+                                                "cardinality":1,
+                                                "extra_info": "cast_info\n[INFOSEPARATOR]\nnote\nmovie_id\nperson_id\nrole_id\nperson_role_id",
+                                                "children": []
+                                                }
+                                             ]
+                                             },
+                                          {
+                                             "name": "SEQ_SCAN",
+                                             "timing":0.00,
+                                             "cardinality":1,
+                                             "extra_info": "company_name\n[INFOSEPARATOR]\ncountry_code\nid",
+                                             "children": []
+                                             }
+                                          ]
+                                          },
+                                       {
+                                          "name": "SEQ_SCAN",
+                                          "timing":0.00,
+                                          "cardinality":1,
+                                          "extra_info": "info_type\n[INFOSEPARATOR]\ninfo\nid",
+                                          "children": []
+                                          }
+                                       ]
+                                       },
+                                    {
+                                       "name": "SEQ_SCAN",
+                                       "timing":0.00,
+                                       "cardinality":1,
+                                       "extra_info": "info_type\n[INFOSEPARATOR]\ninfo\nid",
+                                       "children": []
+                                       }
+                                    ]
+                                    },
+                                 {
+                                    "name": "SEQ_SCAN",
+                                    "timing":0.00,
+                                    "cardinality":1,
+                                    "extra_info": "keyword\n[INFOSEPARATOR]\nkeyword\nid",
+                                    "children": []
+                                    }
+                                 ]
+                                 },
+                              {
+                                 "name": "SEQ_SCAN",
+                                 "timing":0.00,
+                                 "cardinality":1,
+                                 "extra_info": "movie_companies\n[INFOSEPARATOR]\nmovie_id\ncompany_id",
+                                 "children": []
+                                 }
+                              ]
+                              },
+                           {
+                              "name": "SEQ_SCAN",
+                              "timing":0.00,
+                              "cardinality":1,
+                              "extra_info": "movie_info\n[INFOSEPARATOR]\ninfo\nmovie_id\ninfo_type_id",
+                              "children": []
+                              }
+                           ]
+                           },
+                        {
+                           "name": "SEQ_SCAN",
+                           "timing":0.00,
+                           "cardinality":1,
+                           "extra_info": "movie_keyword\n[INFOSEPARATOR]\nmovie_id\nkeyword_id",
+                           "children": []
+                           }
+                        ]
+                        },
+                     {
+                        "name": "SEQ_SCAN",
+                        "timing":0.00,
+                        "cardinality":1,
+                        "extra_info": "name\n[INFOSEPARATOR]\nname\ngender\nid",
+                        "children": []
+                        }
+                     ]
+                     },
+                  {
+                     "name": "SEQ_SCAN",
+                     "timing":0.00,
+                     "cardinality":1,
+                     "extra_info": "person_info\n[INFOSEPARATOR]\nperson_id\ninfo_type_id",
+                     "children": []
+                     }
+                  ]
+                  },
+               {
+                  "name": "SEQ_SCAN",
+                  "timing":0.00,
+                  "cardinality":1,
+                  "extra_info": "role_type\n[INFOSEPARATOR]\nrole\nid",
+                  "children": []
+                  }
+               ]
+               },
+            {
+               "name": "SEQ_SCAN",
+               "timing":0.00,
+               "cardinality":1,
+               "extra_info": "title\n[INFOSEPARATOR]\ntitle\nproduction_year\nid",
+               "children": []
+               }
+            ]
+            }
+         ]
+         }
+      ]
+      }
+   ]
+   }
+}

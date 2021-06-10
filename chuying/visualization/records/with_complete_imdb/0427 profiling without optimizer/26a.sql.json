@@ -1,0 +1,269 @@
+{
+   "result": 2.095823,
+   "timings": {
+      "optimizer": 0.012009,
+      "optimizer > column_lifetime": 0.000071,
+      "optimizer > common_aggregate": 0.000004,
+      "optimizer > common_subexpressions": 0.000003,
+      "optimizer > deliminator": 0.000002,
+      "optimizer > expression_rewriter": 0.000363,
+      "optimizer > filter_pullup": 0.000001,
+      "optimizer > filter_pushdown": 0.002238,
+      "optimizer > in_clause": 0.000056,
+      "optimizer > join_order": 0.009128,
+      "optimizer > regex_range": 0.000001,
+      "optimizer > reorder_filter": 0.000007,
+      "optimizer > statistics_propagation": 0.000087,
+      "optimizer > top_n": 0.000001,
+      "optimizer > unused_columns": 0.000030,
+      "physical_planner": 0.000761,
+      "physical_planner > column_binding": 0.000054,
+      "physical_planner > create_plan": 0.000674,
+      "physical_planner > resolve_types": 0.000012,
+      "planner": 0.000302,
+      "planner > binder": 0.000296
+   },
+   "tree": {
+   "name": "SIMPLE_AGGREGATE",
+   "timing":0.00,
+   "cardinality":1,
+   "extra_info": "min(#0)\nmin(#1)\nmin(#2)\nmin(#3)",
+   "children": [
+   {
+      "name": "PROJECTION",
+      "timing":0.00,
+      "cardinality":1728,
+      "extra_info": "name\ninfo\nname\ntitle\n",
+      "children": [
+      {
+         "name": "HASH_JOIN",
+         "timing":0.04,
+         "cardinality":1728,
+         "extra_info": "INNER\nmovie_id=movie_id\nmovie_id=id\nmovie_id=movie_id\nmovie_id=movie_id\n",
+         "children": [
+         {
+            "name": "HASH_JOIN",
+            "timing":0.28,
+            "cardinality":623586,
+            "extra_info": "INNER\nperson_id=id\n",
+            "children": [
+            {
+               "name": "HASH_JOIN",
+               "timing":0.61,
+               "cardinality":623586,
+               "extra_info": "INNER\nperson_role_id=id\n",
+               "children": [
+               {
+                  "name": "SEQ_SCAN",
+                  "timing":0.23,
+                  "cardinality":36244344,
+                  "extra_info": "cast_info\n[INFOSEPARATOR]\nmovie_id\nperson_role_id\nperson_id",
+                  "children": []
+                  },
+               {
+                  "name": "FILTER",
+                  "timing":0.15,
+                  "cardinality":180152,
+                  "extra_info": "(contains(name, man) OR contains(name, Man))",
+                  "children": [
+                  {
+                     "name": "SEQ_SCAN",
+                     "timing":0.03,
+                     "cardinality":3140339,
+                     "extra_info": "char_name\n[INFOSEPARATOR]\nname\nid",
+                     "children": []
+                     }
+                  ]
+                  }
+               ]
+               },
+            {
+               "name": "SEQ_SCAN",
+               "timing":0.22,
+               "cardinality":4167491,
+               "extra_info": "name\n[INFOSEPARATOR]\nname\nid",
+               "children": []
+               }
+            ]
+            },
+         {
+            "name": "HASH_JOIN",
+            "timing":0.00,
+            "cardinality":326,
+            "extra_info": "INNER\nmovie_id=movie_id\nmovie_id=id\nmovie_id=movie_id\n",
+            "children": [
+            {
+               "name": "HASH_JOIN",
+               "timing":0.03,
+               "cardinality":24091,
+               "extra_info": "INNER\nkeyword_id=id\n",
+               "children": [
+               {
+                  "name": "SEQ_SCAN",
+                  "timing":0.01,
+                  "cardinality":4523930,
+                  "extra_info": "movie_keyword\n[INFOSEPARATOR]\nmovie_id\nkeyword_id",
+                  "children": []
+                  },
+               {
+                  "name": "PROJECTION",
+                  "timing":0.00,
+                  "cardinality":10,
+                  "extra_info": "#1\n",
+                  "children": [
+                  {
+                     "name": "FILTER",
+                     "timing":0.00,
+                     "cardinality":10,
+                     "extra_info": "IN (...)",
+                     "children": [
+                     {
+                        "name": "HASH_JOIN",
+                        "timing":0.01,
+                        "cardinality":121429,
+                        "extra_info": "MARK\nkeyword=#0\n",
+                        "children": [
+                        {
+                           "name": "SEQ_SCAN",
+                           "timing":0.01,
+                           "cardinality":121429,
+                           "extra_info": "keyword\n[INFOSEPARATOR]\nkeyword\nid\n[INFOSEPARATOR]\nFilters: \nkeyword>=based-on-comic\nkeyword<=web",
+                           "children": []
+                           },
+                        {
+                           "name": "CHUNK_SCAN",
+                           "timing":0.00,
+                           "cardinality":10,
+                           "extra_info": "",
+                           "children": []
+                           }
+                        ]
+                        }
+                     ]
+                     }
+                  ]
+                  }
+               ]
+               },
+            {
+               "name": "HASH_JOIN",
+               "timing":0.02,
+               "cardinality":647,
+               "extra_info": "INNER\nid=movie_id\nid=movie_id\n",
+               "children": [
+               {
+                  "name": "HASH_JOIN",
+                  "timing":0.02,
+                  "cardinality":274015,
+                  "extra_info": "INNER\nkind_id=id\n",
+                  "children": [
+                  {
+                     "name": "SEQ_SCAN",
+                     "timing":0.08,
+                     "cardinality":1381453,
+                     "extra_info": "title\n[INFOSEPARATOR]\ntitle\nproduction_year\nkind_id\nid\n[INFOSEPARATOR]\nFilters: \nproduction_year>2000",
+                     "children": []
+                     },
+                  {
+                     "name": "SEQ_SCAN",
+                     "timing":0.00,
+                     "cardinality":1,
+                     "extra_info": "kind_type\n[INFOSEPARATOR]\nkind\nid\n[INFOSEPARATOR]\nFilters: \nkind=movie",
+                     "children": []
+                     }
+                  ]
+                  },
+               {
+                  "name": "HASH_JOIN",
+                  "timing":0.02,
+                  "cardinality":17898,
+                  "extra_info": "INNER\nmovie_id=movie_id\n",
+                  "children": [
+                  {
+                     "name": "HASH_JOIN",
+                     "timing":0.01,
+                     "cardinality":121572,
+                     "extra_info": "INNER\ninfo_type_id=id\n",
+                     "children": [
+                     {
+                        "name": "SEQ_SCAN",
+                        "timing":0.06,
+                        "cardinality":192839,
+                        "extra_info": "movie_info_idx\n[INFOSEPARATOR]\ninfo\nmovie_id\ninfo_type_id\n[INFOSEPARATOR]\nFilters: \ninfo>7.0",
+                        "children": []
+                        },
+                     {
+                        "name": "SEQ_SCAN",
+                        "timing":0.00,
+                        "cardinality":1,
+                        "extra_info": "info_type\n[INFOSEPARATOR]\ninfo\nid\n[INFOSEPARATOR]\nFilters: \ninfo=rating",
+                        "children": []
+                        }
+                     ]
+                     },
+                  {
+                     "name": "HASH_JOIN",
+                     "timing":0.00,
+                     "cardinality":85941,
+                     "extra_info": "INNER\nstatus_id=id\n",
+                     "children": [
+                     {
+                        "name": "HASH_JOIN",
+                        "timing":0.00,
+                        "cardinality":85941,
+                        "extra_info": "INNER\nsubject_id=id\n",
+                        "children": [
+                        {
+                           "name": "SEQ_SCAN",
+                           "timing":0.00,
+                           "cardinality":135086,
+                           "extra_info": "complete_cast\n[INFOSEPARATOR]\nmovie_id\nsubject_id\nstatus_id",
+                           "children": []
+                           },
+                        {
+                           "name": "SEQ_SCAN",
+                           "timing":0.00,
+                           "cardinality":1,
+                           "extra_info": "comp_cast_type\n[INFOSEPARATOR]\nkind\nid\n[INFOSEPARATOR]\nFilters: \nkind=cast",
+                           "children": []
+                           }
+                        ]
+                        },
+                     {
+                        "name": "PROJECTION",
+                        "timing":0.00,
+                        "cardinality":2,
+                        "extra_info": "#1\n",
+                        "children": [
+                        {
+                           "name": "FILTER",
+                           "timing":0.00,
+                           "cardinality":2,
+                           "extra_info": "contains(kind, complete)",
+                           "children": [
+                           {
+                              "name": "SEQ_SCAN",
+                              "timing":0.00,
+                              "cardinality":4,
+                              "extra_info": "comp_cast_type\n[INFOSEPARATOR]\nkind\nid",
+                              "children": []
+                              }
+                           ]
+                           }
+                        ]
+                        }
+                     ]
+                     }
+                  ]
+                  }
+               ]
+               }
+            ]
+            }
+         ]
+         }
+      ]
+      }
+   ]
+   }
+}

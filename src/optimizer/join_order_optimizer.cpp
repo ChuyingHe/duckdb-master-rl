@@ -800,7 +800,7 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 		final_plan = plans.find(total_relation);
 		D_ASSERT(final_plan != plans.end());
 	}
-	std::cout <<"⭕️-11" <<std::endl;
+
 	// now perform the actual reordering
 	return RewritePlan(move(plan), final_plan->second.get());
 }

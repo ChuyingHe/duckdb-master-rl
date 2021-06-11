@@ -596,7 +596,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     for (idx_t i = 0; i < relations.size(); i++) {
         bindings.insert(i);
     }
-    auto total_relation = set_manager.GetJoinRelation(bindings);
+    // auto total_relation = set_manager.GetJoinRelation(bindings);
 
     //FIXME: choose final_plan use UCTChoice
     // auto final_plan = UCTChoice();
@@ -608,8 +608,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     // function ensures that a unique combination of relations will have a unique JoinRelationSet object.
     // TODO: execute plan instead of returning a plan
 
-    return RewritePlan(move(plan), final_plan->second.get());
-
+    return RewritePlan(move(plan), final_plan->second.get());   // returns executable - unique_ptr<LogicalOperator>
 }
 
 }

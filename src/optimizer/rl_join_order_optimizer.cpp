@@ -242,7 +242,7 @@ RLJoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extract
         }
         left_node = left.first;
         right_node = right.first;
-        result_relation = set_manager.Union(left_node, right_node);
+        result_relation = set_manager.RLUnion(left_node, right_node);
     } else {
         // base node, get the entry from the list of extracted relations
         D_ASSERT(node->set->count == 1);
@@ -339,13 +339,13 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
             auto &left = plans[union_set];
             // auto &left = rl_plans[union_set];
 
-            auto new_set = set_manager.Union(union_set, neighbor_relation);
+            auto new_set = set_manager.RLUnion(union_set, neighbor_relation);
 
             auto &right = plans[neighbor_relation];
             auto new_plan = CreateJoinTree(new_set, info, left.get(), right.get());// unique_ptr<JoinNode>
 
             //FIXME: add to plan but do not replace the old one, apparently plan take Relations as identifier
-            if (new_set->count == 5) {
+            /*if (new_set->count == 5) {
                 counter++;
                 //FIXME: just for debug, delete later
                 if (counter == 36) {
@@ -357,7 +357,21 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
                 if(entry == plans.end()) {
                     plans[new_set] = move(new_plan); //add intermediate results to plans
                 }
-            };
+            };*/
+            auto entry = plans.find(new_set);
+
+
+            if (entry == plans.end()) {
+                if (new_set->count == 5) {
+                    rl_plans[new_set] = move(new_plan); // only include plans which includes all the relations
+                } else {
+                    plans[new_set] = move(new_plan);
+                }
+            }
+
+
+
+
 
             exclusion_set.clear();
             for (idx_t i = 0; i < new_set->count; ++i) {
@@ -424,7 +438,8 @@ void RLJoinOrderOptimizer::BackupState() {
     //backup execution state for join order
 }
 
-
+// plan: from previous optimizer
+// node: final_plan chosen by UCTChoice()
 unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<LogicalOperator> plan, JoinNode *node) {
     // now we have to rewrite the plan
     bool root_is_join = plan->children.size() > 1;
@@ -582,20 +597,10 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
         bindings.insert(i);
     }
     auto total_relation = set_manager.GetJoinRelation(bindings);
-    auto final_plan = plans.find(total_relation);
-    if (final_plan == plans.end()) {
-        // could not find the final plan
-        // this should only happen in case the sets are actually disjunct
-        // in this case we need to generate cross product to connect the disjoint sets
-        // GenerateCrossProducts();
-        //! solve the join order again
-        //SolveJoinOrder(); //FIXME
-        // now we can obtain the final plan!
-        final_plan = plans.find(total_relation);
-        D_ASSERT(final_plan != plans.end());
-    }
 
+    //FIXME: choose final_plan use UCTChoice
     // auto final_plan = UCTChoice();
+    auto final_plan = rl_plans.begin();
 
     // TODO: add plans which include all the relations into this->plans.
 
@@ -603,7 +608,6 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     // function ensures that a unique combination of relations will have a unique JoinRelationSet object.
     // TODO: execute plan instead of returning a plan
 
-    // return plan;
     return RewritePlan(move(plan), final_plan->second.get());
 
 }

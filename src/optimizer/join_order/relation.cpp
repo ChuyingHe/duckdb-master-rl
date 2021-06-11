@@ -116,6 +116,19 @@ JoinRelationSet *JoinRelationSetManager::Union(JoinRelationSet *left, JoinRelati
 	return GetJoinRelation(move(relations), count);
 }
 
+JoinRelationSet *JoinRelationSetManager::RLUnion(JoinRelationSet *left, JoinRelationSet *right) {
+    auto relations = unique_ptr<idx_t[]>(new idx_t[left->count + right->count]);
+    idx_t count = 0;
+    for (idx_t i = 0; i <left->count; i++) {
+        relations[count++] = left->relations[i];
+    }
+    for (idx_t i = 0; i <right->count; i++) {
+        relations[count++] = right->relations[i];
+    }
+
+    return GetJoinRelation(move(relations), count);
+}
+
 JoinRelationSet *JoinRelationSetManager::Difference(JoinRelationSet *left, JoinRelationSet *right) {
 	auto relations = unique_ptr<idx_t[]>(new idx_t[left->count]);
 	idx_t count = 0;

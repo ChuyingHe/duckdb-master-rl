@@ -35,10 +35,6 @@ bool JoinRelationSet::IsSubset(JoinRelationSet *super, JoinRelationSet *sub) {
 	return false;
 }
 
-bool JoinRelationSet::operator==(JoinRelationSet *set) {
-    return false;
-}
-
 JoinRelationSet *JoinRelationSetManager::GetJoinRelation(unique_ptr<idx_t[]> relations, idx_t count) { /*(R4, 1)*/
 	// now look it up in the tree
 	JoinRelationTreeNode *info = &root;

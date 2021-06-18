@@ -1,14 +1,14 @@
 {
-   "result": 0.029236,
+   "result": 0.023676,
    "timings": {
-      "optimizer": 0.012856,
-      "optimizer > join_order": 0.012656,
-      "physical_planner": 0.001981,
-      "physical_planner > column_binding": 0.000557,
-      "physical_planner > create_plan": 0.000796,
-      "physical_planner > resolve_types": 0.000459,
-      "planner": 0.003665,
-      "planner > binder": 0.003570
+      "optimizer": 0.008092,
+      "optimizer > join_order": 0.007868,
+      "physical_planner": 0.002101,
+      "physical_planner > column_binding": 0.000579,
+      "physical_planner > create_plan": 0.000825,
+      "physical_planner > resolve_types": 0.000542,
+      "planner": 0.003618,
+      "planner > binder": 0.003533
    },
    "tree": {
    "name": "SIMPLE_AGGREGATE",
@@ -23,68 +23,23 @@
       "extra_info": "note\ntitle\nproduction_year\n",
       "children": [
       {
-         "name": "HASH_JOIN",
+         "name": "FILTER",
          "timing":0.00,
          "cardinality":0,
-         "extra_info": "INNER\nid=company_type_id\n",
+         "extra_info": "id=movie_id",
          "children": [
-         {
-            "name": "FILTER",
-            "timing":0.00,
-            "cardinality":0,
-            "extra_info": "kind=production companies",
-            "children": [
-            {
-               "name": "SEQ_SCAN",
-               "timing":0.00,
-               "cardinality":0,
-               "extra_info": "company_type\n[INFOSEPARATOR]\nkind\nid",
-               "children": []
-               }
-            ]
-            },
          {
             "name": "HASH_JOIN",
             "timing":0.00,
             "cardinality":0,
-            "extra_info": "INNER\nid=info_type_id\n",
+            "extra_info": "INNER\ninfo_type_id=id\n",
             "children": [
-            {
-               "name": "FILTER",
-               "timing":0.00,
-               "cardinality":0,
-               "extra_info": "info=top 250 rank",
-               "children": [
-               {
-                  "name": "SEQ_SCAN",
-                  "timing":0.00,
-                  "cardinality":0,
-                  "extra_info": "info_type\n[INFOSEPARATOR]\ninfo\nid",
-                  "children": []
-                  }
-               ]
-               },
             {
                "name": "HASH_JOIN",
                "timing":0.00,
                "cardinality":0,
-               "extra_info": "INNER\nmovie_id=id\nmovie_id=movie_id\n",
+               "extra_info": "INNER\nmovie_id=movie_id\n",
                "children": [
-               {
-                  "name": "FILTER",
-                  "timing":0.00,
-                  "cardinality":0,
-                  "extra_info": "(!~~(note, %(as Metro-Goldwyn-Mayer Pictures)%) AND (~~(note, %(co-production)%) OR ~~(note, %(presents)%)))",
-                  "children": [
-                  {
-                     "name": "SEQ_SCAN",
-                     "timing":0.00,
-                     "cardinality":0,
-                     "extra_info": "movie_companies\n[INFOSEPARATOR]\nnote\ncompany_type_id\nmovie_id",
-                     "children": []
-                     }
-                  ]
-                  },
                {
                   "name": "HASH_JOIN",
                   "timing":0.00,
@@ -92,11 +47,42 @@
                   "extra_info": "INNER\nmovie_id=id\n",
                   "children": [
                   {
-                     "name": "SEQ_SCAN",
+                     "name": "HASH_JOIN",
                      "timing":0.00,
-                     "cardinality":1,
-                     "extra_info": "movie_info_idx\n[INFOSEPARATOR]\nmovie_id\ninfo_type_id",
-                     "children": []
+                     "cardinality":0,
+                     "extra_info": "INNER\nid=company_type_id\n",
+                     "children": [
+                     {
+                        "name": "FILTER",
+                        "timing":0.00,
+                        "cardinality":0,
+                        "extra_info": "kind=production companies",
+                        "children": [
+                        {
+                           "name": "SEQ_SCAN",
+                           "timing":0.00,
+                           "cardinality":0,
+                           "extra_info": "company_type\n[INFOSEPARATOR]\nkind\nid",
+                           "children": []
+                           }
+                        ]
+                        },
+                     {
+                        "name": "FILTER",
+                        "timing":0.00,
+                        "cardinality":0,
+                        "extra_info": "(!~~(note, %(as Metro-Goldwyn-Mayer Pictures)%) AND (~~(note, %(co-production)%) OR ~~(note, %(presents)%)))",
+                        "children": [
+                        {
+                           "name": "SEQ_SCAN",
+                           "timing":0.00,
+                           "cardinality":1,
+                           "extra_info": "movie_companies\n[INFOSEPARATOR]\nnote\ncompany_type_id\nmovie_id",
+                           "children": []
+                           }
+                        ]
+                        }
+                     ]
                      },
                   {
                      "name": "SEQ_SCAN",
@@ -106,6 +92,28 @@
                      "children": []
                      }
                   ]
+                  },
+               {
+                  "name": "SEQ_SCAN",
+                  "timing":0.00,
+                  "cardinality":1,
+                  "extra_info": "movie_info_idx\n[INFOSEPARATOR]\nmovie_id\ninfo_type_id",
+                  "children": []
+                  }
+               ]
+               },
+            {
+               "name": "FILTER",
+               "timing":0.00,
+               "cardinality":0,
+               "extra_info": "info=top 250 rank",
+               "children": [
+               {
+                  "name": "SEQ_SCAN",
+                  "timing":0.00,
+                  "cardinality":1,
+                  "extra_info": "info_type\n[INFOSEPARATOR]\ninfo\nid",
+                  "children": []
                   }
                ]
                }

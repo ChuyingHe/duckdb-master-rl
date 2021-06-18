@@ -37,8 +37,6 @@ struct JoinRelationSet {
 	idx_t count;
 
 	static bool IsSubset(JoinRelationSet *super, JoinRelationSet *sub);
-	bool operator==(JoinRelationSet *set);
-
 };
 
 //! The JoinRelationTree is a structure holding all the created JoinRelationSet objects and allowing fast lookup on to

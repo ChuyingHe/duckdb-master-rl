@@ -18,68 +18,110 @@
 #include <functional>
 
 namespace duckdb {
+    // node for tree for UCT algorithm
+    struct NodeForTree {
+        idx_t key;
+        int num_of_visits;  //number of visits
+        double reward;         //reward: will be
+        vector<NodeForTree *> child;
+        NodeForTree *parent;
 
-class RLJoinOrderOptimizer {
-public:
-    explicit RLJoinOrderOptimizer(ClientContext &context) : context(context) { /*constructor, explicit prevent other type of parameter*/
-    }
-    unique_ptr<LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan); /*only public function -  THE ENTRANCE*/
+        NodeForTree() : key(0), num_of_visits(0), reward(0.0) {}; //isolated Node
 
-private:
-    ClientContext &context;
-    idx_t pairs = 0;
-    int counter = 0;
+        //NodeForTree(vector<NodeForTree *> child) : key(0), num_of_visits(0), reward(0.0), child(child) {}; //root Node
+        //NodeForTree(NodeForTree* parent) : key(0), num_of_visits(0), reward(0.0), parent(parent) {} //leaf Node
+        NodeForTree(idx_t key, int num_of_visits, double reward, NodeForTree* parent) : key(key), num_of_visits(num_of_visits), reward(reward), parent(parent) {} //leaf Node
+    };
 
-    vector<unique_ptr<SingleJoinRelation>> relations;
-    unordered_map<idx_t, idx_t> relation_mapping;
-    JoinRelationSetManager set_manager;
-    QueryGraph query_graph;
-    unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>> plans;   // includes all the relations, to return
+    class RLJoinOrderOptimizer {
+    public:
+        explicit RLJoinOrderOptimizer(ClientContext &context) : context(
+                context) { /*constructor, explicit prevent other type of parameter*/
+        }
 
-    // FIXME: unordered_map<unordered_set<idx_t>, unique_ptr<JoinOrderOptimizer::JoinNode>> rl_plans;
-    // unordered_map<std::string, unique_ptr<JoinOrderOptimizer::JoinNode>> final_plans;
-    // unordered_map<std::string, unique_ptr<JoinOrderOptimizer::JoinNode>> rl_plans;
-    unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>> rl_plans; // only include plans which includes all the relations
-    std::string order_of_rel = "";
+        unique_ptr <LogicalOperator>
+        Optimize(unique_ptr <LogicalOperator> plan); /*only public function -  THE ENTRANCE*/
+
+    private:
+        ClientContext &context;
+        idx_t pairs = 0;
+        int counter = 0;
+
+        vector <unique_ptr<SingleJoinRelation>> relations;
+        unordered_map <idx_t, idx_t> relation_mapping;
+        JoinRelationSetManager set_manager;
+        QueryGraph query_graph;
+        unordered_map<JoinRelationSet *,
+                unique_ptr < JoinOrderOptimizer::JoinNode>> plans;   // includes all the relations, to return
+
+        // FIXME: unordered_map<unordered_set<idx_t>, unique_ptr<JoinOrderOptimizer::JoinNode>> rl_plans;
+        unordered_map<JoinRelationSet *, unique_ptr <
+                                         JoinOrderOptimizer::JoinNode>> rl_plans; // only include plans which includes all the relations
+        std::string order_of_rel = "";
+
+        unordered_map<JoinRelationSet *, unique_ptr <
+                                         JoinOrderOptimizer::JoinNode>> all_plans; //include intermediate
+
+
+        vector <unique_ptr<Expression>> filters;
+        vector <unique_ptr<FilterInfo>> filter_infos;
+        expression_map_t <vector<FilterInfo *>> equivalence_sets;
+
+        bool ExtractBindings(Expression &expression, unordered_set <idx_t> &bindings);
+
+        bool ExtractJoinRelations(LogicalOperator &input_op, vector<LogicalOperator *> &filter_operators,
+                                  LogicalOperator *parent = nullptr);
+
+        JoinOrderOptimizer::JoinNode *EmitPair(JoinRelationSet *left, JoinRelationSet *right, NeighborInfo *info);
+
+        bool TryEmitPair(JoinRelationSet *left, JoinRelationSet *right, NeighborInfo *info);
+
+        bool EnumerateCmpRecursive(JoinRelationSet *left, JoinRelationSet *right, unordered_set <idx_t> exclusion_set);
+
+        bool EmitCSG(JoinRelationSet *node);
+
+        bool EnumerateCSGRecursive(JoinRelationSet *node, unordered_set <idx_t> &exclusion_set);
+
+        unique_ptr <LogicalOperator> RewritePlan(unique_ptr <LogicalOperator> plan, JoinOrderOptimizer::JoinNode *node);
+
+        void GenerateCrossProducts();
+
+        void SolveJoinOrder();
+
+        bool SolveJoinOrderExactly();
+
+        void SolveJoinOrderApproximately();
+
+        //weight factor -> this should be the same among the whole tree
+        double weight_factor = sqrt(2);
 
 
 
-    vector<unique_ptr<Expression>> filters;
-    vector<unique_ptr<FilterInfo>> filter_infos;
-    expression_map_t<vector<FilterInfo *>> equivalence_sets;
+        void TreeConstruction();
 
-    bool ExtractBindings(Expression &expression, unordered_set<idx_t> &bindings);
-    bool ExtractJoinRelations(LogicalOperator &input_op, vector<LogicalOperator *> &filter_operators,
-                              LogicalOperator *parent = nullptr);
-    JoinOrderOptimizer::JoinNode *EmitPair(JoinRelationSet *left, JoinRelationSet *right, NeighborInfo *info);
-    bool TryEmitPair(JoinRelationSet *left, JoinRelationSet *right, NeighborInfo *info);
+        unique_ptr <LogicalOperator> UCTChoice();
 
-    bool EnumerateCmpRecursive(JoinRelationSet *left, JoinRelationSet *right, unordered_set<idx_t> exclusion_set);
-    bool EmitCSG(JoinRelationSet *node);
-    bool EnumerateCSGRecursive(JoinRelationSet *node, unordered_set<idx_t> &exclusion_set);
-    unique_ptr<LogicalOperator> RewritePlan(unique_ptr<LogicalOperator> plan, JoinOrderOptimizer::JoinNode *node);
-    void GenerateCrossProducts();
-    void SolveJoinOrder();
-    bool SolveJoinOrderExactly();
-    void SolveJoinOrderApproximately();
+        void GeneratePlans();
 
-    unique_ptr<LogicalOperator> UCTChoice();
-    void GeneratePlans();
-    void RewardUpdate();
-    void ContinueJoin(unique_ptr<LogicalOperator> plan, std::chrono::seconds duration);
-    void RestoreState();
-    void BackupState();
-    void IterateTree(JoinRelationSet* union_set, unordered_set<idx_t> exclusion_set);
+        void RewardUpdate();
 
-    unique_ptr<LogicalOperator> ResolveJoinConditions(unique_ptr<LogicalOperator> op);
-    std::pair<JoinRelationSet *, unique_ptr<LogicalOperator>>
-    GenerateJoins(vector<unique_ptr<LogicalOperator>> &extracted_relations, JoinOrderOptimizer::JoinNode *node);
-};
+        void ContinueJoin(unique_ptr <LogicalOperator> plan, std::chrono::seconds duration);
+
+        void RestoreState();
+
+        void BackupState();
+
+        void IterateTree(JoinRelationSet *union_set, unordered_set <idx_t> exclusion_set);
+
+        unique_ptr <LogicalOperator> ResolveJoinConditions(unique_ptr <LogicalOperator> op);
+
+        std::pair<JoinRelationSet *, unique_ptr < LogicalOperator>>
+        GenerateJoins(
+        vector <unique_ptr<LogicalOperator>> &extracted_relations, JoinOrderOptimizer::JoinNode
+        *node);
+    };
 
 }
-
-
-
 
 
 #endif // DUCKDB_RL_JOIN_ORDER_OPTIMIZER_HPP

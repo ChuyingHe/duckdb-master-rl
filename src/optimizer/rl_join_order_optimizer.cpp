@@ -342,12 +342,13 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
 
             auto entry = plans.find(new_set);
             if (entry == plans.end()) {
-                if (new_set->count == 5) {
+                plans[new_set] = move(new_plan);    //include all plans(intermediate & final)
+                /*if (new_set->count == 5) {
                     // rl_plans[new_set] = move(new_plan); // only include plans which includes all the relations
                     plans[new_set] = move(new_plan);
                 } else {
                     plans[new_set] = move(new_plan);
-                }
+                }*/
             }
 
             exclusion_set.clear();
@@ -387,7 +388,38 @@ void RLJoinOrderOptimizer::GeneratePlans() {
         order_of_rel.append(std::to_string(i));
         IterateTree(start_node, exclusion_set);
     }
-    //TODO: put all items in this->intermediate_plan which contains all the relations in this->plan
+}
+/*use elems in this->plans for struct*/
+void RLJoinOrderOptimizer::InitNodes() {
+    //1) unordered_map item --> struct item
+    auto tree = std::vector<NodeForUCT*>();
+
+    //2) connect struct items
+    int i = 0;
+    for (auto& plan:plans) {
+        NodeForUCT* node = new NodeForUCT{plan.first, plan.second.get(), 0, 0.0};
+        //node->parent
+        auto test1 = *(node->relations->relations.get());
+        auto test2 = *(node->relations->relations.get()+1);
+        auto test3 = *(node->relations->relations.get()+2);
+        auto test4 = *(node->relations->relations.get()+3);
+        auto test5 = *(node->relations->relations.get()+4);
+        auto test = node->relations->count;
+
+        tree.push_back(node);
+        i++;
+    }
+
+
+    std::cout << tree.size() <<"\n";
+
+    NodeForUCT root = {};
+    // level1, *.first.count == 1
+    /*for (auto& item:plans) {
+        if (item.first->count == 1) {
+            root.children.push_back(item);
+        }
+    }*/
 }
 
 void RLJoinOrderOptimizer::RewardUpdate() {
@@ -593,19 +625,24 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     GeneratePlans();
     std::cout<< "\n 🐶 amount of plans = "<<plans.size()<<"\n";
 
+    //InitNodes();
+
+    //FIXME: choose final_plan use UCTChoice
+    // auto final_plan = UCTChoice();
+
+
     unordered_set<idx_t> bindings;
     for (idx_t i = 0; i < relations.size(); i++) {
         bindings.insert(i);
     }
     // auto total_relation = set_manager.GetJoinRelation(bindings);
 
-    //FIXME: choose final_plan use UCTChoice
-    // auto final_plan = UCTChoice();
+
 
     auto total_relation = set_manager.GetJoinRelation(bindings);
     auto final_plan = plans.find(total_relation);
 
-    //FIXME:
+    //FIXME: this is for debugging
     for (auto& item: plans) {
         if (item.first->count == 5) {
             return RewritePlan(move(plan), item.second.get());

@@ -19,6 +19,7 @@
 
 namespace duckdb {
     // node for tree for UCT algorithm
+    //FIXME: delete this
     struct NodeForTree {
         idx_t key;
         int num_of_visits;  //number of visits
@@ -31,6 +32,16 @@ namespace duckdb {
         //NodeForTree(vector<NodeForTree *> child) : key(0), num_of_visits(0), reward(0.0), child(child) {}; //root Node
         //NodeForTree(NodeForTree* parent) : key(0), num_of_visits(0), reward(0.0), parent(parent) {} //leaf Node
         NodeForTree(idx_t key, int num_of_visits, double reward, NodeForTree* parent) : key(key), num_of_visits(num_of_visits), reward(reward), parent(parent) {} //leaf Node
+    };
+
+    struct NodeForUCT {
+        JoinRelationSet* relations;                             // from this->plans
+        JoinOrderOptimizer::JoinNode* join_node;   // from this->plans
+        int num_of_visits;
+        double reward;
+        NodeForUCT* parent;
+        vector<NodeForUCT> children;
+        // vector<JoinRelationSet*> validChildren; do we need this?
     };
 
     class RLJoinOrderOptimizer {
@@ -51,13 +62,12 @@ namespace duckdb {
         unordered_map <idx_t, idx_t> relation_mapping;
         JoinRelationSetManager set_manager;
         QueryGraph query_graph;
-        unordered_map<JoinRelationSet *, unique_ptr < JoinOrderOptimizer::JoinNode>> plans;   // includes all the relations, to return
+        unordered_map<JoinRelationSet *, unique_ptr <JoinOrderOptimizer::JoinNode>> plans;   // includes all the relations, to return
 
-        // unordered_map<JoinRelationSet *, unique_ptr <JoinOrderOptimizer::JoinNode>> rl_plans; // only include plans which includes all the relations
+        //FIXME: delete this, only for debugging
         std::string order_of_rel = "";
-
-        unordered_map<JoinRelationSet *, unique_ptr <
-                                         JoinOrderOptimizer::JoinNode>> all_plans; //include intermediate
+        // unordered_map<JoinRelationSet *, unique_ptr <JoinOrderOptimizer::JoinNode>> rl_plans; // only include plans which includes all the relations
+        // unordered_map<JoinRelationSet *, unique_ptr <JoinOrderOptimizer::JoinNode>> all_plans; //include intermediate
 
 
         vector <unique_ptr<Expression>> filters;
@@ -92,13 +102,13 @@ namespace duckdb {
         //weight factor -> this should be the same among the whole tree
         double weight_factor = sqrt(2);
 
-
-
         void TreeConstruction();
 
         unique_ptr <LogicalOperator> UCTChoice();
 
         void GeneratePlans();
+
+        void InitNodes();
 
         void RewardUpdate();
 

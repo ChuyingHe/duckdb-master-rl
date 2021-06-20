@@ -50,7 +50,6 @@ void limitBatch(Connection con, std::string job_profiling, std::string job_query
     con.Query(job_profiling);
 
     std::cout<<job_query<<std::endl;
-    //con.Query(job_query);
     auto result = con.Query(job_query);
     result->Print();
     return;

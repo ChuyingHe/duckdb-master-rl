@@ -343,7 +343,8 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
             auto entry = plans.find(new_set);
             if (entry == plans.end()) {
                 if (new_set->count == 5) {
-                    rl_plans[new_set] = move(new_plan); // only include plans which includes all the relations
+                    // rl_plans[new_set] = move(new_plan); // only include plans which includes all the relations
+                    plans[new_set] = move(new_plan);
                 } else {
                     plans[new_set] = move(new_plan);
                 }
@@ -365,19 +366,25 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
         std::cout <<"add plan which join-order = " << order_of_rel <<std::endl;
     }
 }
-
+/* this function generate all possible plans and add it to this->plans
+ * the number of possible plan depends on the Join-Graph (ONLY use cross-product if there is no other choice)*/
 void RLJoinOrderOptimizer::GeneratePlans() {
-    //this function generate all possible plans and add it to this->plans
-    //the number of possible plan depends on the Join-Graph (ONLY use cross-product if there is no other choice)
-    //@todo: have a look in join_order_optimizer.cpp, see how they generate the plan and add into this->plans
-    for (idx_t i = relations.size(); i > 0; i--) {
+    // 1) initialize each of the single-table plans
+    for (idx_t i = 0; i < relations.size(); i++) {
+        auto &rel = *relations[i];
+        auto node = set_manager.GetJoinRelation(i);
 
-        auto start_node = set_manager.GetJoinRelation(i - 1);
+        plans[node] = make_unique<JoinNode>(node, rel.op->EstimateCardinality(context));
+    }
+
+    // 2) plans include more than one table
+    for (idx_t i = 0; i < relations.size(); i++) {
+        auto start_node = set_manager.GetJoinRelation(i);
         unordered_set<idx_t> exclusion_set;
-        exclusion_set.insert(i-1);    // put current one relation in the exclusion_set
+        exclusion_set.insert(i);    // put current one relation in the exclusion_set
 
         order_of_rel.clear();
-        order_of_rel.append(std::to_string(i-1));
+        order_of_rel.append(std::to_string(i));
         IterateTree(start_node, exclusion_set);
     }
     //TODO: put all items in this->intermediate_plan which contains all the relations in this->plan
@@ -441,6 +448,7 @@ void RLJoinOrderOptimizer::BackupState() {
 // plan: from previous optimizer
 // node: final_plan chosen by UCTChoice()
 unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<LogicalOperator> plan, JoinNode *node) {
+    std::cout <<"\n RewritePlan \n";
     // now we have to rewrite the plan
     bool root_is_join = plan->children.size() > 1;
     std::cout << "children of plan (provided by previous optimizer) = " << plan->children.size() << "\n";
@@ -577,15 +585,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
             }
         }
     }
-    // plans generation: 1) initialize each of the single-node plans
-    for (idx_t i = 0; i < relations.size(); i++) {
-        auto &rel = *relations[i];
-        auto node = set_manager.GetJoinRelation(i); /*returns a JoinRelationSet*/
 
-        // plans[node] = make_unique<JoinNode>(node, rel.op->EstimateCardinality(context));    /*add nodes to the plan*/
-        plans[node] = make_unique<JoinNode>(node, rel.op->EstimateCardinality(context));    /*add nodes to the intermediate plan*/
-        //[std::to_string(i)] = make_unique<JoinNode>(node, rel.op->EstimateCardinality(context));
-    }
 
 
     // plans generation: 2) generate all the possible plans
@@ -601,9 +601,16 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
 
     //FIXME: choose final_plan use UCTChoice
     // auto final_plan = UCTChoice();
-    auto final_plan = rl_plans.begin();
 
-    // UCTChoice();
+    auto total_relation = set_manager.GetJoinRelation(bindings);
+    auto final_plan = plans.find(total_relation);
+
+    //FIXME:
+    for (auto& item: plans) {
+        if (item.first->count == 5) {
+            return RewritePlan(move(plan), item.second.get());
+        }
+    }
 
     // TODO: add plans which include all the relations into this->plans.
 

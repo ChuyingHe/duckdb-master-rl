@@ -1,14 +1,14 @@
 {
-   "result": 0.070028,
+   "result": 0.031454,
    "timings": {
-      "optimizer": 0.017495,
-      "optimizer > join_order": 0.016829,
-      "physical_planner": 0.005323,
-      "physical_planner > column_binding": 0.001768,
-      "physical_planner > create_plan": 0.001805,
-      "physical_planner > resolve_types": 0.001395,
-      "planner": 0.016663,
-      "planner > binder": 0.016476
+      "optimizer": 0.010920,
+      "optimizer > join_order": 0.010619,
+      "physical_planner": 0.002457,
+      "physical_planner > column_binding": 0.000792,
+      "physical_planner > create_plan": 0.000992,
+      "physical_planner > resolve_types": 0.000457,
+      "planner": 0.004902,
+      "planner > binder": 0.004793
    },
    "tree": {
    "name": "SIMPLE_AGGREGATE",
@@ -26,13 +26,13 @@
          "name": "HASH_JOIN",
          "timing":0.00,
          "cardinality":0,
-         "extra_info": "INNER\ncompany_type_id=id\n",
+         "extra_info": "INNER\ninfo_type_id=id\n",
          "children": [
          {
             "name": "HASH_JOIN",
             "timing":0.00,
             "cardinality":0,
-            "extra_info": "INNER\ninfo_type_id=id\n",
+            "extra_info": "INNER\ncompany_type_id=id\n",
             "children": [
             {
                "name": "HASH_JOIN",
@@ -83,13 +83,13 @@
                "name": "FILTER",
                "timing":0.00,
                "cardinality":0,
-               "extra_info": "info=top 250 rank",
+               "extra_info": "kind=production companies",
                "children": [
                {
                   "name": "SEQ_SCAN",
                   "timing":0.00,
                   "cardinality":1,
-                  "extra_info": "info_type\n[INFOSEPARATOR]\ninfo\nid",
+                  "extra_info": "company_type\n[INFOSEPARATOR]\nkind\nid",
                   "children": []
                   }
                ]
@@ -100,13 +100,13 @@
             "name": "FILTER",
             "timing":0.00,
             "cardinality":0,
-            "extra_info": "kind=production companies",
+            "extra_info": "info=top 250 rank",
             "children": [
             {
                "name": "SEQ_SCAN",
                "timing":0.00,
                "cardinality":1,
-               "extra_info": "company_type\n[INFOSEPARATOR]\nkind\nid",
+               "extra_info": "info_type\n[INFOSEPARATOR]\ninfo\nid",
                "children": []
                }
             ]

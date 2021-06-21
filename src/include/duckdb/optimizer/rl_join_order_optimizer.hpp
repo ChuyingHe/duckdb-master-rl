@@ -40,7 +40,7 @@ namespace duckdb {
         int num_of_visits;
         double reward;
         NodeForUCT* parent;
-        vector<NodeForUCT> children;
+        vector<NodeForUCT*> children;
         // vector<JoinRelationSet*> validChildren; do we need this?
     };
 
@@ -57,6 +57,8 @@ namespace duckdb {
         ClientContext &context;
         idx_t pairs = 0;
         int counter = 0;
+        std::vector<NodeForUCT*> tree;
+        NodeForUCT* root_node_for_uct;
 
         vector <unique_ptr<SingleJoinRelation>> relations;
         unordered_map <idx_t, idx_t> relation_mapping;
@@ -104,13 +106,17 @@ namespace duckdb {
 
         void TreeConstruction();
 
+        double CalculateUCB(double avg, int v_p, int v_c);
+
+        unique_ptr<LogicalOperator> UCTIterate(NodeForUCT* root);
+
         unique_ptr <LogicalOperator> UCTChoice();
 
         void GeneratePlans();
 
-        void InitNodes();
+        // void InitNodes();
 
-        void RewardUpdate();
+        void RewardUpdate(NodeForUCT* node);
 
         void ContinueJoin(unique_ptr <LogicalOperator> plan, std::chrono::seconds duration);
 
@@ -118,7 +124,7 @@ namespace duckdb {
 
         void BackupState();
 
-        void IterateTree(JoinRelationSet *union_set, unordered_set <idx_t> exclusion_set);
+        void IterateTree(JoinRelationSet *union_set, unordered_set <idx_t> exclusion_set, NodeForUCT* parent_node_for_uct);
 
         unique_ptr <LogicalOperator> ResolveJoinConditions(unique_ptr <LogicalOperator> op);
 

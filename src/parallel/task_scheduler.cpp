@@ -138,7 +138,7 @@ void TaskScheduler::ExecuteForever(atomic<bool> *marker) {
 }
 
 #ifndef DUCKDB_NO_THREADS
-static void ThreadExecuteTasks(TaskScheduler *scheduler, atomic<bool> *marker) {
+static void ThreadExecuteTasks(TaskScheduler *scheduler, atomic<bool> *marker) {    // a.k.a. has thread, then execute this
 	scheduler->ExecuteForever(marker);
 }
 #endif

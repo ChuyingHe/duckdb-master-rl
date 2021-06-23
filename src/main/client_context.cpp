@@ -182,7 +182,6 @@ shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement(ClientC
 		profiler.EndPhase();
 	}
 
-
     profiler.StartPhase("physical_planner");
     // now convert logical query plan into a physical query plan
     PhysicalPlanGenerator physical_planner(*this);
@@ -190,7 +189,6 @@ shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement(ClientC
     profiler.EndPhase();
 
     result->plan = move(physical_plan);
-
 
 	return result;
 }
@@ -283,7 +281,7 @@ vector<unique_ptr<SQLStatement>> ClientContext::ParseStatementsInternal(ClientCo
 	Parser parser;
 	parser.ParseQuery(query);
 
-	PragmaHandler handler(*this);
+	PragmaHandler handler(*this);   // this = this client_context
 	handler.HandlePragmaStatements(lock, parser.statements);
 
 	return move(parser.statements);
@@ -357,7 +355,7 @@ unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &l
     //FIXME: clearner way?
     //duckdb join order optimizer
     /*if (!enable_rl_join_order_optimizer) {
-
+     *
     } else {    //duckdb join order optimizer
         printf("RunStatementInternal: use rl-optimizer\n");
 
@@ -383,7 +381,7 @@ unique_ptr<QueryResult> ClientContext::RunStatementOrPreparedStatement(ClientCon
 	unique_ptr<QueryResult> result;
 	// check if we are on AutoCommit. In this case we should start a transaction.
 	if (transaction.IsAutoCommit()) {
-		transaction.BeginTransaction();
+		transaction.BeginTransaction(); //update active_transactions in transaction_manager.hpp
 	}
 	ActiveTransaction().active_query = db->GetTransactionManager().GetQueryNumber();
 	if (statement && query_verification_enabled) {
@@ -470,9 +468,9 @@ unique_ptr<QueryResult> ClientContext::RunStatements(ClientContextLock &lock, co
 	// iterate over them and execute them one by one
 	unique_ptr<QueryResult> result;
 	QueryResult *last_result = nullptr;
-	for (idx_t i = 0; i < statements.size(); i++) {
+	for (idx_t i = 0; i < statements.size(); i++) { // iterate statements
 		auto &statement = statements[i];
-		bool is_last_statement = i + 1 == statements.size();
+		bool is_last_statement = i + 1 == statements.size();    // TRUE if its the last statement
 		auto current_result = RunStatement(lock, query, move(statement), allow_stream_result && is_last_statement);
 		// now append the result to the list of results
 		if (!last_result) {
@@ -490,7 +488,7 @@ unique_ptr<QueryResult> ClientContext::RunStatements(ClientContextLock &lock, co
 
 void ClientContext::LogQueryInternal(ClientContextLock &, const string &query) {
 	printf("void ClientContext::LogQueryInternal(ClientContextLock &, const string &query) {\n");
-	if (!log_query_writer) {
+	if (!log_query_writer) {    // can be modified using PragmaLogQueryPath
 		return;
 	}
 	// log query path is set: log the query
@@ -508,15 +506,15 @@ unique_ptr<QueryResult> ClientContext::Query(unique_ptr<SQLStatement> statement,
 
 	return RunStatements(*lock, query, statements, allow_stream_result);
 }
-
+/*(2) */
 unique_ptr<QueryResult> ClientContext::Query(const string &query, bool allow_stream_result) {
 	printf("unique_ptr<QueryResult> ClientContext::Query(const string &query, bool allow_stream_result) {\n");
-	auto lock = LockContext();
-	LogQueryInternal(*lock, query);
+	auto lock = LockContext();          // create lock
+	LogQueryInternal(*lock, query); // write log file if its enabled. Put query inside also
 
 	vector<unique_ptr<SQLStatement>> statements;
 	try {
-		InitialCleanup(*lock);
+		InitialCleanup(*lock);  //! Cleanup any open results and reset the interrupted flag
 		// parse the query and transform it into a set of statements
 		statements = ParseStatementsInternal(*lock, query);
 	} catch (std::exception &ex) {

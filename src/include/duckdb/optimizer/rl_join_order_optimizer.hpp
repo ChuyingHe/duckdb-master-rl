@@ -108,9 +108,7 @@ namespace duckdb {
 
         double CalculateUCB(double avg, int v_p, int v_c);
 
-        unique_ptr<LogicalOperator> UCTIterate(NodeForUCT* root);
-
-        unique_ptr <LogicalOperator> UCTChoice();
+        JoinOrderOptimizer::JoinNode* UCTChoice();
 
         void GeneratePlans();
 

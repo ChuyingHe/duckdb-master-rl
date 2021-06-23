@@ -60,7 +60,7 @@ void Connection::ForceParallelism() {
 unique_ptr<QueryResult> Connection::SendQuery(const string &query) {
 	return context->Query(query, true);
 }
-
+/*(1) convert QueryResult -> MaterializedQueryResult */
 unique_ptr<MaterializedQueryResult> Connection::Query(const string &query) {
 	printf("unique_ptr<MaterializedQueryResult> Connection::Query(const string &query) {\n");
 	auto result = context->Query(query, false);

@@ -72,8 +72,8 @@ void Executor::Reset() {
 void Executor::BuildPipelines(PhysicalOperator *op, Pipeline *parent) {
 	if (op->IsSink()) {
 		// operator is a sink, build a pipeline
-		auto pipeline = make_unique<Pipeline>(*this, *producer);
-		pipeline->sink = (PhysicalSink *)op;
+		auto pipeline = make_unique<Pipeline>(*this, *producer);    // paras: (1) Executor (2) unique_ptr<ProducerToken>
+		pipeline->sink = (PhysicalSink *)op;    // pipeline->sink = value of op, where op = 0x000060b00005ff70, then "(PhysicalSink *)" means its a address of a PhysicalSink
 		pipeline->sink_state = pipeline->sink->GetGlobalState(context);
 		if (parent) {
 			// the parent is dependent on this pipeline to complete

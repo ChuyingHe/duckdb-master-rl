@@ -57,7 +57,7 @@ Transaction *TransactionManager::StartTransaction(ClientContext &context) {
 	printf("transaction_manager.cpp/StartTransaction(");
 	// obtain the transaction lock during this function
 	lock_guard<mutex> lock(transaction_lock);
-	if (current_start_timestamp >= TRANSACTION_ID_START) {
+	if (current_start_timestamp >= TRANSACTION_ID_START) {      //2^62, count amount of transaction, +1 (below) when this function StartTransaction is called
 		throw Exception("Cannot start more transactions, ran out of "
 		                "transaction identifiers!");
 	}
@@ -69,7 +69,7 @@ Transaction *TransactionManager::StartTransaction(ClientContext &context) {
 
 	// create the actual transaction
 	auto &catalog = Catalog::GetCatalog(db);
-	auto transaction = make_unique<Transaction>(weak_ptr<ClientContext>(context.shared_from_this()), start_time,
+	auto transaction = make_unique<Transaction>(weak_ptr<ClientContext>(context.shared_from_this()), start_time,    // shared_from_this return a shared_ptr of context
 	                                            transaction_id, start_timestamp, catalog.GetCatalogVersion());
 	auto transaction_ptr = transaction.get();
 

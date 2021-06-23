@@ -322,11 +322,14 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
 
                 //🚩 create-node-for-UCT-Tree - created all node with "parent"
                 current_node_for_uct = new NodeForUCT{new_set, plans[new_set].get(), 0, 0.0, parent_node_for_uct};
-                tree.push_back(current_node_for_uct);
+                // tree.push_back(current_node_for_uct);
+
+                //🚩 create-node-for-UCT-Tree -
+                // TODO: added "children" attribute
+                parent_node_for_uct->children.push_back(current_node_for_uct);
             }
 
-            //🚩 create-node-for-UCT-Tree -
-            // TODO: added "children" attribute
+
 
             exclusion_set.clear();
             for (idx_t i = 0; i < new_set->count; ++i) {
@@ -349,7 +352,7 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
 void RLJoinOrderOptimizer::GeneratePlans() {
     // 🚩 create-node-for-UCT-Tree:  level0 node, a.k.a. root node
     root_node_for_uct = new NodeForUCT{nullptr, nullptr, 0, 0.0, nullptr};
-    tree.push_back(root_node_for_uct);
+    //tree.push_back(root_node_for_uct);
 
     // 1) initialize each of the single-table plans
     for (idx_t i = 0; i < relations.size(); i++) {
@@ -360,8 +363,8 @@ void RLJoinOrderOptimizer::GeneratePlans() {
         plans[node] = make_unique<JoinNode>(node, rel.op->EstimateCardinality(context));
 
         //🚩 create-node-for-UCT-Tree
-        NodeForUCT* node_for_uct = new NodeForUCT{node, plans[node].get(), 0, 0.0};
-        tree.push_back(node_for_uct);
+        NodeForUCT* node_for_uct = new NodeForUCT{node, plans[node].get(), 0, 0.0, root_node_for_uct};
+        //tree.push_back(node_for_uct);
 
         //🚩 create-node-for-UCT-Tree: level0.children =  level1 nodes
         root_node_for_uct->children.push_back(node_for_uct);
@@ -375,7 +378,7 @@ void RLJoinOrderOptimizer::GeneratePlans() {
 
         order_of_rel.clear();
         order_of_rel.append(std::to_string(i));
-        IterateTree(start_node, exclusion_set, tree.at(i));
+        IterateTree(start_node, exclusion_set, root_node_for_uct->children.at(i));
     }
 }
 /*use elems in this->plans for struct
@@ -430,18 +433,38 @@ void TreeConstruction() {
              * */
 double RLJoinOrderOptimizer::CalculateUCB(double avg, int v_p, int v_c) {
     double weight = sqrt(2);
+    if (v_c == 0 || v_c) {
+        return avg;
+    }
     return ( avg + weight * sqrt(log(v_p)/v_c) );
 }
 
-unique_ptr<LogicalOperator> RLJoinOrderOptimizer::UCTIterate(NodeForUCT* node) {
+
+//TODO:  (1) Rollout/SIMULATION
+/* auto best_plan = RewritePlan(plan, node->join_node);
+ std::chrono::seconds duration(5);
+ ContinueJoin(best_plan, duration);*/
+
+//TODO: (2) BACKPROPAGATION
+/*RewardUpdate(node);
+RestoreState();
+BackupState();*/
+
+/*
+ * UCB1(NODE[c]) = A + weight-factor * sqrt( (log(visit-of-c's-parent))/(visits-of-c) )
+ * A = average-reward-for-c, aka. =  reward-of-c/visit-of-c
+ */
+JoinOrderOptimizer::JoinNode*  RLJoinOrderOptimizer::UCTChoice() {
+    //choose a plan using UCT algorithm and return it
+    // all possible plans are save in this->rl_plans
     // Case 1: current Node is NOT a leaf - calculate UCB, choose the biggest one
-    while (!node->children.empty()) {   //TODO: therefore no EXPANSION needed? ❓
+    while (!root_node_for_uct->children.empty()) {   //TODO: therefore no EXPANSION needed? ❓
         auto max = 0;
         NodeForUCT* chosen_child;
-        for (auto& child:node->children){   // loop through all the possible nodes - from current node
+        for (auto& child:root_node_for_uct->children){   // loop through all the possible node - from current node
             double avg = (child->num_of_visits==0)? 1000000: (child->reward/child->num_of_visits);   // unvisited node has an infinite avg
 
-            auto ucb = CalculateUCB(avg, node->parent->num_of_visits, node->num_of_visits);
+            auto ucb = CalculateUCB(avg, child->parent->num_of_visits, child->num_of_visits);
 
             // if this child has ucb>max , then chosen_child = this child
             if (ucb > max) {
@@ -450,34 +473,10 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::UCTIterate(NodeForUCT* node) {
             }
         }
         // node in current level is chosen, now enter next level
-        node = chosen_child;
+        root_node_for_uct = chosen_child;
     }
-    // Case 2: current Node is a leaf
-    //TODO:  (1) Rollout/SIMULATION
-    //execute(node);
-
-    //TODO: (2) BACKPROPAGATION
-    RewardUpdate(node);
-}
-
-/*
- * UCB1(NODE[c]) = A + weight-factor * sqrt( (log(visit-of-c's-parent))/(visits-of-c) )
- * A = average-reward-for-c, aka. =  reward-of-c/visit-of-c
- */
-unique_ptr<LogicalOperator> RLJoinOrderOptimizer::UCTChoice() {
-    //choose a plan using UCT algorithm and return it
-    // all possible plans are save in this->rl_plans
-    UCTIterate(root_node_for_uct);
-    /*// use this->relations.size() to mark the Root's key
-    NodeForTree root = {}; //initialize as isolated node
-
-    for (idx_t i =0; i<this->relations.size(); i++) {
-        //std::unique_ptr<NodeForTree> newNode = make_unique<NodeForTree>(i, 0, 0.0, &root);
-        NodeForTree* newNode = new NodeForTree {i, 0, 0.0, &root}; //parent=root
-        //FIXME: add to CHILD if not exist
-        root.child.push_back(newNode);
-        //FIXME: add to TREE if not exist
-    }*/
+    // Case 2: current Node is a leaf, return leaf
+    return root_node_for_uct->join_node;
 
 }
 
@@ -500,6 +499,7 @@ void RLJoinOrderOptimizer::RestoreState() {
 
 void RLJoinOrderOptimizer::BackupState() {
     //backup execution state for join order
+    // RewardUpdate(node's parent node)
 }
 
 // plan: from previous optimizer
@@ -665,14 +665,16 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
 
 
     auto total_relation = set_manager.GetJoinRelation(bindings);
-    auto final_plan = plans.find(total_relation);
 
     //FIXME: this is for debugging
+    /*auto final_plan = plans.find(total_relation);
     for (auto& item: plans) {
         if (item.first->count == 5) {
             return RewritePlan(move(plan), item.second.get());
         }
-    }
+    }*/
+
+    auto final_plan = UCTChoice();      // returns JoinOrderOptimizer::JoinNode*
 
     // TODO: add plans which include all the relations into this->plans.
 
@@ -680,7 +682,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     // function ensures that a unique combination of relations will have a unique JoinRelationSet object.
     // TODO: execute plan instead of returning a plan
 
-    return RewritePlan(move(plan), final_plan->second.get());   // returns executable - unique_ptr<LogicalOperator>
+    return RewritePlan(move(plan), final_plan);   // returns executable - unique_ptr<LogicalOperator>
 }
 
 

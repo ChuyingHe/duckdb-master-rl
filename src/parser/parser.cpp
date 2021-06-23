@@ -33,16 +33,16 @@ void Parser::ParseQuery(const string &query) {
 			return;
 		}
 
-		// if it succeeded, we transform the Postgres parse tree into a list of
-		// SQLStatements
+		// if it succeeded, we transform the Postgres parse tree into a list of SQLStatements
+		// put the result in this->statements
 		transformer.TransformParseTree(parser.parse_tree, statements);
 	}
 	if (!statements.empty()) {
-		auto &last_statement = statements.back();
-		last_statement->stmt_length = query.size() - last_statement->stmt_location;
+		auto &last_statement = statements.back();   // choose the last statement in statements
+		last_statement->stmt_length = query.size() - last_statement->stmt_location; // length of the last statement
 		for (auto &statement : statements) {
 			statement->query = query;
-			if (statement->type == StatementType::CREATE_STATEMENT) {
+			if (statement->type == StatementType::CREATE_STATEMENT) {   // if query starts with "CREATE XXX..."
 				auto &create = (CreateStatement &)*statement;
 				create.info->sql = query.substr(statement->stmt_location, statement->stmt_length);
 			}

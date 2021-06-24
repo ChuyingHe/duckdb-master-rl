@@ -186,7 +186,7 @@ bool Pipeline::ScheduleOperator(PhysicalOperator *op) {
 		D_ASSERT(get.function.init_parallel_state);
 		D_ASSERT(get.function.parallel_state_next);
 		idx_t max_threads = get.function.max_threads(executor.context, get.bind_data.get());
-		auto pstate = get.function.init_parallel_state(executor.context, get.bind_data.get());
+		auto pstate = get.function.init_parallel_state(executor.context, get.bind_data.get());	//ParallelState
 		return LaunchScanTasks(op, max_threads, move(pstate));
 	}
 	case PhysicalOperatorType::WINDOW: {
@@ -223,7 +223,7 @@ void Pipeline::Reset(ClientContext &context) {
 	finished = false;
 }
 
-void Pipeline::Schedule() {
+void Pipeline::Schedule() {	// here: this = current pipeline from executor.cpp Executor::Initialize(PhysicalOperator *plan)
 	D_ASSERT(finished_tasks == 0);
 	D_ASSERT(total_tasks == 0);
 	D_ASSERT(finished_dependencies == dependencies.size());
@@ -236,7 +236,7 @@ void Pipeline::Schedule() {
 			// not all aggregates are parallelizable: switch to sequential mode
 			break;
 		}
-		if (ScheduleOperator(sink->children[0].get())) {
+		if (ScheduleOperator(sink->children[0].get())) {	//PARALLEL SCHEDULE
 			// all parallel tasks have been scheduled: return
 			return;
 		}

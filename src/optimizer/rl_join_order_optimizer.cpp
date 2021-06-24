@@ -420,35 +420,33 @@ void RLJoinOrderOptimizer::RewardUpdate(NodeForUCT* node) {
 
 }
 
-void TreeConstruction() {
-    // turn this->rl_plans to tree
-}
-
 /*
-             * SkinnerDB-Paper:
-             * avg = Rc
-             * weight = w
-             * node->parent->num_of_visits = Vp, num_of_visits for its parent
-             * node->num_of_visits = Vc, num_of_visits for itself
-             * */
+ * SkinnerDB-Paper:
+ * avg = Rc
+ * weight = w
+ * node->parent->num_of_visits = Vp, num_of_visits for its parent
+ * node->num_of_visits = Vc, num_of_visits for itself
+ * */
 double RLJoinOrderOptimizer::CalculateUCB(double avg, int v_p, int v_c) {
     double weight = sqrt(2);
-    if (v_c == 0 || v_c) {
+    if (v_c == 0) {
         return avg;
     }
     return ( avg + weight * sqrt(log(v_p)/v_c) );
 }
 
+void RLJoinOrderOptimizer::pseudoCode() {
+    bool finished = false;  //indicator: whether the whole query has been executed or not
+    // auto state = 0;             //恢复执行状态?
 
-//TODO:  (1) Rollout/SIMULATION
-/* auto best_plan = RewritePlan(plan, node->join_node);
- std::chrono::seconds duration(5);
- ContinueJoin(best_plan, duration);*/
-
-//TODO: (2) BACKPROPAGATION
-/*RewardUpdate(node);
-RestoreState();
-BackupState();*/
+    while (!finished) {
+        auto chosen_plan = UCTChoice();
+        RestoreState();
+        finished = ContinueJoin(chosen_plan, std::chrono::seconds(5));  // (1) Rollout/SIMULATION
+        //FIXME: RewardUpdate();
+        BackupState();  // (2) BACKPROPAGATION
+    }
+}
 
 /*
  * UCB1(NODE[c]) = A + weight-factor * sqrt( (log(visit-of-c's-parent))/(visits-of-c) )
@@ -480,8 +478,9 @@ JoinOrderOptimizer::JoinNode*  RLJoinOrderOptimizer::UCTChoice() {
 
 }
 
-void RLJoinOrderOptimizer::ContinueJoin(unique_ptr<LogicalOperator> plan, std::chrono::seconds duration) {
+bool RLJoinOrderOptimizer::ContinueJoin(JoinOrderOptimizer::JoinNode* node, std::chrono::seconds duration) {
     //execute join order during time budget
+    return false;
 }
 
 void RLJoinOrderOptimizer::RestoreState() {

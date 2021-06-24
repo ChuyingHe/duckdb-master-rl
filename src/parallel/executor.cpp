@@ -31,7 +31,7 @@ void Executor::Initialize(PhysicalOperator *plan) {
 	auto &scheduler = TaskScheduler::GetScheduler(context);
 	this->producer = scheduler.CreateProducer();
 
-	BuildPipelines(physical_plan, nullptr);
+	BuildPipelines(physical_plan, nullptr); //update this->pipelines
 
 	this->total_pipelines = pipelines.size();
 
@@ -79,7 +79,7 @@ void Executor::BuildPipelines(PhysicalOperator *op, Pipeline *parent) {
 			// the parent is dependent on this pipeline to complete
 			parent->AddDependency(pipeline.get());
 		}
-		switch (op->type) {
+		switch (op->type) {     // op->type = SIMPLE_AGGREGATE
 		case PhysicalOperatorType::CREATE_TABLE_AS:
 		case PhysicalOperatorType::INSERT:
 		case PhysicalOperatorType::DELETE_OPERATOR:
@@ -115,9 +115,9 @@ void Executor::BuildPipelines(PhysicalOperator *op, Pipeline *parent) {
 			throw InternalException("Unimplemented sink type!");
 		}
 		// recurse into the pipeline child
-		BuildPipelines(pipeline->child, pipeline.get());
-		for (auto &dependency : pipeline->GetDependencies()) {
-			auto dependency_cte = dependency->GetRecursiveCTE();
+		BuildPipelines(pipeline->child, pipeline.get());    // get from op->children
+		for (auto &dependency : pipeline->GetDependencies()) {  // GetDependencies returns TYPE unordered_set<Pipeline *>
+			auto dependency_cte = dependency->GetRecursiveCTE();    // cte=temporaray intermediate result which might be executed multiple times
 			if (dependency_cte) {
 				pipeline->SetRecursiveCTE(dependency_cte);
 			}

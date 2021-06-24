@@ -14,13 +14,13 @@
 #include "duckdb/main/extension.hpp"
 
 namespace duckdb {
-class StorageManager;
-class Catalog;
-class TransactionManager;
-class ConnectionManager;
+class StorageManager;       // StorageManager is responsible for managing the physical storage of the database on disk
+class Catalog;              // The Catalog object represents the catalog of the database.
+class TransactionManager;   // The Transaction Manager is responsible for creating and managing transactions
+class ConnectionManager;    // Connect the DatabaseInstance and ClientContext
 class FileSystem;
-class TaskScheduler;
-class ObjectCache;
+class TaskScheduler;        // The TaskScheduler is responsible for managing tasks and threads
+class ObjectCache;          // ObjectCache is the base class for objects caches in DuckDB
 
 class DatabaseInstance : public std::enable_shared_from_this<DatabaseInstance> {
 	friend class DuckDB;
@@ -29,7 +29,7 @@ public:
 	DUCKDB_API DatabaseInstance();
 	DUCKDB_API ~DatabaseInstance();
 
-	DBConfig config;
+	DBConfig config;        // this is optional and only used in tests at the moment
 
 public:
 	StorageManager &GetStorageManager();

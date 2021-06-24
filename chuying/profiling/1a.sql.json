@@ -1,14 +1,14 @@
 {
-   "result": 0.024256,
+   "result": 0.022592,
    "timings": {
-      "optimizer": 0.008742,
-      "optimizer > join_order": 0.008508,
-      "physical_planner": 0.001951,
-      "physical_planner > column_binding": 0.000545,
-      "physical_planner > create_plan": 0.000796,
-      "physical_planner > resolve_types": 0.000454,
-      "planner": 0.003888,
-      "planner > binder": 0.003791
+      "optimizer": 0.008166,
+      "optimizer > join_order": 0.007951,
+      "physical_planner": 0.001852,
+      "physical_planner > column_binding": 0.000516,
+      "physical_planner > create_plan": 0.000728,
+      "physical_planner > resolve_types": 0.000457,
+      "planner": 0.003495,
+      "planner > binder": 0.003407
    },
    "tree": {
    "name": "SIMPLE_AGGREGATE",

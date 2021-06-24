@@ -104,9 +104,9 @@ namespace duckdb {
         //weight factor -> this should be the same among the whole tree
         double weight_factor = sqrt(2);
 
-        void TreeConstruction();
-
         double CalculateUCB(double avg, int v_p, int v_c);
+
+        void pseudoCode();
 
         JoinOrderOptimizer::JoinNode* UCTChoice();
 
@@ -116,7 +116,7 @@ namespace duckdb {
 
         void RewardUpdate(NodeForUCT* node);
 
-        void ContinueJoin(unique_ptr <LogicalOperator> plan, std::chrono::seconds duration);
+        bool ContinueJoin(JoinOrderOptimizer::JoinNode *node, std::chrono::seconds duration);
 
         void RestoreState();
 

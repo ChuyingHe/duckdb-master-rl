@@ -11,7 +11,7 @@
 #include "duckdb/optimizer/filter_pushdown.hpp"
 #include "duckdb/optimizer/in_clause_rewriter.hpp"
 #include "duckdb/optimizer/join_order_optimizer.hpp"
-#include "duckdb/optimizer/rl_join_order_optimizer.hpp"
+#include "duckdb/skinnerdb/rl_join_order_optimizer.hpp"
 #include "duckdb/optimizer/regex_range_filter.hpp"
 #include "duckdb/optimizer/remove_unused_columns.hpp"
 #include "duckdb/optimizer/rule/list.hpp"

@@ -9,6 +9,7 @@
 #include "duckdb/main/query_result.hpp"
 #include "duckdb/main/stream_query_result.hpp"
 #include "duckdb/optimizer/optimizer.hpp"
+#include "duckdb/skinnerdb/rl_join_order_optimizer.hpp"
 #include "duckdb/parser/parser.hpp"
 #include "duckdb/parser/expression/constant_expression.hpp"
 #include "duckdb/parser/statement/drop_statement.hpp"
@@ -352,22 +353,13 @@ unique_ptr<QueryResult> ClientContext::Execute(const string &query, shared_ptr<P
 unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &lock, const string &query,
                                                             unique_ptr<SQLStatement> statement,
                                                             bool allow_stream_result) {
-    //FIXME: clearner way?
-    //duckdb join order optimizer
-    /*if (!enable_rl_join_order_optimizer) {
-     *
-    } else {    //duckdb join order optimizer
-        printf("RunStatementInternal: use rl-optimizer\n");
-
-    }*/
-
-    printf("RunStatementInternal: use duckdb-optimizer\n");
-    // prepare the query for execution
-    auto prepared = CreatePreparedStatement(lock, query, move(statement));  //return optimized physical plan
-    // by default, no values are bound
-    vector<Value> bound_values;
-    // execute the prepared statement
-    return ExecutePreparedStatement(lock, query, move(prepared), move(bound_values), allow_stream_result);
+	printf("RunStatementInternal: use duckdb-optimizer\n");
+	// prepare the query for execution
+	auto prepared = CreatePreparedStatement(lock, query, move(statement));  									//return optimized plan
+	// by default, no values are bound
+	vector<Value> bound_values;
+	// execute the prepared statement
+	return ExecutePreparedStatement(lock, query, move(prepared), move(bound_values), allow_stream_result);	//run chosen plan
 }
 
 unique_ptr<QueryResult> ClientContext::RunStatementOrPreparedStatement(ClientContextLock &lock, const string &query,
@@ -506,7 +498,7 @@ unique_ptr<QueryResult> ClientContext::Query(unique_ptr<SQLStatement> statement,
 
 	return RunStatements(*lock, query, statements, allow_stream_result);
 }
-/*(2) */
+
 unique_ptr<QueryResult> ClientContext::Query(const string &query, bool allow_stream_result) {
 	printf("unique_ptr<QueryResult> ClientContext::Query(const string &query, bool allow_stream_result) {\n");
 	auto lock = LockContext();          // create lock
@@ -528,6 +520,7 @@ unique_ptr<QueryResult> ClientContext::Query(const string &query, bool allow_str
 
 	return RunStatements(*lock, query, statements, allow_stream_result);
 }
+
 
 void ClientContext::Interrupt() {
 	interrupted = true;

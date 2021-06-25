@@ -14,6 +14,7 @@
 #include "duckdb/parser/expression_map.hpp"
 #include "duckdb/planner/logical_operator.hpp"
 #include "duckdb/planner/logical_operator_visitor.hpp"
+#include "duckdb/optimizer/join_order_optimizer.hpp"
 
 #include <functional>
 

@@ -115,7 +115,7 @@ public:
 	//! statement.
 	DUCKDB_API unique_ptr<QueryResult> Query(const string &query, bool allow_stream_result);
 	DUCKDB_API unique_ptr<QueryResult> Query(unique_ptr<SQLStatement> statement, bool allow_stream_result);
-	//! Fetch a query from the current result set (if any)
+        //! Fetch a query from the current result set (if any)
 	DUCKDB_API unique_ptr<DataChunk> Fetch();
 	//! Cleanup the result set (if any).
 	DUCKDB_API void Cleanup();

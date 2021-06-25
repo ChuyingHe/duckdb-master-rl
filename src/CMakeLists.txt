@@ -57,6 +57,7 @@ else()
   add_subdirectory(execution)
   add_subdirectory(main)
   add_subdirectory(parallel)
+  add_subdirectory(skinnerdb)
   add_subdirectory(storage)
   add_subdirectory(transaction)
 

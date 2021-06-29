@@ -25,7 +25,7 @@ PhysicalOperatorState::PhysicalOperatorState(PhysicalOperator &op, PhysicalOpera
 		child_state = child->GetOperatorState();
 	}
 }
-
+// 1.parameter = econtext(context, thread, task);
 void PhysicalOperator::GetChunk(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) {
 	if (context.client.interrupted) {
 		throw InterruptException();
@@ -39,7 +39,7 @@ void PhysicalOperator::GetChunk(ExecutionContext &context, DataChunk &chunk, Phy
 
 	// execute the operator
 	context.thread.profiler.StartOperator(this);
-	GetChunkInternal(context, chunk, state);
+	GetChunkInternal(context, chunk, state);    // function defined in src/execution/operator/aggregate/physical_simple_aggregate.cpp
 	context.thread.profiler.EndOperator(&chunk);
 
 	chunk.Verify();

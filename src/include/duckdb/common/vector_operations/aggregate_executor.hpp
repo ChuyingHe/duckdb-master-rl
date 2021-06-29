@@ -313,13 +313,14 @@ public:
 
 	template <class STATE_TYPE, class RESULT_TYPE, class OP>
 	static void Finalize(Vector &states, FunctionData *bind_data, Vector &result, idx_t count) {
-		if (states.GetVectorType() == VectorType::CONSTANT_VECTOR) {
-			result.SetVectorType(VectorType::CONSTANT_VECTOR);
+		if (states.GetVectorType() == VectorType::CONSTANT_VECTOR) {        // states.GetVectorType() returns states.buffer.vector_type
+			result.SetVectorType(VectorType::CONSTANT_VECTOR);   // set result->buffer->vector_type
 
-			auto sdata = ConstantVector::GetData<STATE_TYPE *>(states);
-			auto rdata = ConstantVector::GetData<RESULT_TYPE>(result);
+			auto sdata = ConstantVector::GetData<STATE_TYPE *>(states); //get state->data (assign pointer, not value)
+			auto rdata = ConstantVector::GetData<RESULT_TYPE>(result);  //get result->data
 			OP::template Finalize<RESULT_TYPE, STATE_TYPE>(result, bind_data, *sdata, rdata,
-			                                               ConstantVector::Validity(result), 0);
+			                                               ConstantVector::Validity(result), 0);    // 1st: call Validity() in src/include/duckdb/common/types/vector.hpp
+			                                               //2rd: then use the result as input to Finalize() in src/function/aggregate/distributive/minmax.cpp
 		} else {
 			D_ASSERT(states.GetVectorType() == VectorType::FLAT_VECTOR);
 			result.SetVectorType(VectorType::FLAT_VECTOR);

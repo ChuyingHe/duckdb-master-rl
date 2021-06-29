@@ -172,7 +172,7 @@ void Binder::BindModifierTypes(BoundQueryNode &result, const vector<LogicalType>
 
 unique_ptr<BoundQueryNode> Binder::BindNode(SelectNode &statement) {
 	auto result = make_unique<BoundSelectNode>();
-	result->projection_index = GenerateTableIndex();
+	result->projection_index = GenerateTableIndex();    // from current to the followings values are 0,1,2,3,4,5,6
 	result->group_index = GenerateTableIndex();
 	result->aggregate_index = GenerateTableIndex();
 	result->window_index = GenerateTableIndex();
@@ -180,7 +180,7 @@ unique_ptr<BoundQueryNode> Binder::BindNode(SelectNode &statement) {
 	result->prune_index = GenerateTableIndex();
 
 	// first bind the FROM table statement
-	result->from_table = Bind(*statement.from_table);
+	result->from_table = Bind(*statement.from_table);   // parameter: BoundTableRef, result: added TableRef including binder: BoundTableRef, left_binder, right_binder, left, right
 
 	// bind the sample clause
 	if (statement.sample) {
@@ -201,7 +201,7 @@ unique_ptr<BoundQueryNode> Binder::BindNode(SelectNode &statement) {
 			new_select_list.push_back(move(select_element));
 		}
 	}
-	statement.select_list = move(new_select_list);
+	statement.select_list = move(new_select_list);  // put back
 
 	// create a mapping of (alias -> index) and a mapping of (Expression -> index) for the SELECT list
 	unordered_map<string, idx_t> alias_map;

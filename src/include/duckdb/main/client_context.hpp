@@ -162,6 +162,12 @@ public:
 	DUCKDB_API void RunFunctionInTransactionInternal(ClientContextLock &lock, const std::function<void(void)> &fun,
 	                                                 bool requires_valid_transaction = true);
 
+    //! Internally execute a prepared SQL statement. Caller must hold the context_lock.
+    unique_ptr<QueryResult> ExecutePreparedStatement(ClientContextLock &lock, const string &query,
+                                                     shared_ptr<PreparedStatementData> statement,
+                                                     vector<Value> bound_values, bool allow_stream_result);
+
+
 private:
 	//! Parse statements from a query
 	vector<unique_ptr<SQLStatement>> ParseStatementsInternal(ClientContextLock &lock, const string &query);
@@ -189,10 +195,7 @@ private:
 	//! Internally prepare a SQL statement. Caller must hold the context_lock.
 	shared_ptr<PreparedStatementData> CreatePreparedStatement(ClientContextLock &lock, const string &query,
 	                                                          unique_ptr<SQLStatement> statement);
-	//! Internally execute a prepared SQL statement. Caller must hold the context_lock.
-	unique_ptr<QueryResult> ExecutePreparedStatement(ClientContextLock &lock, const string &query,
-	                                                 shared_ptr<PreparedStatementData> statement,
-	                                                 vector<Value> bound_values, bool allow_stream_result);
+
 	//! Call CreatePreparedStatement() and ExecutePreparedStatement() without any bound values
 	unique_ptr<QueryResult> RunStatementInternal(ClientContextLock &lock, const string &query,
 	                                             unique_ptr<SQLStatement> statement, bool allow_stream_result);

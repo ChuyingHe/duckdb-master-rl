@@ -249,12 +249,12 @@ unique_ptr<DataChunk> Executor::FetchChunk() {
 
 	ThreadContext thread(context);
 	TaskContext task;
-	ExecutionContext econtext(context, thread, task);
+	ExecutionContext econtext(context, thread, task);   // context, empty, empty
 
 	auto chunk = make_unique<DataChunk>();
 	// run the plan to get the next chunks
-	physical_plan->InitializeChunkEmpty(*chunk);
-	physical_plan->GetChunk(econtext, *chunk, physical_state.get());
+	physical_plan->InitializeChunkEmpty(*chunk);    // chunk = empty unique_ptr // Function: update *chunk: initialize 3 empty elements(amount of types), put them in vector<Vector> chuck.data
+	physical_plan->GetChunk(econtext, *chunk, physical_state.get());    //physical_state is modified in executor::Initialize
 	physical_plan->FinalizeOperatorState(*physical_state, econtext);
 	context.profiler.Flush(thread.profiler);
 	return chunk;

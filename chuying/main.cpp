@@ -42,19 +42,6 @@ void addIndexes(Connection con) {
     return;
 }
 
-void limitBatch(Connection con, std::string job_profiling, std::string job_query) {
-    // con.Query("PRAGMA disable_optimizer");
-    con.Query("PRAGMA enable_progress_bar");
-    con.Query("PRAGMA enable_profiling='json'");
-    con.Query("PRAGMA enable_rl_join_order_optimizer");
-    con.Query(job_profiling);
-
-    std::cout<<job_query<<std::endl;
-    auto result = con.Query(job_query);
-    result->Print();
-    return;
-}
-
 void runJOBQuerys(Connection con) {
     std::cout <<"\n 🌈 runJOBQuerys \n";
 
@@ -63,16 +50,17 @@ void runJOBQuerys(Connection con) {
         if (entry.path().u8string().find(".sql")!= std::string::npos) { //only take *.sql files
             std::string job_file = entry.path().filename().string();
             std::cout <<" 📒 job_file:" << job_file <<"\n";
+            con.Query("PRAGMA enable_progress_bar");
+            con.Query("PRAGMA enable_profiling='json'");
 
             std::string job_profiling = "PRAGMA profile_output='" + getRootPath() +"/chuying/profiling/" + job_file + ".json';";
+            con.Query(job_profiling);
+
+            con.Query("PRAGMA enable_rl_join_order_optimizer");
             std::string job_query = readFileIntoString(entry.path());
-
             std::cout <<"entry_path" <<entry.path() <<"\n JOB query = " << job_query;
-
-            limitBatch(con, job_profiling, job_query);
-            /*std::thread t(limitBatch, con, job_profiling, job_query);
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            t.join();*/
+            auto result = con.Query(job_query);
+            result->Print();
         }
     }
 }

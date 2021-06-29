@@ -21,10 +21,10 @@ DataChunk::DataChunk() : count(0) {
 }
 
 void DataChunk::InitializeEmpty(const vector<LogicalType> &types) {
-	D_ASSERT(types.size() > 0);
+	D_ASSERT(types.size() > 0); // types = 3
 	for (idx_t i = 0; i < types.size(); i++) {
-		data.emplace_back(Vector(types[i], nullptr));
-	}
+		data.emplace_back(Vector(types[i], nullptr));   // each element contains: [duckdb::data_ptr_t]data; [duckdb::ValidityMask]validity, [duckdh::buffer_ptr<duckdb::VectorBuffer>]buffer, [duckdh::buffer_ptr<duckdb::VectorBuffer>]auxiliary
+    }
 }
 
 void DataChunk::Initialize(const vector<LogicalType> &types) {
@@ -57,10 +57,10 @@ void DataChunk::SetValue(idx_t col_idx, idx_t index, const Value &val) {
 }
 
 void DataChunk::Reference(DataChunk &chunk) {
-	D_ASSERT(chunk.ColumnCount() <= ColumnCount());
+	D_ASSERT(chunk.ColumnCount() <= ColumnCount()); // ColumnCount() returns data.size = 3
 	SetCardinality(chunk);
 	for (idx_t i = 0; i < chunk.ColumnCount(); i++) {
-		data[i].Reference(chunk.data[i]);
+		data[i].Reference(chunk.data[i]);   // update data[i].data and data[i].buffer
 	}
 }
 

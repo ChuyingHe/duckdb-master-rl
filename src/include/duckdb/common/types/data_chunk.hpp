@@ -50,7 +50,7 @@ public:
 		return data.size();
 	}
 	void SetCardinality(idx_t count) {
-		D_ASSERT(count <= STANDARD_VECTOR_SIZE);
+		D_ASSERT(count <= STANDARD_VECTOR_SIZE);    // STANDARD_VECTOR_SIZE = 1024
 		this->count = count;
 	}
 	void SetCardinality(const DataChunk &other) {

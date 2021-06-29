@@ -28,7 +28,7 @@ Vector::Vector(const LogicalType &type) : Vector(type, true, false) {
 }
 
 Vector::Vector(const LogicalType &type, data_ptr_t dataptr) : data(dataptr) {
-	buffer = make_buffer<VectorBuffer>(VectorType::FLAT_VECTOR, type);
+	buffer = make_buffer<VectorBuffer>(VectorType::FLAT_VECTOR, type);      // type.id=VARCHAR, dataptr=null
 	if (dataptr && type.id() == LogicalTypeId::INVALID) {
 		throw InvalidTypeException(type, "Cannot create a vector of type INVALID!");
 	}

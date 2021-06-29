@@ -87,8 +87,9 @@ public:
 		auto &types = GetTypes();
 		chunk.Initialize(types);
 	}
+	// initialize 3 elements(amount of types), put them in vector<Vector> data;
 	virtual void InitializeChunkEmpty(DataChunk &chunk) {
-		auto &types = GetTypes();
+		auto &types = GetTypes();   // get types of current physical_operator
 		chunk.InitializeEmpty(types);
 	}
 	//! Retrieves a chunk from this operator and stores it in the chunk

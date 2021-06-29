@@ -507,7 +507,6 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<Logical
     std::cout <<"\n RewritePlan \n";
     // now we have to rewrite the plan
     bool root_is_join = plan->children.size() > 1;
-    std::cout << "children of plan (provided by previous optimizer) = " << plan->children.size() << "\n";
 
     // first we will extract all relations from the main plan
     vector<unique_ptr<LogicalOperator>> extracted_relations;
@@ -649,19 +648,10 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     GeneratePlans();
     std::cout<< "\n 🐶 amount of plans = "<<plans.size()<<"\n";
 
-    //InitNodes();
-
-    //FIXME: choose final_plan use UCTChoice
-    // auto final_plan = UCTChoice();
-
-
     unordered_set<idx_t> bindings;
     for (idx_t i = 0; i < relations.size(); i++) {
         bindings.insert(i);
     }
-    // auto total_relation = set_manager.GetJoinRelation(bindings);
-
-
 
     auto total_relation = set_manager.GetJoinRelation(bindings);
 
@@ -675,13 +665,12 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
 
     auto final_plan = UCTChoice();      // returns JoinOrderOptimizer::JoinNode*
 
-    // TODO: add plans which include all the relations into this->plans.
 
     // NOTE: we can just use pointers to JoinRelationSet* here because the GetJoinRelation
     // function ensures that a unique combination of relations will have a unique JoinRelationSet object.
     // TODO: execute plan instead of returning a plan
 
-    return RewritePlan(move(plan), final_plan);   // returns executable - unique_ptr<LogicalOperator>
+    return RewritePlan(move(plan), final_plan);   // returns EXECUTABLE of the chosen_plan unique_ptr<LogicalOperator>
 }
 
 

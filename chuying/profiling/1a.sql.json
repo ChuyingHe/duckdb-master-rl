@@ -1,27 +1,27 @@
 {
-   "result": 0.039865,
+   "result": 68862.500045,
    "timings": {
-      "optimizer": 0.025898,
-      "optimizer > expression_rewriter": 0.007270,
+      "optimizer": 0.033170,
+      "optimizer > expression_rewriter": 0.011072,
       "optimizer > filter_pullup": 0.000025,
-      "optimizer > filter_pushdown": 0.004476,
-      "optimizer > in_clause": 0.000043,
-      "optimizer > join_order": 0.011953,
-      "optimizer > optimizer > join_order > column_lifetime": 0.000462,
-      "optimizer > optimizer > join_order > common_aggregate": 0.000115,
-      "optimizer > optimizer > join_order > common_subexpressions": 0.000088,
-      "optimizer > optimizer > join_order > deliminator": 0.000015,
-      "optimizer > optimizer > join_order > reorder_filter": 0.000150,
-      "optimizer > optimizer > join_order > statistics_propagation": 0.000741,
+      "optimizer > filter_pushdown": 0.005426,
+      "optimizer > in_clause": 0.000141,
+      "optimizer > join_order": 0.014236,
+      "optimizer > optimizer > join_order > column_lifetime": 0.000510,
+      "optimizer > optimizer > join_order > common_aggregate": 0.000117,
+      "optimizer > optimizer > join_order > common_subexpressions": 0.000082,
+      "optimizer > optimizer > join_order > deliminator": 0.000012,
+      "optimizer > optimizer > join_order > reorder_filter": 0.000155,
+      "optimizer > optimizer > join_order > statistics_propagation": 0.000875,
       "optimizer > optimizer > join_order > top_n": 0.000010,
-      "optimizer > optimizer > join_order > unused_columns": 0.000238,
-      "optimizer > optimizer > physical_planner > column_binding": 0.000351,
-      "optimizer > optimizer > physical_planner > create_plan": 0.000903,
-      "optimizer > optimizer > physical_planner > resolve_types": 0.000365,
-      "optimizer > physical_planner": 0.001785,
-      "optimizer > regex_range": 0.000018,
-      "planner": 0.003515,
-      "planner > binder": 0.003425
+      "optimizer > optimizer > join_order > unused_columns": 0.000278,
+      "optimizer > optimizer > physical_planner > column_binding": 0.000404,
+      "optimizer > optimizer > physical_planner > create_plan": 0.000909,
+      "optimizer > optimizer > physical_planner > resolve_types": 0.000372,
+      "optimizer > physical_planner": 0.001819,
+      "optimizer > regex_range": 0.000023,
+      "planner": 0.004559,
+      "planner > binder": 0.004418
    },
    "tree": {
    "name": "SIMPLE_AGGREGATE",
@@ -56,7 +56,7 @@
             "children": [
             {
                "name": "SEQ_SCAN",
-               "timing":0.00,
+               "timing":0.01,
                "cardinality":1,
                "extra_info": "info_type\n[INFOSEPARATOR]\ninfo\nid\n[INFOSEPARATOR]\nFilters: \ninfo=top 250 rank",
                "children": []
@@ -69,13 +69,13 @@
                "children": [
                {
                   "name": "FILTER",
-                  "timing":0.00,
+                  "timing":0.01,
                   "cardinality":1,
                   "extra_info": "(!~~(note, %(as Metro-Goldwyn-Mayer Pictures)%) AND (contains(note, (co-production)) OR contains(note, (presents))))",
                   "children": [
                   {
                      "name": "SEQ_SCAN",
-                     "timing":0.00,
+                     "timing":0.01,
                      "cardinality":1,
                      "extra_info": "movie_companies\n[INFOSEPARATOR]\nnote\ncompany_type_id\nmovie_id",
                      "children": []
@@ -84,20 +84,20 @@
                   },
                {
                   "name": "HASH_JOIN",
-                  "timing":0.00,
+                  "timing":0.03,
                   "cardinality":1,
                   "extra_info": "INNER\nmovie_id=id\n",
                   "children": [
                   {
                      "name": "SEQ_SCAN",
-                     "timing":0.00,
+                     "timing":0.01,
                      "cardinality":1,
                      "extra_info": "movie_info_idx\n[INFOSEPARATOR]\nmovie_id\ninfo_type_id",
                      "children": []
                      },
                   {
                      "name": "SEQ_SCAN",
-                     "timing":0.00,
+                     "timing":0.04,
                      "cardinality":1,
                      "extra_info": "title\n[INFOSEPARATOR]\ntitle\nproduction_year\nid",
                      "children": []

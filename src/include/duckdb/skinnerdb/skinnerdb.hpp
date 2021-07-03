@@ -10,6 +10,7 @@
 #include "duckdb/main/client_context.hpp"
 #include "duckdb/planner/logical_operator.hpp"
 #include "duckdb/optimizer/expression_rewriter.hpp"
+#include "duckdb/optimizer/optimizer.hpp"
 
 namespace duckdb {
     class SkinnerDB {
@@ -24,11 +25,10 @@ namespace duckdb {
 
 
     private:
-        bool finished = false;  //indicator: whether the whole query has been executed or not
         int state = 0;             //恢复执行状态?
 
         shared_ptr<PreparedStatementData> CreatePreparedStatement(ClientContextLock &lock, const string &query,
-                                                                                 unique_ptr<SQLStatement> statement);
+                                                                                 unique_ptr<SQLStatement> statement, RLJoinOrderOptimizer rl_optimizer);
     };
 
 }

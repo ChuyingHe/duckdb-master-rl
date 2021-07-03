@@ -39,9 +39,6 @@ class ClientContextLock;
 
 extern bool enable_rl_join_order_optimizer; // to avoid duplication linker error
 
-// Reinforcement learning join order optimizer.
-
-
 //! The ClientContext holds information relevant to the current client session
 //! during execution
 class ClientContext : public std::enable_shared_from_this<ClientContext> {
@@ -75,7 +72,7 @@ public:
 	//! The wait time before showing the progress bar
 	int wait_time = 2000;
 
-
+	bool query_finished = false;
 
 	unique_ptr<SchemaCatalogEntry> temporary_objects;
 	unordered_map<string, shared_ptr<PreparedStatementData>> prepared_statements;
@@ -164,6 +161,10 @@ public:
 
     //! Internally execute a prepared SQL statement. Caller must hold the context_lock.
     unique_ptr<QueryResult> ExecutePreparedStatement(ClientContextLock &lock, const string &query,
+                                                     shared_ptr<PreparedStatementData> statement,
+                                                     vector<Value> bound_values, bool allow_stream_result);
+
+    unique_ptr<QueryResult> ExecutePreparedStatementWithRLOptimizer(ClientContextLock &lock, const string &query,
                                                      shared_ptr<PreparedStatementData> statement,
                                                      vector<Value> bound_values, bool allow_stream_result);
 

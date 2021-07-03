@@ -21,7 +21,7 @@
 namespace duckdb {
     // node for tree for UCT algorithm
     //FIXME: delete this
-    struct NodeForTree {
+    /*struct NodeForTree {
         idx_t key;
         int num_of_visits;  //number of visits
         double reward;         //reward: will be
@@ -33,7 +33,7 @@ namespace duckdb {
         //NodeForTree(vector<NodeForTree *> child) : key(0), num_of_visits(0), reward(0.0), child(child) {}; //root Node
         //NodeForTree(NodeForTree* parent) : key(0), num_of_visits(0), reward(0.0), parent(parent) {} //leaf Node
         NodeForTree(idx_t key, int num_of_visits, double reward, NodeForTree* parent) : key(key), num_of_visits(num_of_visits), reward(reward), parent(parent) {} //leaf Node
-    };
+    };*/
 
     struct NodeForUCT {
         JoinRelationSet* relations;                             // from this->plans
@@ -43,6 +43,7 @@ namespace duckdb {
         NodeForUCT* parent;
         vector<NodeForUCT*> children;
         // vector<JoinRelationSet*> validChildren; do we need this?
+        // NodeForUCT(): num_of_visits(0), reward(0.0) {}
     };
 
     class RLJoinOrderOptimizer {
@@ -53,13 +54,17 @@ namespace duckdb {
 
         unique_ptr <LogicalOperator>
         Optimize(unique_ptr <LogicalOperator> plan); /*only public function -  THE ENTRANCE*/
+        void RewardUpdate(double reward);
+
+        NodeForUCT* root_node_for_uct;   //to save the TREE
+        NodeForUCT* chosen_node; // to tranfer the reward in RewardUpdate
 
     private:
         ClientContext &context;
         idx_t pairs = 0;
         int counter = 0;
         std::vector<NodeForUCT*> tree;
-        NodeForUCT* root_node_for_uct;
+
 
         vector <unique_ptr<SingleJoinRelation>> relations;
         unordered_map <idx_t, idx_t> relation_mapping;
@@ -115,7 +120,6 @@ namespace duckdb {
 
         // void InitNodes();
 
-        void RewardUpdate(NodeForUCT* node);
 
         bool ContinueJoin(JoinOrderOptimizer::JoinNode *node, std::chrono::seconds duration);
 

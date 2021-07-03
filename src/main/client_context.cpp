@@ -30,6 +30,7 @@
 #include "duckdb/planner/pragma_handler.hpp"
 #include "duckdb/common/to_string.hpp"
 
+
 #include <iostream>
 
 namespace duckdb {
@@ -254,6 +255,7 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 		auto chunk = FetchInternal(lock);   // chunk->data = "CONSTANT INTEGER: (UNKNOWN COUNT) [ NULL]"
 
 		if (chunk->size() == 0) {
+
 			break;
 		}
 #ifdef DEBUG
@@ -269,6 +271,65 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 		progress_bar->Stop();
 	}
 	return move(result);    // 🚩 2rd return
+}
+
+
+unique_ptr<QueryResult> ClientContext::ExecutePreparedStatementWithRLOptimizer(ClientContextLock &lock, const string &query,
+                                                                shared_ptr<PreparedStatementData> statement_p,
+                                                                vector<Value> bound_values, bool allow_stream_result) {
+    printf("ExecutePreparedStatementWithRLOptimizer \n");
+
+    auto &statement = *statement_p;     // shared_ptr<PreparedStatementData>: includes optimized PLAN
+    if (ActiveTransaction().IsInvalidated() && statement.requires_valid_transaction) {
+        throw Exception("Current transaction is aborted (please ROLLBACK)");
+    }
+    auto &config = DBConfig::GetConfig(*this);  // DBConfig&
+    if (config.access_mode == AccessMode::READ_ONLY && !statement.read_only) {
+        throw Exception(StringUtil::Format("Cannot execute statement of type \"%s\" in read-only mode!",
+                                           StatementTypeToString(statement.statement_type)));
+    }
+
+    // bind the bound values before execution
+    statement.Bind(move(bound_values)); //bound_values: empty vector
+
+    bool create_stream_result = statement.allow_stream_result && allow_stream_result;
+    if (enable_progress_bar) {
+        if (!progress_bar) {
+            progress_bar = make_shared<ProgressBar>(&executor, wait_time);
+        }
+        progress_bar->Start();
+    }
+    // store the physical plan in the context for calls to Fetch()
+    executor.Initialize(statement.plan.get());  /*initialize the PLAN in Executor*/
+
+    auto types = executor.GetTypes();
+
+    D_ASSERT(types == statement.types);
+
+    if (create_stream_result) {
+        if (progress_bar) {
+            progress_bar->Stop();
+        }
+        // successfully compiled SELECT clause and it is the last statement
+        // return a StreamQueryResult so the client can call Fetch() on it and stream the result
+        // 🌞 1st return - only a framework??? where is this FETCH() function and what did it do?
+        return make_unique<StreamQueryResult>(statement.statement_type, shared_from_this(), statement.types,
+                                              statement.names, move(statement_p));
+    }
+    // create a materialized result by continuously fetching
+    auto result = make_unique<MaterializedQueryResult>(statement.statement_type, statement.types, statement.names); // 🚩 2rd return
+
+    auto chunk = FetchInternal(lock);   // ONLY FETCH ONE CHUNK EACH ExecutePreparedStatementWithRLOptimizer()
+    if (chunk->size()!=0) {
+        result->collection.Append(*chunk);
+    } else {
+        query_finished = true;
+    }
+
+    if (progress_bar) {
+        progress_bar->Stop();
+    }
+    return move(result);
 }
 
 void ClientContext::InitialCleanup(ClientContextLock &lock) {

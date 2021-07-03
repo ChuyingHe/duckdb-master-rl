@@ -25,7 +25,7 @@ PhysicalOperatorState::PhysicalOperatorState(PhysicalOperator &op, PhysicalOpera
 		child_state = child->GetOperatorState();
 	}
 }
-// 1.parameter = econtext(context, thread, task);
+// 1.para: econtext(context, thread, task); // 2.para: chunk.data
 void PhysicalOperator::GetChunk(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) {
 	if (context.client.interrupted) {
 		throw InterruptException();

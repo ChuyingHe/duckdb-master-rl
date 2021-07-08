@@ -34,7 +34,7 @@ unique_ptr<PhysicalOperator> PhysicalPlanGenerator::CreatePlan(unique_ptr<Logica
 
 	// now resolve types of all the operators
 	context.profiler.StartPhase("resolve_types");
-	op->ResolveOperatorTypes();
+	op->ResolveOperatorTypes(); //op->types is updated
 	context.profiler.EndPhase();
 
 	// extract dependencies from the logical plan
@@ -43,7 +43,7 @@ unique_ptr<PhysicalOperator> PhysicalPlanGenerator::CreatePlan(unique_ptr<Logica
 
 	// then create the main physical plan
 	context.profiler.StartPhase("create_plan");
-	auto plan = CreatePlan(*op);
+	auto plan = CreatePlan(*op);    //op->estimated_cardinality is updated
 	context.profiler.EndPhase();
 	return plan;
 }

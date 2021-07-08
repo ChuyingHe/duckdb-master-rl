@@ -79,8 +79,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         RLJoinOrderOptimizer rl_optimizer(context);
 
         // DEEP COPY of unique_ptr
-        LogicalOperator copy = *plan;
-        //unique_ptr<LogicalOperator> copy_of_plan = make_unique<LogicalOperator>(*plan);
+        //LogicalOperator copy = *plan;
+        // unique_ptr<LogicalOperator> copy_of_plan = make_unique<LogicalOperator>(*plan);
         //unique_ptr<LogicalOperator> copy_of_plan = *plan;
 
         // unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(plan_share);

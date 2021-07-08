@@ -13,7 +13,11 @@
 #include "duckdb/optimizer/optimizer.hpp"
 
 namespace duckdb {
+
+
     class SkinnerDB {
+        friend class RLJoinOrderOptimizer;
+
     public:
         SkinnerDB(QueryProfiler &profiler, ClientContext& context);
 
@@ -21,14 +25,15 @@ namespace duckdb {
         ClientContext& context;
 
         void runStatement(shared_ptr<PreparedStatementData> plan);
-        unique_ptr<QueryResult> Execute(ClientContextLock &lock, const string &query, unique_ptr<SQLStatement> statement, bool allow_stream_result);
+
+        // unique_ptr<QueryResult> Execute(ClientContextLock &lock, const string &query, unique_ptr<SQLStatement> statement, bool allow_stream_result);
+        unique_ptr<QueryResult> CreateAndExecuteStatement(ClientContextLock &lock, const string &query, unique_ptr<SQLStatement> statement, bool allow_stream_result);
 
 
     private:
         int state = 0;             //恢复执行状态?
 
-        shared_ptr<PreparedStatementData> CreatePreparedStatement(ClientContextLock &lock, const string &query,
-                                                                                 unique_ptr<SQLStatement> statement, RLJoinOrderOptimizer rl_optimizer);
+
     };
 
 }

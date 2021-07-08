@@ -255,7 +255,6 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 		auto chunk = FetchInternal(lock);   // chunk->data = "CONSTANT INTEGER: (UNKNOWN COUNT) [ NULL]"
 
 		if (chunk->size() == 0) {
-
 			break;
 		}
 #ifdef DEBUG
@@ -439,7 +438,8 @@ unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &l
         printf("after created skinnerdb");
 
         //FIXME: return unique_ptr<QueryResult> instead of void
-        auto result = skinnerDb.Execute(lock, query, move(statement), allow_stream_result);
+        // auto result = skinnerDb.Execute(lock, query, move(statement), allow_stream_result);
+        auto result = skinnerDb.CreateAndExecuteStatement(lock, query, move(statement), allow_stream_result);
         return result;
 
     } else {

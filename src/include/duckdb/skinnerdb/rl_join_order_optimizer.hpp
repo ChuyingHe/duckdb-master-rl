@@ -19,22 +19,6 @@
 #include <functional>
 
 namespace duckdb {
-    // node for tree for UCT algorithm
-    //FIXME: delete this
-    /*struct NodeForTree {
-        idx_t key;
-        int num_of_visits;  //number of visits
-        double reward;         //reward: will be
-        vector<NodeForTree *> child;
-        NodeForTree *parent;
-
-        NodeForTree() : key(0), num_of_visits(0), reward(0.0) {}; //isolated Node
-
-        //NodeForTree(vector<NodeForTree *> child) : key(0), num_of_visits(0), reward(0.0), child(child) {}; //root Node
-        //NodeForTree(NodeForTree* parent) : key(0), num_of_visits(0), reward(0.0), parent(parent) {} //leaf Node
-        NodeForTree(idx_t key, int num_of_visits, double reward, NodeForTree* parent) : key(key), num_of_visits(num_of_visits), reward(reward), parent(parent) {} //leaf Node
-    };*/
-
     struct NodeForUCT {
         JoinRelationSet* relations;                             // from this->plans
         JoinOrderOptimizer::JoinNode* join_node;   // from this->plans
@@ -46,25 +30,27 @@ namespace duckdb {
         // NodeForUCT(): num_of_visits(0), reward(0.0) {}
     };
 
+    extern NodeForUCT* root_node_for_uct;
+    extern NodeForUCT* chosen_node; // to tranfer the reward in RewardUpdate
+
     class RLJoinOrderOptimizer {
     public:
         explicit RLJoinOrderOptimizer(ClientContext &context) : context(
                 context) { /*constructor, explicit prevent other type of parameter*/
         }
 
-        unique_ptr <LogicalOperator>
-        Optimize(unique_ptr <LogicalOperator> plan); /*only public function -  THE ENTRANCE*/
+        unique_ptr <LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan); /*only public function -  THE ENTRANCE*/
+        // shared_ptr<LogicalOperator> Optimize(shared_ptr<LogicalOperator> plan);
+        // LogicalOperator* Optimize(LogicalOperator* plan);
+
         void RewardUpdate(double reward);
 
-        NodeForUCT* root_node_for_uct;   //to save the TREE
-        NodeForUCT* chosen_node; // to tranfer the reward in RewardUpdate
+
 
     private:
         ClientContext &context;
         idx_t pairs = 0;
         int counter = 0;
-        std::vector<NodeForUCT*> tree;
-
 
         vector <unique_ptr<SingleJoinRelation>> relations;
         unordered_map <idx_t, idx_t> relation_mapping;
@@ -98,6 +84,7 @@ namespace duckdb {
         bool EnumerateCSGRecursive(JoinRelationSet *node, unordered_set <idx_t> &exclusion_set);
 
         unique_ptr <LogicalOperator> RewritePlan(unique_ptr <LogicalOperator> plan, JoinOrderOptimizer::JoinNode *node);
+        // LogicalOperator* RewritePlan(LogicalOperator* plan, JoinOrderOptimizer::JoinNode *node);
 
         void GenerateCrossProducts();
 
@@ -107,8 +94,7 @@ namespace duckdb {
 
         void SolveJoinOrderApproximately();
 
-        //weight factor -> this should be the same among the whole tree
-        double weight_factor = sqrt(2);
+
 
         double CalculateUCB(double avg, int v_p, int v_c);
 

@@ -14,6 +14,9 @@
 
 
 namespace duckdb {
+NodeForUCT* root_node_for_uct;     //initialize the root of the tree
+NodeForUCT* chosen_node;
+
 SkinnerDB::SkinnerDB(QueryProfiler &profiler, ClientContext& context): profiler(move(profiler)), context(context) {
 }
 
@@ -22,16 +25,17 @@ void SkinnerDB::runStatement(shared_ptr<PreparedStatementData> plan){
     // measure: how long does it take to EXECUTE one CHUNK
     //2. update
 
-
-
 }
+//shared_ptr<PreparedStatementData>
 
+unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &lock, const string &query,
+                                                          unique_ptr<SQLStatement> statement, bool allow_stream_result){
 
-shared_ptr<PreparedStatementData> SkinnerDB::CreatePreparedStatement(ClientContextLock &lock, const string &query,
-                                                          unique_ptr<SQLStatement> statement, RLJoinOrderOptimizer rl_optimizer){
+    auto query_result = unique_ptr<QueryResult>();
+
     printf("SkinnerDB::CreatePreparedStatement\n");
     StatementType statement_type = statement->type;
-    auto result = make_shared<PreparedStatementData>(statement_type);
+    shared_ptr<PreparedStatementData> result = make_shared<PreparedStatementData>(statement_type);
 
     profiler.StartPhase("planner");
     Planner planner(context);
@@ -49,45 +53,80 @@ shared_ptr<PreparedStatementData> SkinnerDB::CreatePreparedStatement(ClientConte
     result->value_map = move(planner.value_map);
     result->catalog_version = Transaction::GetTransaction(context).catalog_version;
 
-    profiler.StartPhase("optimizer");
+    // pre-optimizer
+    profiler.StartPhase("pre_optimizer");
     Optimizer optimizer(*planner.binder, context);
-    plan = optimizer.OptimizeWithRLOptimizer(move(plan), move(rl_optimizer));
+    plan = optimizer.OptimizeBeforeRLOptimizer(move(plan));
     D_ASSERT(plan);
     profiler.EndPhase();
 
-    profiler.StartPhase("physical_planner");
-    // now convert logical query plan into a physical query plan
-    PhysicalPlanGenerator physical_planner(context);
-    auto physical_plan = physical_planner.CreatePlan(move(plan));
-    profiler.EndPhase();
+    // convert UNIQUE to SHARE
+    // shared_ptr<LogicalOperator> plan_share = move(plan);
 
-    result->plan = move(physical_plan);
+    // rl-optimizer
+    // profiler.StartPhase("rl_optimizer");
 
-    return result;  // PreparedStatementData result which includes the PLAN
+    root_node_for_uct = new NodeForUCT{nullptr, nullptr, 0, 0.0, nullptr};
+
+    int loop_count = 0;
+    // FIXME: fixme
+    while (loop_count < 100) {
+    //while (!context.query_finished) {
+        std::cout<<" 🦄️ loop_count = " << loop_count <<"\n";
+        loop_count += 1;
+
+        profiler.StartPhase("rl_optimizer");
+        RLJoinOrderOptimizer rl_optimizer(context);
+
+        // DEEP COPY of unique_ptr
+        LogicalOperator copy = *plan;
+        //unique_ptr<LogicalOperator> copy_of_plan = make_unique<LogicalOperator>(*plan);
+        //unique_ptr<LogicalOperator> copy_of_plan = *plan;
+
+        // unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(plan_share);
+        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(plan));    // CHECK HERE, erst kopieren dann
+
+        profiler.EndPhase();
+
+        profiler.StartPhase("physical_planner");
+        // now convert logical query plan into a physical query plan
+        PhysicalPlanGenerator physical_planner(context);
+        auto physical_plan = physical_planner.CreatePlan(move(rl_plan));    // CHECK HERE, erst kopieren dann
+        // auto physical_plan = physical_planner.CreatePlanRL(plan.get());
+        profiler.EndPhase();
+
+        result->plan = move(physical_plan);
+        //auto prepared = result;
+
+        vector<Value> bound_values;
+        Timer timer;
+        // query_result = context.ExecutePreparedStatementWithRLOptimizer(lock, query, result.get(), move(bound_values), allow_stream_result);
+        query_result = context.ExecutePreparedStatementWithRLOptimizer(lock, query, move(result), move(bound_values), allow_stream_result);
+
+        double reward = timer.check();
+
+        rl_optimizer.RewardUpdate(reward);
+
+    }
+
+    //TODO: add up all query_result
+    return query_result;
 }
 
 /*
  * input: unique_ptr<SQLStatement> statement, QueryProfiler profiler, ClientContext &context
  * output: the final result: unique_ptr<QueryResult>
  * */
+/*
 unique_ptr<QueryResult> SkinnerDB::Execute(ClientContextLock &lock, const string &query, unique_ptr<SQLStatement> statement, bool allow_stream_result) {
     printf("SkinnerDB::Preprocessing");
-    // QueryResult final_result(statement->type, statement.t);
-
-    if (!context.query_finished) {  //TODO: fix this??
-        RLJoinOrderOptimizer rl_optimizer(context);
-
-        auto prepared = CreatePreparedStatement(lock, query, move(statement), move(rl_optimizer));
-        vector<Value> bound_values;
-
-        Timer timer;
-        auto result = context.ExecutePreparedStatementWithRLOptimizer(lock, query, move(prepared), move(bound_values), allow_stream_result);;
-        double reward = timer.check();
-        rl_optimizer.RewardUpdate(reward);
-
-    }
 
 
-}
+
+
+
+
+
+}*/
 
 }

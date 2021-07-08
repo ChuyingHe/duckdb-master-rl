@@ -192,7 +192,7 @@ bool RLJoinOrderOptimizer::ExtractJoinRelations(LogicalOperator &input_op, vecto
         return can_reorder_left && can_reorder_right;
     } else if (op->type == LogicalOperatorType::LOGICAL_GET) {
         // base table scan, add to set of relations
-        auto get = (LogicalGet *)op;
+        auto get = (LogicalGet *)op;    // here op->bind_data is added
         auto relation = make_unique<SingleJoinRelation>(&input_op, parent);
         relation_mapping[get->table_index] = relations.size();
         relations.push_back(move(relation));
@@ -412,7 +412,8 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
 void RLJoinOrderOptimizer::GeneratePlans() {
     printf("\nGeneratePlans\n");
     // 🚩 create-node-for-UCT-Tree:  level0 node, a.k.a. root node
-    root_node_for_uct = new NodeForUCT{nullptr, nullptr, 0, 0.0, nullptr};
+
+    // NodeForUCT* root_node_for_uct = new NodeForUCT{nullptr, nullptr, 0, 0.0, nullptr};
     //tree.push_back(root_node_for_uct);
 
     // 1) initialize each of the single-table plans
@@ -474,6 +475,9 @@ void RLJoinOrderOptimizer::InitNodes() {
 }
 */
 
+// 1) use chosen_node
+// 2) use input parameter
+// are they the same? maybe yes, because chosen_node is updated
 void RLJoinOrderOptimizer::RewardUpdate(double reward) {
     // update the current leaf-node
     if (chosen_node) {
@@ -481,10 +485,10 @@ void RLJoinOrderOptimizer::RewardUpdate(double reward) {
         chosen_node->reward += reward;
 
         // update node's parent - until the root note
-        NodeForUCT* parent = chosen_node->parent;
-        if (parent != root_node_for_uct){   // TODO: or if(parent)? root_node_for_uct doesnt need the reward
-            parent->reward +=reward;
-            parent = parent->parent;
+        NodeForUCT* parent_ptr = chosen_node->parent;
+        while (parent_ptr) {
+            parent_ptr->reward +=reward;
+            parent_ptr = parent_ptr->parent;
         }
     }
 
@@ -731,7 +735,6 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     }*/
 
     auto final_plan = UCTChoice();      // returns JoinOrderOptimizer::JoinNode*
-
 
     // NOTE: we can just use pointers to JoinRelationSet* here because the GetJoinRelation
     // function ensures that a unique combination of relations will have a unique JoinRelationSet object.

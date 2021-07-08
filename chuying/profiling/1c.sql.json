@@ -1,27 +1,27 @@
 {
-   "result": 0.099404,
+   "result": 0.078431,
    "timings": {
-      "optimizer": 0.026316,
-      "optimizer > column_lifetime": 0.000278,
-      "optimizer > common_aggregate": 0.000110,
-      "optimizer > common_subexpressions": 0.000086,
+      "optimizer": 0.021811,
+      "optimizer > column_lifetime": 0.000201,
+      "optimizer > common_aggregate": 0.000101,
+      "optimizer > common_subexpressions": 0.000076,
       "optimizer > deliminator": 0.000012,
-      "optimizer > expression_rewriter": 0.008885,
+      "optimizer > expression_rewriter": 0.005332,
       "optimizer > filter_pullup": 0.000022,
-      "optimizer > filter_pushdown": 0.004224,
-      "optimizer > in_clause": 0.000081,
-      "optimizer > join_order": 0.011143,
-      "optimizer > regex_range": 0.000027,
-      "optimizer > reorder_filter": 0.000140,
-      "optimizer > statistics_propagation": 0.000664,
+      "optimizer > filter_pushdown": 0.004545,
+      "optimizer > in_clause": 0.000043,
+      "optimizer > join_order": 0.010138,
+      "optimizer > regex_range": 0.000015,
+      "optimizer > reorder_filter": 0.000153,
+      "optimizer > statistics_propagation": 0.000597,
       "optimizer > top_n": 0.000010,
-      "optimizer > unused_columns": 0.000255,
-      "physical_planner": 0.001425,
-      "physical_planner > column_binding": 0.000384,
-      "physical_planner > create_plan": 0.000581,
-      "physical_planner > resolve_types": 0.000329,
-      "planner": 0.003377,
-      "planner > binder": 0.003263
+      "optimizer > unused_columns": 0.000250,
+      "physical_planner": 0.001380,
+      "physical_planner > column_binding": 0.000325,
+      "physical_planner > create_plan": 0.000621,
+      "physical_planner > resolve_types": 0.000314,
+      "planner": 0.002884,
+      "planner > binder": 0.002806
    },
    "tree": {
    "name": "SIMPLE_AGGREGATE",
@@ -32,31 +32,31 @@
    {
       "name": "PROJECTION",
       "timing":0.00,
-      "cardinality":1,
+      "cardinality":0,
       "extra_info": "note\ntitle\nproduction_year\n",
       "children": [
       {
          "name": "HASH_JOIN",
          "timing":0.00,
-         "cardinality":1,
+         "cardinality":0,
          "extra_info": "INNER\ncompany_type_id=id\n",
          "children": [
          {
             "name": "HASH_JOIN",
             "timing":0.00,
-            "cardinality":1,
+            "cardinality":0,
             "extra_info": "INNER\ninfo_type_id=id\n",
             "children": [
             {
                "name": "HASH_JOIN",
                "timing":0.00,
-               "cardinality":1,
+               "cardinality":0,
                "extra_info": "INNER\nid=movie_id\nmovie_id=movie_id\n",
                "children": [
                {
                   "name": "HASH_JOIN",
                   "timing":0.01,
-                  "cardinality":784,
+                  "cardinality":78,
                   "extra_info": "INNER\nmovie_id=id\n",
                   "children": [
                   {
@@ -69,17 +69,17 @@
                   {
                      "name": "SEQ_SCAN",
                      "timing":0.00,
-                     "cardinality":5887,
-                     "extra_info": "title\n[INFOSEPARATOR]\ntitle\nproduction_year\nid",
+                     "cardinality":1069,
+                     "extra_info": "title\n[INFOSEPARATOR]\ntitle\nproduction_year\nid\n[INFOSEPARATOR]\nFilters: \nproduction_year>2010",
                      "children": []
                      }
                   ]
                   },
                {
                   "name": "FILTER",
-                  "timing":0.04,
+                  "timing":0.02,
                   "cardinality":1,
-                  "extra_info": "(!~~(note, %(as Metro-Goldwyn-Mayer Pictures)%) AND (contains(note, (co-production)) OR contains(note, (presents))))",
+                  "extra_info": "(!~~(note, %(as Metro-Goldwyn-Mayer Pictures)%) AND contains(note, (co-production)))",
                   "children": [
                   {
                      "name": "SEQ_SCAN",

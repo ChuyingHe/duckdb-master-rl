@@ -32,6 +32,8 @@ public:
 	virtual ~LogicalOperator() {
 	}
 
+    std::unique_ptr<LogicalOperator> clone() const;
+
 	//! The type of the logical operator
 	LogicalOperatorType type;
 	//! The set of children of the operator

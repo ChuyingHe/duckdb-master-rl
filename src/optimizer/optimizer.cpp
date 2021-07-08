@@ -128,7 +128,7 @@ unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan
 	return plan;
 }
 
-unique_ptr<LogicalOperator> Optimizer::OptimizeWithRLOptimizer(unique_ptr<LogicalOperator> plan, RLJoinOrderOptimizer rl_optimizer) {
+unique_ptr<LogicalOperator> Optimizer::OptimizeBeforeRLOptimizer(unique_ptr<LogicalOperator> plan) {
     printf("unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan) {\n");
     // first we perform expression rewrites using the ExpressionRewriter
     // this does not change the logical plan structure, but only simplifies the expression trees
@@ -158,7 +158,7 @@ unique_ptr<LogicalOperator> Optimizer::OptimizeWithRLOptimizer(unique_ptr<Logica
     plan = rewriter.Rewrite(move(plan));
     context.profiler.EndPhase();
 
-    context.profiler.StartPhase("rl_join_order");
+    /*context.profiler.StartPhase("rl_join_order");
     printf("🐈 🐈 🐈 RL Optimizer");
     plan = rl_optimizer.Optimize(move(plan));
     context.profiler.EndPhase();
@@ -206,7 +206,7 @@ unique_ptr<LogicalOperator> Optimizer::OptimizeWithRLOptimizer(unique_ptr<Logica
     context.profiler.StartPhase("reorder_filter");
     ExpressionHeuristics expression_heuristics(*this);
     plan = expression_heuristics.Rewrite(move(plan));
-    context.profiler.EndPhase();
+    context.profiler.EndPhase();*/
 
     return plan;
 }

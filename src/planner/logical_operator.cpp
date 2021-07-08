@@ -9,7 +9,9 @@ namespace duckdb {
 string LogicalOperator::GetName() const {
 	return LogicalOperatorToString(type);
 }
-
+std::unique_ptr<LogicalOperator> LogicalOperator::clone() const {
+    return unique_ptr<LogicalOperator>(new LogicalOperator(*this));
+}
 string LogicalOperator::ParamsToString() const {
 	string result;
 	for (idx_t i = 0; i < expressions.size(); i++) {

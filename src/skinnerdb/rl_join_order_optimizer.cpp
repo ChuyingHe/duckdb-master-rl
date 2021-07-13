@@ -12,8 +12,71 @@
 
 namespace duckdb {
 
-//using JoinNode = RLJoinOrderOptimizer::JoinNode;
 
+//! Returns true if A and B are disjoint, false otherwise
+template <class T>
+static bool RL_Disjoint(unordered_set<T> &a, unordered_set<T> &b) {
+    for (auto &entry : a) {
+        if (b.find(entry) != b.end()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static unique_ptr<LogicalOperator> RL_ExtractJoinRelation(SingleJoinRelation &rel) {
+    auto &children = rel.parent->children;
+    for (idx_t i = 0; i < children.size(); i++) {
+        if (children[i].get() == rel.op) {
+            // found it! take ownership of it from the parent
+            auto result = move(children[i]);
+            children.erase(children.begin() + i);
+            return result;
+        }
+    }
+    throw Exception("Could not find relation in parent node (?)");
+}
+
+static unique_ptr<LogicalOperator> RL_PushFilter(unique_ptr<LogicalOperator> node, unique_ptr<Expression> expr) {
+    // push an expression into a filter
+    // first check if we have any filter to push it into
+    if (node->type != LogicalOperatorType::LOGICAL_FILTER) {
+        // we don't, we need to create one
+        auto filter = make_unique<LogicalFilter>();
+        filter->children.push_back(move(node));
+        node = move(filter);
+    }
+    // push the filter into the LogicalFilter
+    D_ASSERT(node->type == LogicalOperatorType::LOGICAL_FILTER);
+    auto filter = (LogicalFilter *)node.get();
+    filter->expressions.push_back(move(expr));
+    return node;
+}
+
+//! Create a new JoinTree node by joining together two previous JoinTree nodes
+static unique_ptr<JoinOrderOptimizer::JoinNode> RL_CreateJoinTree(JoinRelationSet *set, NeighborInfo *info, JoinOrderOptimizer::JoinNode *left, JoinOrderOptimizer::JoinNode *right) {
+    // for the hash join we want the right side (build side) to have the smallest cardinality
+    // also just a heuristic but for now...
+    // FIXME: we should probably actually benchmark that as well
+    // FIXME: should consider different join algorithms, should we pick a join algorithm here as well? (probably)
+    if (left->cardinality < right->cardinality) {   /*exchange left and right if right has bigger cardinality*/
+        return RL_CreateJoinTree(set, info, right, left);
+    }
+    // the expected cardinality is the max of the child cardinalities
+    // FIXME: we should obviously use better cardinality estimation here
+    // but for now we just assume foreign key joins only
+    idx_t expected_cardinality;
+    if (info->filters.empty()) {
+        // cross product
+        expected_cardinality = left->cardinality * right->cardinality;
+    } else {
+        // normal join, expect foreign key join
+        expected_cardinality = MaxValue(left->cardinality, right->cardinality);
+    }
+    // cost is expected_cardinality plus the cost of the previous plans
+    idx_t cost = expected_cardinality;
+    return make_unique<JoinOrderOptimizer::JoinNode>(set, info, left, right, expected_cardinality, cost);
+}
 
 //! Extract the set of relations referred to inside an expression
 bool RLJoinOrderOptimizer::ExtractBindings(Expression &expression, unordered_set<idx_t> &bindings) {
@@ -129,7 +192,7 @@ bool RLJoinOrderOptimizer::ExtractJoinRelations(LogicalOperator &input_op, vecto
         return can_reorder_left && can_reorder_right;
     } else if (op->type == LogicalOperatorType::LOGICAL_GET) {
         // base table scan, add to set of relations
-        auto get = (LogicalGet *)op;
+        auto get = (LogicalGet *)op;    // here op->bind_data is added
         auto relation = make_unique<SingleJoinRelation>(&input_op, parent);
         relation_mapping[get->table_index] = relations.size();
         relations.push_back(move(relation));
@@ -163,7 +226,7 @@ bool RLJoinOrderOptimizer::ExtractJoinRelations(LogicalOperator &input_op, vecto
 }
 
 pair<JoinRelationSet *, unique_ptr<LogicalOperator>>
-RLJoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extracted_relations, JoinNode *node) {
+RLJoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extracted_relations, JoinOrderOptimizer::JoinNode *node) {
     JoinRelationSet *left_node = nullptr, *right_node = nullptr;
     JoinRelationSet *result_relation;
     unique_ptr<LogicalOperator> result_operator;
@@ -241,7 +304,7 @@ RLJoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extract
                 // check if we are in a join or in a base table
                 if (!left_node || !info->left_set) {
                     // base table or non-comparison expression, push it as a filter
-                    result_operator = PushFilter(move(result_operator), move(filter));
+                    result_operator = RL_PushFilter(move(result_operator), move(filter));
                     continue;
                 }
                 // the node below us is a join or cross product and the expression is a comparison
@@ -258,7 +321,7 @@ RLJoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extract
                 }
                 if (!found_subset) {
                     // could not be split up into left/right
-                    result_operator = PushFilter(move(result_operator), move(filter));
+                    result_operator = RL_PushFilter(move(result_operator), move(filter));
                     continue;
                 }
                 // create the join condition
@@ -313,23 +376,20 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
             auto &left = plans[union_set];
             auto new_set = set_manager.RLUnion(union_set, neighbor_relation);
             auto &right = plans[neighbor_relation];
-            auto new_plan = CreateJoinTree(new_set, info, left.get(), right.get());// unique_ptr<JoinNode>
+            auto new_plan = RL_CreateJoinTree(new_set, info, left.get(), right.get());// unique_ptr<JoinNode>
 
             auto entry = plans.find(new_set);
             NodeForUCT* current_node_for_uct;
             if (entry == plans.end()) {
                 plans[new_set] = move(new_plan);    //include all plans(intermediate & final)
 
-                //🚩 create-node-for-UCT-Tree - created all node with "parent"
+                //UCT-Tree: created all node with "parent"
                 current_node_for_uct = new NodeForUCT{new_set, plans[new_set].get(), 0, 0.0, parent_node_for_uct};
                 // tree.push_back(current_node_for_uct);
 
-                //🚩 create-node-for-UCT-Tree -
-                // TODO: added "children" attribute
+                //UCT-Tree: added "children" attribute
                 parent_node_for_uct->children.push_back(current_node_for_uct);
             }
-
-
 
             exclusion_set.clear();
             for (idx_t i = 0; i < new_set->count; ++i) {
@@ -350,8 +410,10 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
 /* this function generate all possible plans and add it to this->plans
  * the number of possible plan depends on the Join-Graph (ONLY use cross-product if there is no other choice)*/
 void RLJoinOrderOptimizer::GeneratePlans() {
+    printf("\nGeneratePlans\n");
     // 🚩 create-node-for-UCT-Tree:  level0 node, a.k.a. root node
-    root_node_for_uct = new NodeForUCT{nullptr, nullptr, 0, 0.0, nullptr};
+
+    // NodeForUCT* root_node_for_uct = new NodeForUCT{nullptr, nullptr, 0, 0.0, nullptr};
     //tree.push_back(root_node_for_uct);
 
     // 1) initialize each of the single-table plans
@@ -360,7 +422,7 @@ void RLJoinOrderOptimizer::GeneratePlans() {
         auto node = set_manager.GetJoinRelation(i);
 
         //create plans
-        plans[node] = make_unique<JoinNode>(node, rel.op->EstimateCardinality(context));
+        plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(node, rel.op->EstimateCardinality(context));
 
         //🚩 create-node-for-UCT-Tree
         NodeForUCT* node_for_uct = new NodeForUCT{node, plans[node].get(), 0, 0.0, root_node_for_uct};
@@ -413,10 +475,22 @@ void RLJoinOrderOptimizer::InitNodes() {
 }
 */
 
-void RLJoinOrderOptimizer::RewardUpdate(NodeForUCT* node) {
-    //updates tree T by registering reward r for join order j
-    //higher rewards correlate with better join orders
-    //TODO: update all node's parents
+// 1) use chosen_node
+// 2) use input parameter
+// are they the same? maybe yes, because chosen_node is updated
+void RLJoinOrderOptimizer::RewardUpdate(double reward) {
+    // update the current leaf-node
+    if (chosen_node) {
+        printf("RewardUpdate");
+        chosen_node->reward += reward;
+
+        // update node's parent - until the root note
+        NodeForUCT* parent_ptr = chosen_node->parent;
+        while (parent_ptr) {
+            parent_ptr->reward +=reward;
+            parent_ptr = parent_ptr->parent;
+        }
+    }
 
 }
 
@@ -435,7 +509,7 @@ double RLJoinOrderOptimizer::CalculateUCB(double avg, int v_p, int v_c) {
     return ( avg + weight * sqrt(log(v_p)/v_c) );
 }
 
-void RLJoinOrderOptimizer::pseudoCode() {
+/*void RLJoinOrderOptimizer::pseudoCode() {
     bool finished = false;  //indicator: whether the whole query has been executed or not
     // auto state = 0;             //恢复执行状态?
 
@@ -443,16 +517,16 @@ void RLJoinOrderOptimizer::pseudoCode() {
         auto chosen_plan = UCTChoice();
         RestoreState();
         finished = ContinueJoin(chosen_plan, std::chrono::seconds(5));  // (1) Rollout/SIMULATION
-        //FIXME: RewardUpdate();
         BackupState();  // (2) BACKPROPAGATION
     }
-}
+}*/
 
 /*
  * UCB1(NODE[c]) = A + weight-factor * sqrt( (log(visit-of-c's-parent))/(visits-of-c) )
  * A = average-reward-for-c, aka. =  reward-of-c/visit-of-c
  */
-JoinOrderOptimizer::JoinNode*  RLJoinOrderOptimizer::UCTChoice() {
+JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
+    printf("\nUCTChoice\n");
     //choose a plan using UCT algorithm and return it
     // all possible plans are save in this->rl_plans
     // Case 1: current Node is NOT a leaf - calculate UCB, choose the biggest one
@@ -474,8 +548,8 @@ JoinOrderOptimizer::JoinNode*  RLJoinOrderOptimizer::UCTChoice() {
         root_node_for_uct = chosen_child;
     }
     // Case 2: current Node is a leaf, return leaf
-    return root_node_for_uct->join_node;
-
+    chosen_node = root_node_for_uct;    // for RewardUpdate
+    return chosen_node->join_node;
 }
 
 bool RLJoinOrderOptimizer::ContinueJoin(JoinOrderOptimizer::JoinNode* node, std::chrono::seconds duration) {
@@ -503,16 +577,15 @@ void RLJoinOrderOptimizer::BackupState() {
 
 // plan: from previous optimizer
 // node: final_plan chosen by UCTChoice()
-unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<LogicalOperator> plan, JoinNode *node) {
+unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<LogicalOperator> plan, JoinOrderOptimizer::JoinNode *node) {
     std::cout <<"\n RewritePlan \n";
     // now we have to rewrite the plan
     bool root_is_join = plan->children.size() > 1;
-    std::cout << "children of plan (provided by previous optimizer) = " << plan->children.size() << "\n";
 
     // first we will extract all relations from the main plan
     vector<unique_ptr<LogicalOperator>> extracted_relations;
     for (auto &relation : relations) {
-        extracted_relations.push_back(ExtractJoinRelation(*relation));  // all relations we have in the Query
+        extracted_relations.push_back(RL_ExtractJoinRelation(*relation));  // all relations we have in the Query
     }
     // now we generate the actual joins, returns pair<JoinRelationSet *, unique_ptr<LogicalOperator>>
     auto join_tree = GenerateJoins(extracted_relations, node);  // node comes from final_plan->second.get()
@@ -521,7 +594,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<Logical
         // check if the filter has already been extracted
         if (filter) {
             // if not we need to push it
-            join_tree.second = PushFilter(move(join_tree.second), move(filter));
+            join_tree.second = RL_PushFilter(move(join_tree.second), move(filter));
         }
     }
 
@@ -548,7 +621,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<Logical
 
 
 unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOperator> plan) {
-    printf("\n\n Reinforcement Learning Join Optimizer");
+    printf("\n\n Optimize \n\n");
     D_ASSERT(filters.empty() && relations.empty()); // assert that the RLJoinOrderOptimizer has not been used before
     LogicalOperator *op = plan.get();
     vector<LogicalOperator *> filter_operators;
@@ -619,7 +692,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
                 // we can only create a meaningful edge if the sets are not exactly the same -> not self connected
                 if (filter_info->left_set != filter_info->right_set) {
                     // check if the sets are disjoint
-                    if (Disjoint(left_bindings, right_bindings)) {
+                    if (RL_Disjoint(left_bindings, right_bindings)) {
                         // they are disjoint, we only need to create one set of edges in the join graph
                         query_graph.CreateEdge(filter_info->left_set, filter_info->right_set, filter_info);
                         query_graph.CreateEdge(filter_info->right_set, filter_info->left_set, filter_info);
@@ -642,31 +715,19 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
         }
     }
 
-
-
     // plans generation: 2) generate all the possible plans
-
     GeneratePlans();
     std::cout<< "\n 🐶 amount of plans = "<<plans.size()<<"\n";
-
-    //InitNodes();
-
-    //FIXME: choose final_plan use UCTChoice
-    // auto final_plan = UCTChoice();
-
 
     unordered_set<idx_t> bindings;
     for (idx_t i = 0; i < relations.size(); i++) {
         bindings.insert(i);
     }
-    // auto total_relation = set_manager.GetJoinRelation(bindings);
 
-
-
-    auto total_relation = set_manager.GetJoinRelation(bindings);
 
     //FIXME: this is for debugging
-    /*auto final_plan = plans.find(total_relation);
+    /*auto total_relation = set_manager.GetJoinRelation(bindings);
+    auto final_plan = plans.find(total_relation);
     for (auto& item: plans) {
         if (item.first->count == 5) {
             return RewritePlan(move(plan), item.second.get());
@@ -675,13 +736,11 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
 
     auto final_plan = UCTChoice();      // returns JoinOrderOptimizer::JoinNode*
 
-    // TODO: add plans which include all the relations into this->plans.
-
     // NOTE: we can just use pointers to JoinRelationSet* here because the GetJoinRelation
     // function ensures that a unique combination of relations will have a unique JoinRelationSet object.
     // TODO: execute plan instead of returning a plan
 
-    return RewritePlan(move(plan), final_plan);   // returns executable - unique_ptr<LogicalOperator>
+    return RewritePlan(move(plan), final_plan);   // returns EXECUTABLE of the chosen_plan unique_ptr<LogicalOperator>
 }
 
 

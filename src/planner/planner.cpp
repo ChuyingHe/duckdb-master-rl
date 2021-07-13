@@ -21,11 +21,11 @@ Planner::Planner(ClientContext &context) : binder(Binder::CreateBinder(context))
 }
 
 void Planner::CreatePlan(SQLStatement &statement) {
-	vector<BoundParameterExpression *> bound_parameters;
+	vector<BoundParameterExpression *> bound_parameters;    // create empty bound_parameters
 
 	// first bind the tables and columns to the catalog
 	context.profiler.StartPhase("binder");
-	binder->parameters = &bound_parameters;
+	binder->parameters = &bound_parameters; //from now on they are the same thing, change one, the other changes too
 	auto bound_statement = binder->Bind(statement);
 	context.profiler.EndPhase();
 

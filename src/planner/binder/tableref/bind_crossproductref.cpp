@@ -14,7 +14,7 @@ unique_ptr<BoundTableRef> Binder::Bind(CrossProductRef &ref) {
 	result->left = left_binder.Bind(*ref.left);
 	result->right = right_binder.Bind(*ref.right);
 
-	bind_context.AddContext(move(left_binder.bind_context));
+	bind_context.AddContext(move(left_binder.bind_context));    //this->bind_context->bindings updated, all tables are inside
 	bind_context.AddContext(move(right_binder.bind_context));
 	MoveCorrelatedExpressions(left_binder);
 	MoveCorrelatedExpressions(right_binder);

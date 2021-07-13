@@ -348,7 +348,7 @@ Value Value::HASH(hash_t value) {
 
 Value Value::POINTER(uintptr_t value) {
 	Value result(LogicalType::POINTER);
-	result.value_.pointer = value;
+	result.value_.pointer = value;  // assign input "value" to result
 	result.is_null = false;
 	return result;
 }

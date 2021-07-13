@@ -183,12 +183,12 @@ void PhysicalSimpleAggregate::GetChunkInternal(ExecutionContext &context, DataCh
 		return;
 	}
 	// initialize the result chunk with the aggregate values
-	chunk.SetCardinality(1);
-	for (idx_t aggr_idx = 0; aggr_idx < aggregates.size(); aggr_idx++) {
-		auto &aggregate = (BoundAggregateExpression &)*aggregates[aggr_idx];
-
-		Vector state_vector(Value::POINTER((uintptr_t)gstate.state.aggregates[aggr_idx].get()));
-		aggregate.function.finalize(state_vector, aggregate.bind_info.get(), chunk.data[aggr_idx], 1);
+	chunk.SetCardinality(1);    //set chunk->count = 1
+	for (idx_t aggr_idx = 0; aggr_idx < aggregates.size(); aggr_idx++) {        //vector<unique_ptr<Expression>> aggregates has 3 elements: return_type are respectively VARCHAR, VARCHAR, INT, corresponding to mc.note, t.title, t.production_year
+		auto &aggregate = (BoundAggregateExpression &)*aggregates[aggr_idx];    //BoundAggregateExpression aggregate
+        // Vector class is defined in src/include/duckdb/common/types/vector.hpp
+		Vector state_vector(Value::POINTER((uintptr_t)gstate.state.aggregates[aggr_idx].get()));    // the parameter call function Value Value::POINTER(uintptr_t value) which returns a Value (pointer, value,... of result)
+		aggregate.function.finalize(state_vector, aggregate.bind_info.get(), chunk.data[aggr_idx], 1);  // call static void Finalize() in src/include/duckdb/common/vector_operations/aggregate_executor.hpp
 	}
 	state->finished = true;
 }

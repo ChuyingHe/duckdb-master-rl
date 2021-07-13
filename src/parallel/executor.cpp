@@ -68,7 +68,7 @@ void Executor::Reset() {
 	exceptions.clear();
 	pipelines.clear();
 }
-
+/*	BuildPipelines(physical_plan, nullptr); //update this->pipelines */
 void Executor::BuildPipelines(PhysicalOperator *op, Pipeline *parent) {
 	if (op->IsSink()) {
 		// operator is a sink, build a pipeline
@@ -249,12 +249,12 @@ unique_ptr<DataChunk> Executor::FetchChunk() {
 
 	ThreadContext thread(context);
 	TaskContext task;
-	ExecutionContext econtext(context, thread, task);
+	ExecutionContext econtext(context, thread, task);   // context, empty, empty
 
 	auto chunk = make_unique<DataChunk>();
-	// run the plan to get the next chunks
-	physical_plan->InitializeChunkEmpty(*chunk);
-	physical_plan->GetChunk(econtext, *chunk, physical_state.get());
+	// run the plan to get the next chunks ❓哪里update了下一个chunk？
+	physical_plan->InitializeChunkEmpty(*chunk);    // update *chunk.data: initialize 3 empty elements(amount of types), put them in vector<Vector> chuck.data
+	physical_plan->GetChunk(econtext, *chunk, physical_state.get());    //physical_state is modified in executor::Initialize
 	physical_plan->FinalizeOperatorState(*physical_state, econtext);
 	context.profiler.Flush(thread.profiler);
 	return chunk;

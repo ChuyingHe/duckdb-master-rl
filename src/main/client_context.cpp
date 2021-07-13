@@ -9,7 +9,7 @@
 #include "duckdb/main/query_result.hpp"
 #include "duckdb/main/stream_query_result.hpp"
 #include "duckdb/optimizer/optimizer.hpp"
-#include "duckdb/skinnerdb/rl_join_order_optimizer.hpp"
+#include "duckdb/skinnerdb/skinnerdb.hpp"
 #include "duckdb/parser/parser.hpp"
 #include "duckdb/parser/expression/constant_expression.hpp"
 #include "duckdb/parser/statement/drop_statement.hpp"
@@ -29,6 +29,7 @@
 #include "duckdb/common/serializer/buffered_file_writer.hpp"
 #include "duckdb/planner/pragma_handler.hpp"
 #include "duckdb/common/to_string.hpp"
+
 
 #include <iostream>
 
@@ -161,7 +162,7 @@ shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement(ClientC
 
 	profiler.StartPhase("planner");
 	Planner planner(*this);
-	planner.CreatePlan(move(statement));
+	planner.CreatePlan(move(statement));    // turn STATEMENT to PLAN: update this->planner: plan, names, types
 	D_ASSERT(planner.plan);
 	profiler.EndPhase();
 
@@ -175,7 +176,7 @@ shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement(ClientC
 	result->value_map = move(planner.value_map);
 	result->catalog_version = Transaction::GetTransaction(*this).catalog_version;
 
-	if (enable_optimizer) {
+	if (enable_optimizer) {                 // Optimize PLAN
 		profiler.StartPhase("optimizer");
 		Optimizer optimizer(*planner.binder, *this);
 		plan = optimizer.Optimize(move(plan));
@@ -191,7 +192,7 @@ shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement(ClientC
 
     result->plan = move(physical_plan);
 
-	return result;
+	return result;  // PreparedStatementData result which includes the PLAN
 }
 
 int ClientContext::GetProgress() {
@@ -201,17 +202,21 @@ int ClientContext::GetProgress() {
 	}
 	return my_progress_bar->GetCurrentPercentage();
 }
-
+/* 1. lock
+ * 2. query
+ * 3. statement_p is the result of CreatePreparedStatement()
+ * 4. bound_values: empty vector<Value> where Value holds a single arbitrary value of any type that can be stored in the database.
+ * 5. allow_stream_result*/
 unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLock &lock, const string &query,
                                                                 shared_ptr<PreparedStatementData> statement_p,
                                                                 vector<Value> bound_values, bool allow_stream_result) {
 	printf("unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLock &lock, const string &query,\n");
-	std::cout<< "\n\n optimized logical plan = " <<statement_p<<"\n";
-	auto &statement = *statement_p;     // optimized logical plan
+
+	auto &statement = *statement_p;     // shared_ptr<PreparedStatementData>: includes optimized PLAN
 	if (ActiveTransaction().IsInvalidated() && statement.requires_valid_transaction) {
 		throw Exception("Current transaction is aborted (please ROLLBACK)");
 	}
-	auto &config = DBConfig::GetConfig(*this);
+	auto &config = DBConfig::GetConfig(*this);  // DBConfig&
 	if (config.access_mode == AccessMode::READ_ONLY && !statement.read_only) {
 		throw Exception(StringUtil::Format("Cannot execute statement of type \"%s\" in read-only mode!",
 		                                   StatementTypeToString(statement.statement_type)));
@@ -228,7 +233,7 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 		progress_bar->Start();
 	}
 	// store the physical plan in the context for calls to Fetch()
-	executor.Initialize(statement.plan.get());  /*initialize the physical plan in Executor*/
+	executor.Initialize(statement.plan.get());  /*initialize the PLAN in Executor*/
 
 	auto types = executor.GetTypes();
 
@@ -240,13 +245,15 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 		}
 		// successfully compiled SELECT clause and it is the last statement
 		// return a StreamQueryResult so the client can call Fetch() on it and stream the result
+		// 🌞 1st return - only a framework??? where is this FETCH() function and what did it do?
 		return make_unique<StreamQueryResult>(statement.statement_type, shared_from_this(), statement.types,
 		                                      statement.names, move(statement_p));
 	}
 	// create a materialized result by continuously fetching
-	auto result = make_unique<MaterializedQueryResult>(statement.statement_type, statement.types, statement.names);
+	auto result = make_unique<MaterializedQueryResult>(statement.statement_type, statement.types, statement.names); // 🚩 2rd return
 	while (true) {
-		auto chunk = FetchInternal(lock);
+		auto chunk = FetchInternal(lock);   // chunk->data = "CONSTANT INTEGER: (UNKNOWN COUNT) [ NULL]"
+
 		if (chunk->size() == 0) {
 			break;
 		}
@@ -257,12 +264,71 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 			}
 		}
 #endif
-		result->collection.Append(*chunk);
+		result->collection.Append(*chunk);  // 🚩 2rd return
 	}
 	if (progress_bar) {
 		progress_bar->Stop();
 	}
-	return move(result);
+	return move(result);    // 🚩 2rd return
+}
+
+
+unique_ptr<QueryResult> ClientContext::ExecutePreparedStatementWithRLOptimizer(ClientContextLock &lock, const string &query,
+                                                                shared_ptr<PreparedStatementData> statement_p,
+                                                                vector<Value> bound_values, bool allow_stream_result) {
+    printf("ExecutePreparedStatementWithRLOptimizer \n");
+
+    auto &statement = *statement_p;     // shared_ptr<PreparedStatementData>: includes optimized PLAN
+    if (ActiveTransaction().IsInvalidated() && statement.requires_valid_transaction) {
+        throw Exception("Current transaction is aborted (please ROLLBACK)");
+    }
+    auto &config = DBConfig::GetConfig(*this);  // DBConfig&
+    if (config.access_mode == AccessMode::READ_ONLY && !statement.read_only) {
+        throw Exception(StringUtil::Format("Cannot execute statement of type \"%s\" in read-only mode!",
+                                           StatementTypeToString(statement.statement_type)));
+    }
+
+    // bind the bound values before execution
+    statement.Bind(move(bound_values)); //bound_values: empty vector
+
+    bool create_stream_result = statement.allow_stream_result && allow_stream_result;
+    if (enable_progress_bar) {
+        if (!progress_bar) {
+            progress_bar = make_shared<ProgressBar>(&executor, wait_time);
+        }
+        progress_bar->Start();
+    }
+    // store the physical plan in the context for calls to Fetch()
+    executor.Initialize(statement.plan.get());  /*initialize the PLAN in Executor*/
+
+    auto types = executor.GetTypes();
+
+    D_ASSERT(types == statement.types);
+
+    if (create_stream_result) {
+        if (progress_bar) {
+            progress_bar->Stop();
+        }
+        // successfully compiled SELECT clause and it is the last statement
+        // return a StreamQueryResult so the client can call Fetch() on it and stream the result
+        // 🌞 1st return - only a framework??? where is this FETCH() function and what did it do?
+        return make_unique<StreamQueryResult>(statement.statement_type, shared_from_this(), statement.types,
+                                              statement.names, move(statement_p));
+    }
+    // create a materialized result by continuously fetching
+    auto result = make_unique<MaterializedQueryResult>(statement.statement_type, statement.types, statement.names); // 🚩 2rd return
+
+    auto chunk = FetchInternal(lock);   // ONLY FETCH ONE CHUNK EACH ExecutePreparedStatementWithRLOptimizer()
+    if (chunk->size()!=0) {
+        result->collection.Append(*chunk);
+    } else {
+        query_finished = true;
+    }
+
+    if (progress_bar) {
+        progress_bar->Stop();
+    }
+    return move(result);
 }
 
 void ClientContext::InitialCleanup(ClientContextLock &lock) {
@@ -350,7 +416,7 @@ unique_ptr<QueryResult> ClientContext::Execute(const string &query, shared_ptr<P
 	return RunStatementOrPreparedStatement(*lock, query, nullptr, prepared, &values, allow_stream_result);
 }
 
-unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &lock, const string &query,
+/*unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &lock, const string &query,
                                                             unique_ptr<SQLStatement> statement,
                                                             bool allow_stream_result) {
 	printf("RunStatementInternal: use duckdb-optimizer\n");
@@ -360,6 +426,32 @@ unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &l
 	vector<Value> bound_values;
 	// execute the prepared statement
 	return ExecutePreparedStatement(lock, query, move(prepared), move(bound_values), allow_stream_result);	//run chosen plan
+}*/
+
+unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &lock, const string &query,
+                                                            unique_ptr<SQLStatement> statement,
+                                                            bool allow_stream_result) {
+
+    if (enable_rl_join_order_optimizer) {	//this should mix the process of selection and execution, and return a result in the end
+        printf("🌈 RunStatementInternal: use rl-optimizer\n");
+        SkinnerDB skinnerDb(profiler, *this);
+        printf("after created skinnerdb");
+
+        //FIXME: return unique_ptr<QueryResult> instead of void
+        // auto result = skinnerDb.Execute(lock, query, move(statement), allow_stream_result);
+        auto result = skinnerDb.CreateAndExecuteStatement(lock, query, move(statement), allow_stream_result);
+        return result;
+
+    } else {
+        printf("RunStatementInternal: use duckdb-optimizer\n");
+        // prepare the query for execution
+        auto prepared = CreatePreparedStatement(lock, query, move(statement));  									//return optimized plan
+        // by default, no values are bound
+        vector<Value> bound_values;
+        // execute the prepared statement
+        return ExecutePreparedStatement(lock, query, move(prepared), move(bound_values), allow_stream_result);	    //return unique_ptr<QueryResult>
+    }
+
 }
 
 unique_ptr<QueryResult> ClientContext::RunStatementOrPreparedStatement(ClientContextLock &lock, const string &query,

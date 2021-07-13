@@ -34,8 +34,8 @@ void ProgressBar::Stop() {
 #ifndef DUCKDB_NO_THREADS
 	if (progress_bar_thread.joinable()) {
 		stop = true;
-		c.notify_one();
-		progress_bar_thread.join();
+		c.notify_one(); //randomly notify one waiting thread
+		progress_bar_thread.join(); //check ob fertig ist
 		if (supported && current_percentage > 0 && executor->context.print_progress_bar) {
 			Printer::FinishProgressBarPrint(PROGRESS_BAR_STRING.c_str(), PROGRESS_BAR_WIDTH);
 		}

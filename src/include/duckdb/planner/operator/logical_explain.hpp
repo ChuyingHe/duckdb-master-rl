@@ -18,9 +18,22 @@ public:
 		children.push_back(move(plan));
 	}
 
+    LogicalExplain(LogicalExplain const &le) : LogicalOperator(LogicalOperatorType::LOGICAL_EXPLAIN),
+     physical_plan(le.physical_plan), logical_plan_unopt(le.logical_plan_unopt), logical_plan_opt(le.logical_plan_opt) {
+        // children = le.children; //vector<unique_ptr<LogicalOperator>>
+        children.reserve(le.children.size());
+        for (auto const& child:le.children) {
+            children.push_back(child->clone());
+        }
+	}
+
 	string physical_plan;
 	string logical_plan_unopt;
 	string logical_plan_opt;
+
+    std::unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalExplain>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

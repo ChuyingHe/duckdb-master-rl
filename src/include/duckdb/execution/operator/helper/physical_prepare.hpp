@@ -24,8 +24,15 @@ public:
 	string name;
 	shared_ptr<PreparedStatementData> prepared;
 
+    PhysicalPrepare(PhysicalPrepare const& pp) : PhysicalOperator(PhysicalOperatorType::PREPARE, {LogicalType::BOOLEAN}, pp.estimated_cardinality),
+    name(pp.name), prepared(move(pp.prepared)) {    //std::move() didnt call copy constructor
+    }
+
 public:
 	void GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) override;
+    std::unique_ptr<PhysicalOperator> clone() const override {
+        return make_unique<PhysicalPrepare>(*this);
+    }
 };
 
 } // namespace duckdb

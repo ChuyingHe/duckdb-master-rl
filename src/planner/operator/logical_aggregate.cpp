@@ -46,4 +46,14 @@ string LogicalAggregate::ParamsToString() const {
 	return result;
 }
 
+std::unique_ptr<LogicalOperator> LogicalAggregate::clone() const {
+    return make_unique<LogicalAggregate>(*this);
+    /*vector<unique_ptr<Expression>> groups;
+    groups.reserve(this->groups.size());
+    for (auto const& g: this->groups) {
+        groups.push_back(g->Copy());
+    }
+
+    return make_unique<LogicalAggregate>(this->group_index, this->aggregate_index, groups);*/
+}
 } // namespace duckdb

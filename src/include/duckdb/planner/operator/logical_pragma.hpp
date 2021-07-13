@@ -21,10 +21,18 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_PRAGMA), function(move(function_p)), info(move(info_p)) {
 	}
 
+    LogicalPragma(LogicalPragma const &lp) : LogicalOperator(LogicalOperatorType::LOGICAL_PRAGMA),
+    function(lp.function), info(lp.info) {
+	}
+
 	//! The pragma function to call
 	PragmaFunction function;
 	//! The context of the call
 	PragmaInfo info;
+
+    std::unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalPragma>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

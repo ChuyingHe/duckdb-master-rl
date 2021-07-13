@@ -30,7 +30,18 @@ struct DropInfo : public ParseInfo {
 	bool cascade = false;
 
 public:
-	unique_ptr<DropInfo> Copy() const {
+
+    std::unique_ptr<ParseInfo> clone() const override {
+        auto result = make_unique<DropInfo>();
+        result->type = type;
+        result->schema = schema;
+        result->name = name;
+        result->if_exists = if_exists;
+        result->cascade = cascade;
+        return result;
+    }
+
+    unique_ptr<DropInfo> Copy() const {
 		auto result = make_unique<DropInfo>();
 		result->type = type;
 		result->schema = schema;

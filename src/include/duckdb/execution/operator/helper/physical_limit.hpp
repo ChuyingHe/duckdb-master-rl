@@ -25,10 +25,18 @@ public:
 	unique_ptr<Expression> limit_expression;
 	unique_ptr<Expression> offset_expression;
 
+    PhysicalLimit(PhysicalLimit const& pl) : PhysicalOperator(PhysicalOperatorType::LIMIT, pl.types, pl.estimated_cardinality),
+    limit(pl.limit), offset(pl.offset), limit_expression(pl.limit_expression->Copy()), offset_expression(pl.offset_expression->Copy()) {
+    }
+
 public:
 	void GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) override;
 
 	unique_ptr<PhysicalOperatorState> GetOperatorState() override;
+
+    std::unique_ptr<PhysicalOperator> clone() const override {
+        return make_unique<PhysicalLimit>(*this);
+    }
 };
 
 } // namespace duckdb

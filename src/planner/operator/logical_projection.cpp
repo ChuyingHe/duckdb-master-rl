@@ -16,4 +16,7 @@ void LogicalProjection::ResolveTypes() {
 	}
 }
 
+std::unique_ptr<LogicalOperator> LogicalProjection::clone() const {
+    return make_unique<LogicalProjection>(*this);
+}
 } // namespace duckdb

@@ -23,8 +23,15 @@ public:
 
 	void GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) override;
 
+    PhysicalTableInOutFunction(PhysicalTableInOutFunction const& ptiof) : PhysicalOperator(PhysicalOperatorType::INOUT_FUNCTION, ptiof.types, ptiof.estimated_cardinality),
+    function(ptiof.function), bind_data(ptiof.bind_data->Copy()), column_ids(ptiof.column_ids) {
+    }
+
 public:
 	unique_ptr<PhysicalOperatorState> GetOperatorState() override;
+    std::unique_ptr<PhysicalOperator> clone() const override {
+        return make_unique<PhysicalTableInOutFunction>(*this);
+    }
 
 private:
 	//! The table function

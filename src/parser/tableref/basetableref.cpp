@@ -41,4 +41,15 @@ unique_ptr<TableRef> BaseTableRef::Copy() {
 
 	return move(copy);
 }
+
+unique_ptr<BaseTableRef> BaseTableRef::Copy_BaseTableRef() {
+    auto copy = make_unique<BaseTableRef>();
+
+    copy->schema_name = this->schema_name;
+    copy->table_name = this->table_name;
+    copy->column_name_alias = this->column_name_alias;
+
+    return copy;
+}
+
 } // namespace duckdb

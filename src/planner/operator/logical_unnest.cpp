@@ -10,6 +10,11 @@ vector<ColumnBinding> LogicalUnnest::GetColumnBindings() {
 	return child_bindings;
 }
 
+std::unique_ptr<LogicalOperator> LogicalUnnest::clone() const {
+    return make_unique<LogicalUnnest>(*this);
+}
+
+
 void LogicalUnnest::ResolveTypes() {
 	types.insert(types.end(), children[0]->types.begin(), children[0]->types.end());
 	for (auto &expr : expressions) {

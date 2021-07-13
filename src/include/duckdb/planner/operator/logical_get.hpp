@@ -20,6 +20,11 @@ public:
 	LogicalGet(idx_t table_index, TableFunction function, unique_ptr<FunctionData> bind_data,
 	           vector<LogicalType> returned_types, vector<string> returned_names);
 
+    LogicalGet(LogicalGet const& lg) : LogicalOperator(LogicalOperatorType::LOGICAL_GET),
+    table_index(lg.table_index), function(lg.function), bind_data(lg.bind_data->Copy()), returned_types(lg.returned_types),
+    names(lg.names), column_ids(lg.column_ids), table_filters(lg.table_filters) {
+    }
+
 	//! The table index in the current bind context
 	idx_t table_index;
 	//! The function that is called
@@ -37,6 +42,7 @@ public:
 
 	string GetName() const override;
 	string ParamsToString() const override;
+    std::unique_ptr<LogicalOperator> clone() const override;
 
 public:
 	vector<ColumnBinding> GetColumnBindings() override;

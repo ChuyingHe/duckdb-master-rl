@@ -21,7 +21,16 @@ public:
 		types = prepared->types;
 	}
 
+    LogicalExecute(LogicalExecute const &le) : LogicalOperator(LogicalOperatorType::LOGICAL_EXECUTE),
+    prepared(le.prepared) {
+	    types = le.prepared->types; //mimic the constructor
+	}
+
 	shared_ptr<PreparedStatementData> prepared;
+
+    std::unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalExecute>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

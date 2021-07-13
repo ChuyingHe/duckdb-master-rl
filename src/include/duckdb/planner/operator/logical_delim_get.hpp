@@ -21,6 +21,10 @@ public:
 		chunk_types = types;
 	}
 
+    LogicalDelimGet(LogicalDelimGet const &ldg) : LogicalOperator(LogicalOperatorType::LOGICAL_DELIM_GET),
+                                                  table_index(ldg.table_index), chunk_types(ldg.chunk_types) {
+	}
+
 	//! The table index in the current bind context
 	idx_t table_index;
 	//! The types of the chunk
@@ -30,6 +34,9 @@ public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return GenerateColumnBindings(table_index, chunk_types.size());
 	}
+    std::unique_ptr<LogicalOperator> clone() const {
+        return make_unique<LogicalDelimGet>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

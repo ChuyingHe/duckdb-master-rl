@@ -36,6 +36,22 @@ public:
 		heap = unique_ptr<idx_t[]>(new idx_t[limit + offset]);
 	}
 
+    TopNHeap(TopNHeap const& tnh) {
+        limit = tnh.limit;
+        offset = tnh.offset;
+        heap_size = tnh.heap_size;
+        executor = tnh.executor;
+        sort_types = tnh.sort_types;
+        order_types = tnh.order_types;
+        null_order_types = tnh.null_order_types;
+        top_data = tnh.top_data;
+        heap_size = tnh.heap_size;
+
+        /*auto heap_ptr = tnh.heap.get(); //raw pointer
+        heap = make_unique<>()*/
+
+	}
+
 	void Append(DataChunk &top_chunk, DataChunk &heap_chunk) {
 		top_data.Append(top_chunk);
 		heap_data.Append(heap_chunk);
@@ -107,14 +123,26 @@ void TopNHeap::Reduce() {
 	// replace the old data
 	std::swap(top_data, new_top);
 	std::swap(heap_data, new_heap);
+    //top_data.swap(new_top);
+	// heap_data.swap(new_heap);
 }
 
 class TopNGlobalState : public GlobalOperatorState {
 public:
 	TopNGlobalState(const vector<BoundOrderByNode> &orders, idx_t limit, idx_t offset) : heap(orders, limit, offset) {
 	}
+
+	//	TopNHeap(const vector<BoundOrderByNode> &orders, idx_t limit, idx_t offset)
+    TopNGlobalState(TopNGlobalState const& topgs) : heap(topgs.heap) {
+
+	}
+
 	mutex lock;
 	TopNHeap heap;
+
+    unique_ptr <GlobalOperatorState> clone() {
+        return make_unique<TopNGlobalState> (*this);
+    }
 };
 
 class TopNLocalState : public LocalSinkState {

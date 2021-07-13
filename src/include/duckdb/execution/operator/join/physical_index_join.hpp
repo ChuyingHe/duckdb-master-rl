@@ -23,6 +23,28 @@ public:
 	                  vector<JoinCondition> cond, JoinType join_type, const vector<idx_t> &left_projection_map,
 	                  vector<idx_t> right_projection_map, vector<column_t> column_ids, Index *index, bool lhs_first,
 	                  idx_t estimated_cardinality);
+
+    // Constructor PhysicalOperator() => 2rd parameter is types
+    PhysicalIndexJoin(PhysicalIndexJoin const &pij) : PhysicalOperator(PhysicalOperatorType::INDEX_JOIN, pij.types, pij.estimated_cardinality) {
+        column_ids = pij.column_ids;
+        fetch_ids = pij.fetch_ids;
+        fetch_types = pij.fetch_types;
+        index_ids = pij.index_ids;
+        left_projection_map = pij.left_projection_map;
+        right_projection_map = pij.right_projection_map;
+        condition_types = pij.condition_types;
+        build_types = pij.build_types;
+        // index
+        conditions = pij.conditions;
+        join_type = pij.join_type;
+        lhs_first = pij.lhs_first;
+
+        children.reserve(pij.children.size());  //vector<unique_ptr<PhysicalOperator>> children;
+        for (auto const& child: pij.children) {
+            children.push_back(child);
+        }
+    }
+
 	//! Columns from RHS used in the query
 	vector<column_t> column_ids;
 	//! Columns to be fetched
@@ -54,6 +76,10 @@ private:
 	void GetRHSMatches(ExecutionContext &context, PhysicalOperatorState *state_p) const;
 	//! Fills result chunk
 	void Output(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state_p);
+
+    std::unique_ptr<PhysicalOperator> clone() const {
+        return make_unique<PhysicalIndexJoin>(*this);
+    }
 };
 
 } // namespace duckdb

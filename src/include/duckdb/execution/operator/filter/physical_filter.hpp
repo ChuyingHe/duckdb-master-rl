@@ -18,7 +18,9 @@ namespace duckdb {
 class PhysicalFilter : public PhysicalOperator {
 public:
 	PhysicalFilter(vector<LogicalType> types, vector<unique_ptr<Expression>> select_list, idx_t estimated_cardinality);
-
+    PhysicalFilter(PhysicalFilter const& pf) : PhysicalOperator(PhysicalOperatorType::FILTER, pf.types, pf.estimated_cardinality),
+    expression(pf.expression->Copy()){
+    }
 	//! The filter expression
 	unique_ptr<Expression> expression;
 
@@ -28,5 +30,8 @@ public:
 	unique_ptr<PhysicalOperatorState> GetOperatorState() override;
 	string ParamsToString() const override;
 	void FinalizeOperatorState(PhysicalOperatorState &state_p, ExecutionContext &context) override;
+    std::unique_ptr<PhysicalOperator> clone() const override {
+        return make_unique<PhysicalFilter>(*this);
+    }
 };
 } // namespace duckdb

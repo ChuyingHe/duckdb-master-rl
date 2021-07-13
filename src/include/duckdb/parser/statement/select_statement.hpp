@@ -23,6 +23,8 @@ class SelectStatement : public SQLStatement {
 public:
 	SelectStatement() : SQLStatement(StatementType::SELECT_STATEMENT) {
 	}
+    SelectStatement(SelectStatement const& ss) : SQLStatement(StatementType::SELECT_STATEMENT) {
+	}
 
 	//! The main query node
 	unique_ptr<QueryNode> node;
@@ -37,5 +39,9 @@ public:
 	static unique_ptr<SelectStatement> Deserialize(Deserializer &source);
 	//! Whether or not the statements are equivalent
 	bool Equals(const SQLStatement *other) const;
+
+    unique_ptr<SelectStatement> clone() {
+        return make_unique<SelectStatement>(*this);
+    }
 };
 } // namespace duckdb

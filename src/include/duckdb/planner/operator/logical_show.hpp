@@ -17,9 +17,15 @@ public:
 	explicit LogicalShow(unique_ptr<LogicalOperator> plan) : LogicalOperator(LogicalOperatorType::LOGICAL_SHOW) {
 		children.push_back(move(plan));
 	}
-
+    LogicalShow(LogicalShow const &ls) : LogicalOperator(LogicalOperatorType::LOGICAL_SHOW),
+    types_select(ls.types_select), aliases(ls.aliases) {
+	}
 	vector<LogicalType> types_select;
 	vector<string> aliases;
+	
+    std::unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalShow>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

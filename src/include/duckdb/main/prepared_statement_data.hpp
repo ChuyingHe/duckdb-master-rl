@@ -24,6 +24,19 @@ public:
 	DUCKDB_API explicit PreparedStatementData(StatementType type);
 	DUCKDB_API ~PreparedStatementData();
 
+    PreparedStatementData(PreparedStatementData const& psd): statement_type(psd.statement_type),  unbound_statement(psd.unbound_statement->Copy()),
+    plan(make_unique<PhysicalOperator>(psd.plan))
+    {
+
+
+        for(auto const& item:psd.value_map) {
+            value_map[item.first].reserve(item.second.size());
+            for (auto const& value:item.second) {
+                value_map[item.first].push_back(make_unique<Value>(value->Copy()));
+            }
+        }
+    }
+
 	StatementType statement_type;
 	//! The unbound SQL statement that was prepared
 	unique_ptr<SQLStatement> unbound_statement;
@@ -54,6 +67,8 @@ public:
 	DUCKDB_API void Bind(vector<Value> values);
 	//! Get the expected SQL Type of the bound parameter
 	DUCKDB_API LogicalType GetType(idx_t param_index);
+
+    std::shared_ptr<PreparedStatementData> clone() const;
 };
 
 } // namespace duckdb

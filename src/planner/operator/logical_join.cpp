@@ -42,6 +42,10 @@ void LogicalJoin::ResolveTypes() {
 	types.insert(types.end(), right_types.begin(), right_types.end());
 }
 
+std::unique_ptr<LogicalOperator> LogicalJoin::clone() const {
+    return make_unique<LogicalJoin>(*this);
+}
+
 void LogicalJoin::GetTableReferences(LogicalOperator &op, unordered_set<idx_t> &bindings) {
 	auto column_bindings = op.GetColumnBindings();
 	for (auto binding : column_bindings) {

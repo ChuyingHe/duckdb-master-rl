@@ -21,6 +21,29 @@ struct BoundCreateTableInfo {
 	explicit BoundCreateTableInfo(unique_ptr<CreateInfo> base) : base(move(base)) {
 	}
 
+    BoundCreateTableInfo(BoundCreateTableInfo &bcti) {
+        schema = bcti.schema;
+        base->CopyProperties(*bcti.base);
+        name_map = bcti.name_map;
+
+        constraints.reserve(bcti.constraints.size());
+        for (const auto &con : bcti.constraints) {
+            constraints.push_back(con->Copy());
+        }
+        bound_constraints.reserve(bcti.bound_constraints.size());
+        for (const auto &bc:bcti.bound_constraints) {
+            bound_constraints.push_back(make_unique<BoundConstraint>(*bc));
+        }
+        bound_defaults.reserve(bcti.bound_defaults.size());
+        for (const auto &bd:bcti.bound_defaults) {
+            bound_defaults.push_back(bd->Copy());
+        }
+
+        dependencies = bcti.dependencies;
+        data = make_unique<PersistentTableData>(*bcti.data);
+        query = bcti.query->clone();
+	}
+
 	//! The schema to create the table in
 	SchemaCatalogEntry *schema;
 	//! The base CreateInfo object
@@ -42,6 +65,10 @@ struct BoundCreateTableInfo {
 
 	CreateTableInfo &Base() {
 		return (CreateTableInfo &)*base;
+	}
+
+	unique_ptr<BoundCreateTableInfo> clone() {
+        return make_unique<BoundCreateTableInfo>(*this);
 	}
 };
 

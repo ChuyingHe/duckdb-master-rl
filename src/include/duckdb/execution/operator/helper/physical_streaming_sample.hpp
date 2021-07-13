@@ -19,6 +19,10 @@ public:
 	PhysicalStreamingSample(vector<LogicalType> types, SampleMethod method, double percentage, int64_t seed,
 	                        idx_t estimated_cardinality);
 
+    PhysicalStreamingSample(PhysicalStreamingSample const& pss) : PhysicalOperator(PhysicalOperatorType::STREAMING_SAMPLE, pss.types, pss.estimated_cardinality),
+    method(pss.method), percentage(pss.percentage), seed(pss.seed) {
+    }
+
 	SampleMethod method;
 	double percentage;
 	int64_t seed;
@@ -28,6 +32,10 @@ public:
 	unique_ptr<PhysicalOperatorState> GetOperatorState() override;
 
 	string ParamsToString() const override;
+
+    std::unique_ptr<PhysicalOperator> clone() const override {
+        return make_unique<PhysicalStreamingSample>(*this);
+    }
 
 private:
 	void SystemSample(DataChunk &input, DataChunk &result, PhysicalOperatorState *state);

@@ -16,9 +16,13 @@ namespace duckdb {
 class LogicalCrossProduct : public LogicalOperator {
 public:
 	LogicalCrossProduct();
+    LogicalCrossProduct(LogicalCrossProduct const &lcp) : LogicalOperator(LogicalOperatorType::LOGICAL_CROSS_PRODUCT) {
+    };
 
 public:
 	vector<ColumnBinding> GetColumnBindings() override;
+
+    std::unique_ptr<LogicalOperator> clone() const override;
 
 protected:
 	void ResolveTypes() override;

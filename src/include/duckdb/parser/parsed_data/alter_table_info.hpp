@@ -31,7 +31,7 @@ struct AlterInfo : public ParseInfo {
 public:
 	virtual CatalogType GetCatalogType() = 0;
 	virtual unique_ptr<AlterInfo> Copy() const = 0;
-	virtual void Serialize(Serializer &serializer);
+    virtual void Serialize(Serializer &serializer);
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &source);
 };
 
@@ -85,6 +85,7 @@ public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &source, string schema, string table);
+    std::unique_ptr<ParseInfo> clone() const override;
 };
 
 //===--------------------------------------------------------------------===//
@@ -104,6 +105,7 @@ public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &source, string schema, string table);
+    std::unique_ptr<ParseInfo> clone() const override;
 };
 
 //===--------------------------------------------------------------------===//
@@ -123,6 +125,7 @@ public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &source, string schema, string table);
+    std::unique_ptr<ParseInfo> clone() const override;
 };
 
 //===--------------------------------------------------------------------===//
@@ -145,6 +148,7 @@ public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &source, string schema, string table);
+    std::unique_ptr<ParseInfo> clone() const override;
 };
 
 //===--------------------------------------------------------------------===//
@@ -170,6 +174,7 @@ public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &source, string schema, string table);
+    std::unique_ptr<ParseInfo> clone() const override;
 };
 
 //===--------------------------------------------------------------------===//
@@ -192,6 +197,7 @@ public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &source, string schema, string table);
+    std::unique_ptr<ParseInfo> clone() const override;
 };
 
 //===--------------------------------------------------------------------===//
@@ -233,6 +239,7 @@ public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &source, string schema, string table);
+    std::unique_ptr<ParseInfo> clone() const override;
 };
 
 } // namespace duckdb

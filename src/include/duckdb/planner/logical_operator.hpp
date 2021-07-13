@@ -26,11 +26,30 @@ class LogicalOperator {
 public:
 	explicit LogicalOperator(LogicalOperatorType type) : type(type) {
 	}
+
 	LogicalOperator(LogicalOperatorType type, vector<unique_ptr<Expression>> expressions)
 	    : type(type), expressions(move(expressions)) {
 	}
+
+    LogicalOperator(LogicalOperator &lo) {
+	    types = lo.types;
+	    type = lo.type;
+	    children.reserve(lo.children.size());
+        for (const auto& child:lo.children) {
+            children.push_back(child);
+        }
+
+        expressions.reserve(lo.expressions.size());
+        for (const auto& exp:expressions) {
+            expressions.push_back(exp->Copy());
+        }
+        estimated_cardinality = lo.estimated_cardinality;
+	}
+
 	virtual ~LogicalOperator() {
 	}
+
+    virtual std::unique_ptr<LogicalOperator> clone() const = 0; // Virtual constructor (copying)
 
 	//! The type of the logical operator
 	LogicalOperatorType type;

@@ -11,6 +11,10 @@ PreparedStatementData::PreparedStatementData(StatementType type)
 PreparedStatementData::~PreparedStatementData() {
 }
 
+std::shared_ptr<PreparedStatementData> PreparedStatementData::clone() const {
+	return make_shared<PreparedStatementData>(*this);
+}
+
 void PreparedStatementData::Bind(vector<Value> values) {
 	// set parameters
 	if (values.size() != value_map.size()) {

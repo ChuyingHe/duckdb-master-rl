@@ -24,6 +24,10 @@ public:
 	      function(std::move(function)), info(move(info)) {
 	}
 
+    PhysicalExport(PhysicalExport const& pe) : PhysicalOperator(PhysicalOperatorType::EXPORT, pe.types, pe.estimated_cardinality),
+    function(pe.function), info(pe.info->Copy()){
+	}
+
 	//! The copy function to use to read the file
 	CopyFunction function;
 	//! The binding info containing the set of options for reading the file
@@ -31,6 +35,9 @@ public:
 
 public:
 	void GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) override;
+    std::unique_ptr<PhysicalOperator> clone() const override {
+        return make_unique<PhysicalExport>(*this);
+    }
 };
 
 } // namespace duckdb

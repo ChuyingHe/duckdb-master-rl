@@ -19,6 +19,10 @@ public:
 	PhysicalCreateTable(LogicalOperator &op, SchemaCatalogEntry *schema, unique_ptr<BoundCreateTableInfo> info,
 	                    idx_t estimated_cardinality);
 
+    PhysicalCreateTable(PhysicalCreateTable const& pct) : PhysicalOperator(PhysicalOperatorType::CREATE_TABLE, pct.types, pct.estimated_cardinality),
+    schema(pct.schema), info(pct.info->clone()) {
+    }
+
 	//! Schema to insert to
 	SchemaCatalogEntry *schema;
 	//! Table name to create
@@ -26,5 +30,8 @@ public:
 
 public:
 	void GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) override;
+    std::unique_ptr<PhysicalOperator> clone() const override {
+        return make_unique<PhysicalCreateTable>(*this);
+    }
 };
 } // namespace duckdb

@@ -21,6 +21,18 @@ public:
 	      expressions(move(expressions)) {
 	}
 
+    LogicalExpressionGet(LogicalExpressionGet const &leg) : LogicalOperator(LogicalOperatorType::LOGICAL_EXPRESSION_GET),
+    table_index(leg.table_index), expr_types(leg.types) {
+        expressions.reserve(leg.expressions.size());
+        for(const auto& row: leg.expressions) {
+            vector<unique_ptr<Expression>> tmp;
+            for(const auto& exp: row) {
+                tmp.push_back(exp->Copy());    // elem: unique_ptr<Expression> Copy()
+            }
+            expressions.push_back(tmp); // temp: vector<unique_ptr<Expression>>
+        }
+	}
+
 	//! The table index in the current bind context
 	idx_t table_index;
 	//! The types of the expressions
@@ -32,6 +44,10 @@ public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return GenerateColumnBindings(table_index, expr_types.size());
 	}
+
+    std::unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalExpressionGet>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

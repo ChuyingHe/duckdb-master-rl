@@ -25,6 +25,8 @@ class Pipeline {
 
 public:
 	Pipeline(Executor &execution_context, ProducerToken &token);
+    Pipeline(Pipeline const& pl) : executor(pl.executor), token(pl.token) {
+    }
 
 	Executor &executor;
 	ProducerToken &token;
@@ -76,6 +78,10 @@ public:
 	atomic<idx_t> finished_tasks;
 	//! The maximum amount of threads that can work on the pipeline
 	atomic<idx_t> total_tasks;
+
+    unique_ptr<Pipeline> clone() {
+        return make_unique<Pipeline>(*this);
+    }
 
 private:
 	//! The child from which to pull chunks

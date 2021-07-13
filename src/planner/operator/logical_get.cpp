@@ -54,6 +54,11 @@ void LogicalGet::ResolveTypes() {
 	}
 }
 
+std::unique_ptr<LogicalOperator> LogicalGet::clone() const {
+    //return make_unique<LogicalGet>(this->table_index, this->function, this->bind_data->Copy(), this->returned_types, this->names);
+    return make_unique<LogicalGet>(*this);
+}
+
 idx_t LogicalGet::EstimateCardinality(ClientContext &context) {
 	if (function.cardinality) {
 		auto node_stats = function.cardinality(context, bind_data.get());   // bind_data.get() is null?

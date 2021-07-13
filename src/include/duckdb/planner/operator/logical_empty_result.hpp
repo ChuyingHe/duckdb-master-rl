@@ -18,6 +18,10 @@ class LogicalEmptyResult : public LogicalOperator {
 public:
 	explicit LogicalEmptyResult(unique_ptr<LogicalOperator> op);
 
+    LogicalEmptyResult(LogicalEmptyResult const &ler) : LogicalOperator(LogicalOperatorType::LOGICAL_EMPTY_RESULT),
+    return_types(ler.return_types), bindings(ler.bindings) {
+    }
+
 	//! The set of return types of the empty result
 	vector<LogicalType> return_types;
 	//! The columns that would be bound at this location (if the subtree was not optimized away)
@@ -27,6 +31,11 @@ public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return bindings;
 	}
+
+    std::unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalEmptyResult>(*this);
+        // return make_unique_base<LogicalOperator, LogicalEmptyResult>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

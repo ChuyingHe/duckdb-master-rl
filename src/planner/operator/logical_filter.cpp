@@ -43,4 +43,8 @@ bool LogicalFilter::SplitPredicates(vector<unique_ptr<Expression>> &expressions)
 	return found_conjunction;
 }
 
+std::unique_ptr<LogicalOperator> LogicalFilter::clone() const {
+    return make_unique<LogicalFilter>(*this);
+}
+
 } // namespace duckdb

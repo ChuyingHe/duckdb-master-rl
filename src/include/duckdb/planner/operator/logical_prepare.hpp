@@ -24,8 +24,17 @@ public:
 		children.push_back(move(logical_plan));
 	}
 
-	string name;
+    LogicalPrepare(LogicalPrepare const &lp) : LogicalOperator(LogicalOperatorType::LOGICAL_PREPARE),
+    name(lp.name), prepared(move(prepared)) {
+        prepared = std::make_shared<PreparedStatementData>(*lp.prepared);
+    }
+
+    string name;
 	shared_ptr<PreparedStatementData> prepared;
+
+    std::unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalPrepare>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

@@ -25,6 +25,16 @@ public:
 	virtual ~Node() {
 	}
 
+    Node(Node const& node) {
+	    prefix_length = node.prefix_length;
+	    count = node.count;
+	    type = node.type;
+	    /*prefix = make_unique<uint8_t[]>(&node.prefix);
+        for (auto pre:node.prefix) {
+        }
+        node.prefix;*/
+	}
+
 	//! length of the compressed path (prefix)
 	uint32_t prefix_length;
 	//! number of non-null children

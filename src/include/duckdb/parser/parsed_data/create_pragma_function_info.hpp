@@ -35,6 +35,9 @@ public:
 		CopyProperties(*result);
 		return move(result);
 	}
+    std::unique_ptr<ParseInfo> clone() const override {
+        Copy();
+    }
 };
 
 } // namespace duckdb

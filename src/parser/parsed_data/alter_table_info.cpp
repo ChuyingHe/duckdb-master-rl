@@ -56,6 +56,10 @@ unique_ptr<AlterInfo> RenameColumnInfo::Copy() const {
 	return make_unique_base<AlterInfo, RenameColumnInfo>(schema, name, old_name, new_name);
 }
 
+std::unique_ptr<ParseInfo> RenameColumnInfo::clone() const {
+    return make_unique_base<AlterInfo, RenameColumnInfo>(schema, name, old_name, new_name);
+}
+
 void RenameColumnInfo::Serialize(Serializer &serializer) {
 	AlterTableInfo::Serialize(serializer);
 	serializer.WriteString(old_name);
@@ -75,6 +79,11 @@ unique_ptr<AlterInfo> RenameTableInfo::Copy() const {
 	return make_unique_base<AlterInfo, RenameTableInfo>(schema, name, new_table_name);
 }
 
+std::unique_ptr<ParseInfo> RenameTableInfo::clone() const {
+    //return make_unique<RenameTableInfo>(*this);
+    return make_unique_base<AlterInfo, RenameTableInfo>(schema, name, new_table_name);
+}
+
 void RenameTableInfo::Serialize(Serializer &serializer) {
 	AlterTableInfo::Serialize(serializer);
 	serializer.WriteString(new_table_name);
@@ -92,6 +101,10 @@ unique_ptr<AlterInfo> AddColumnInfo::Copy() const {
 	return make_unique_base<AlterInfo, AddColumnInfo>(schema, name, new_column.Copy());
 }
 
+std::unique_ptr<ParseInfo> AddColumnInfo::clone() const {
+    return make_unique_base<AlterInfo, AddColumnInfo>(schema, name, new_column.Copy());
+}
+
 void AddColumnInfo::Serialize(Serializer &serializer) {
 	AlterTableInfo::Serialize(serializer);
 	new_column.Serialize(serializer);
@@ -107,6 +120,10 @@ unique_ptr<AlterInfo> AddColumnInfo::Deserialize(Deserializer &source, string sc
 //===--------------------------------------------------------------------===//
 unique_ptr<AlterInfo> RemoveColumnInfo::Copy() const {
 	return make_unique_base<AlterInfo, RemoveColumnInfo>(schema, name, removed_column, if_exists);
+}
+
+std::unique_ptr<ParseInfo> RemoveColumnInfo::clone() const {
+    return make_unique_base<AlterInfo, RemoveColumnInfo>(schema, name, removed_column, if_exists);
 }
 
 void RemoveColumnInfo::Serialize(Serializer &serializer) {
@@ -129,6 +146,11 @@ unique_ptr<AlterInfo> ChangeColumnTypeInfo::Copy() const {
 	                                                         expression->Copy());
 }
 
+std::unique_ptr<ParseInfo> ChangeColumnTypeInfo::clone() const {
+    return make_unique_base<AlterInfo, ChangeColumnTypeInfo>(schema, name, column_name, target_type,
+                                                             expression->Copy());
+}
+
 void ChangeColumnTypeInfo::Serialize(Serializer &serializer) {
 	AlterTableInfo::Serialize(serializer);
 	serializer.WriteString(column_name);
@@ -149,6 +171,10 @@ unique_ptr<AlterInfo> ChangeColumnTypeInfo::Deserialize(Deserializer &source, st
 //===--------------------------------------------------------------------===//
 unique_ptr<AlterInfo> SetDefaultInfo::Copy() const {
 	return make_unique_base<AlterInfo, SetDefaultInfo>(schema, name, column_name, expression->Copy());
+}
+
+std::unique_ptr<ParseInfo> SetDefaultInfo::clone() const {
+    return make_unique_base<AlterInfo, SetDefaultInfo>(schema, name, column_name, expression->Copy());
 }
 
 void SetDefaultInfo::Serialize(Serializer &serializer) {
@@ -191,6 +217,10 @@ unique_ptr<AlterInfo> AlterViewInfo::Deserialize(Deserializer &source) {
 //===--------------------------------------------------------------------===//
 unique_ptr<AlterInfo> RenameViewInfo::Copy() const {
 	return make_unique_base<AlterInfo, RenameViewInfo>(schema, name, new_view_name);
+}
+
+std::unique_ptr<ParseInfo> RenameViewInfo::clone() const {
+    return make_unique_base<AlterInfo, RenameViewInfo>(schema, name, new_view_name);
 }
 
 void RenameViewInfo::Serialize(Serializer &serializer) {

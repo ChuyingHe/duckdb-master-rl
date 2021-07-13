@@ -49,6 +49,10 @@ public:
 	      payload_data_block_dims(std::make_pair(0, 0)), payload_offset_block_capacity(0) {
 	}
 
+    OrderGlobalState(OrderGlobalState const& ogs) : buffer_manager(ogs.buffer_manager), total_count(ogs.total_count), sorting_block_capacity(ogs.sorting_block_capacity),
+                                                    payload_data_block_dims(ogs.payload_data_block_dims), payload_offset_block_capacity(ogs.payload_offset_block_capacity) {
+	}
+
 	~OrderGlobalState() override;
 
 	//! The lock for updating the order global state
@@ -73,6 +77,11 @@ public:
 	vector<idx_t> var_sorting_offset_block_capacity;
 	std::pair<idx_t, idx_t> payload_data_block_dims;
 	idx_t payload_offset_block_capacity;
+
+    unique_ptr<GlobalOperatorState> clone() {
+        return make_unique<OrderGlobalState>(*this);
+    }
+
 };
 
 class OrderLocalState : public LocalSinkState {

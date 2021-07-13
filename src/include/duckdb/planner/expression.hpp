@@ -10,6 +10,7 @@
 
 #include "duckdb/parser/base_expression.hpp"
 #include "duckdb/common/types.hpp"
+#include "duckdb/storage/statistics/base_statistics.hpp"
 
 namespace duckdb {
 class BaseStatistics;
@@ -18,7 +19,18 @@ class BaseStatistics;
 class Expression : public BaseExpression {
 public:
 	Expression(ExpressionType type, ExpressionClass expression_class, LogicalType return_type);
-	~Expression() override;
+
+    Expression(Expression &ex) : BaseExpression(ex.type, ex.expression_class) {
+        // CopyProperties(ex);
+        /*type = ex.type;
+        expression_class = ex.expression_class;
+        return_type = ex.return_type;*/
+        return_type = ex.return_type;
+        stats = ex.stats->Copy();
+        alias = ex.alias;
+    }
+
+    ~Expression() override;
 
 	//! The return type of the expression
 	LogicalType return_type;

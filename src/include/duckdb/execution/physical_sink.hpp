@@ -18,6 +18,8 @@ class GlobalOperatorState {
 public:
 	virtual ~GlobalOperatorState() {
 	}
+
+	virtual unique_ptr<GlobalOperatorState> clone() = 0;
 };
 
 class LocalSinkState {
@@ -30,6 +32,9 @@ class PhysicalSink : public PhysicalOperator {
 public:
 	PhysicalSink(PhysicalOperatorType type, vector<LogicalType> types, idx_t estimated_cardinality)
 	    : PhysicalOperator(type, move(types), estimated_cardinality) {
+	}
+    PhysicalSink(PhysicalSink const& ps) : PhysicalOperator(ps.type, ps.types, ps.estimated_cardinality) {
+        sink_state = ps.sink_state;
 	}
 
 	unique_ptr<GlobalOperatorState> sink_state;
@@ -63,6 +68,10 @@ public:
 	}
 
 	void Schedule(ClientContext &context);
+
+    std::unique_ptr<PhysicalOperator> clone() const override {
+        return make_unique<PhysicalSink>(*this);
+    }
 };
 
 } // namespace duckdb

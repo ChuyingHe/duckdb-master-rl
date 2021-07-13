@@ -66,6 +66,12 @@ public:
 
 	void ToTemporary() override;
 
+    // std::unique_ptr<UncompressedSegment> clone() const override;
+    std::unique_ptr<UncompressedSegment> clone() const override {
+        //	StringSegment(DatabaseInstance &db, idx_t row_start, block_id_t block_id = INVALID_BLOCK);
+        return make_unique<StringSegment>(this->db, this->row_start, INVALID_BLOCK);
+    }
+
 protected:
 	void FetchBaseData(ColumnScanState &state, idx_t vector_index, Vector &result) override;
 

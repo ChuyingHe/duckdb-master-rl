@@ -20,6 +20,15 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_TOP_N), orders(move(orders)), limit(limit), offset(offset) {
 	}
 
+    LogicalTopN(LogicalTopN const& ltopn) : LogicalOperator(LogicalOperatorType::LOGICAL_TOP_N),
+    limit(ltopn.limit), offset(ltopn.offset) {
+        orders.reserve(ltopn.orders.size());
+        for (auto const& order : ltopn.orders) {
+            BoundOrderByNode bobn(order);
+            orders.push_back(bobn);
+        }
+	}
+
 	vector<BoundOrderByNode> orders;
 	//! The maximum amount of elements to emit
 	int64_t limit;
@@ -30,6 +39,10 @@ public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return children[0]->GetColumnBindings();
 	}
+
+    std::unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalTopN>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

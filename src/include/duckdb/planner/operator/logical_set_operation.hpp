@@ -23,6 +23,14 @@ public:
 		children.push_back(move(bottom));
 	}
 
+    LogicalSetOperation(LogicalSetOperation const &lso) : LogicalOperator(lso.type),
+    table_index(lso.table_index), column_count(lso.column_count) {
+        children.reserve(lso.children.size());
+        for (auto const& child: lso.children) {
+            children.push_back(child->clone());
+        }
+	}
+
 	idx_t table_index;
 	idx_t column_count;
 
@@ -30,6 +38,10 @@ public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return GenerateColumnBindings(table_index, column_count);
 	}
+
+    std::unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalSetOperation>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

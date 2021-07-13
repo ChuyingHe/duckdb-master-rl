@@ -20,11 +20,17 @@ public:
 	    : PhysicalOperator(PhysicalOperatorType::CREATE_SEQUENCE, {LogicalType::BIGINT}, estimated_cardinality),
 	      info(move(info)) {
 	}
+    PhysicalCreateSequence(PhysicalCreateSequence const& pcs): PhysicalOperator(PhysicalOperatorType::CREATE_SEQUENCE, {LogicalType::BIGINT}, pcs.estimated_cardinality),
+                                                               info(pcs.info->duplicate()) {
+	}
 
 	unique_ptr<CreateSequenceInfo> info;
 
 public:
 	void GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) override;
+    std::unique_ptr<PhysicalOperator> clone() const override {
+        return make_unique<PhysicalCreateSequence>(*this);
+    }
 };
 
 } // namespace duckdb

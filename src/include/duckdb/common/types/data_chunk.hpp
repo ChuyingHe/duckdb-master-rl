@@ -39,6 +39,11 @@ public:
 	//! Creates an empty DataChunk
 	DataChunk();
 
+    DataChunk(DataChunk &dc) {
+        data = dc.data;
+        count =  dc.count;
+    }
+
 	//! The vectors owned by the DataChunk.
 	vector<Vector> data;
 

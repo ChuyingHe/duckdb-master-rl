@@ -20,7 +20,16 @@ public:
 	LogicalSimple(LogicalOperatorType type, unique_ptr<ParseInfo> info) : LogicalOperator(type), info(move(info)) {
 	}
 
+    LogicalSimple(LogicalSimple const &ls) : LogicalOperator(ls.type),
+    info(ls.info->clone()) {
+	}
+
 	unique_ptr<ParseInfo> info;
+
+    std::unique_ptr<LogicalOperator> clone() const override {
+        // return make_unique<LogicalSimple>(this->type, this->info->clone());
+        return make_unique<LogicalSimple>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

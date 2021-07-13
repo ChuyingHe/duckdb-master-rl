@@ -31,6 +31,12 @@ public:
 	//! full.
 	idx_t Append(SegmentStatistics &stats, VectorData &data, idx_t offset, idx_t count) override;
 
+    // std::unique_ptr<UncompressedSegment> clone() const override;
+    std::unique_ptr<UncompressedSegment> clone() const override {
+        //	NumericSegment(DatabaseInstance &db, PhysicalType type, idx_t row_start, block_id_t block_id = INVALID_BLOCK);
+        return make_unique<NumericSegment>(this->db, this->type, this->row_start, INVALID_BLOCK);
+    }
+
 protected:
 	void FetchBaseData(ColumnScanState &state, idx_t vector_index, Vector &result) override;
 

@@ -20,6 +20,12 @@ public:
 	PersistentSegment(DatabaseInstance &db, block_id_t id, idx_t offset, const LogicalType &type, idx_t start,
 	                  idx_t count, unique_ptr<BaseStatistics> statistics);
 
+    PersistentSegment(PersistentSegment &ps): ColumnSegment(ps.type, ColumnSegmentType::PERSISTENT, ps.start, ps.count), db(ps.db) {
+        block_id = ps.block_id;
+        offset = ps.offset;
+        data = ps.data->clone();
+    }
+
 	//! The storage manager
 	DatabaseInstance &db;
 	//! The block id that this segment relates to

@@ -20,9 +20,15 @@ public:
 	    : PhysicalOperator(PhysicalOperatorType::SET, {LogicalType::BOOLEAN}, estimated_cardinality), name(name_p),
 	      value(value_p) {
 	}
+    PhysicalSet(PhysicalSet const& ps) : PhysicalOperator(PhysicalOperatorType::SET, {LogicalType::BOOLEAN}, estimated_cardinality), name(ps.name),
+                                          value(ps.value) {
+	}
 
 public:
 	void GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) override;
+    std::unique_ptr<PhysicalOperator> clone() const override {
+        return make_unique<PhysicalSet>(*this);
+    }
 
 public:
 	std::string name;

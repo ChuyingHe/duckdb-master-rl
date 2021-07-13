@@ -30,6 +30,15 @@ struct CreateInfo : public ParseInfo {
 	~CreateInfo() override {
 	}
 
+	CreateInfo(CreateInfo &ci) {
+        schema = ci.schema;
+        type = ci.type;
+        internal = ci.internal;
+        on_conflict = ci.on_conflict;
+        sql = ci.sql;
+        temporary = ci.temporary;
+	}
+
 	//! The to-be-created catalog type
 	CatalogType type;
 	//! The schema name of the entry

@@ -78,13 +78,20 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         profiler.StartPhase("rl_optimizer");
         RLJoinOrderOptimizer rl_optimizer(context);
 
-        // DEEP COPY of unique_ptr
+        //plan->type
+        auto copy = plan->clone();  // returns std::unique_ptr<LogicalOperator>
+
+        //unique_ptr<LogicalDelete> copy = make_unique<LogicalDelete>(plan);
+
+        //unique_ptr<LogicalOperator> copy_plan = make_unique<LogicalOperator>(plan);
+
+        // DEEP COPY of unique_ptr, because LogicalOperator is ABSTRACT, we need to differentiate which child of LogicalOperator does current PLAN belong to and then do the deep copy
         //LogicalOperator copy = *plan;
         // unique_ptr<LogicalOperator> copy_of_plan = make_unique<LogicalOperator>(*plan);
         //unique_ptr<LogicalOperator> copy_of_plan = *plan;
 
         // unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(plan_share);
-        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(plan));    // CHECK HERE, erst kopieren dann
+        auto rl_plan = rl_optimizer.Optimize(move(copy));    // CHECK HERE, erst kopieren dann
 
         profiler.EndPhase();
 

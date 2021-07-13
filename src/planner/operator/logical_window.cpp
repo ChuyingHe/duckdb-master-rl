@@ -10,6 +10,10 @@ vector<ColumnBinding> LogicalWindow::GetColumnBindings() {
 	return child_bindings;
 }
 
+std::unique_ptr<LogicalOperator> LogicalWindow::clone() const {
+    return make_unique<LogicalWindow>(*this);
+}
+
 void LogicalWindow::ResolveTypes() {
 	types.insert(types.end(), children[0]->types.begin(), children[0]->types.end());
 	for (auto &expr : expressions) {

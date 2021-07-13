@@ -18,6 +18,12 @@ public:
 	BaseTableRef() : TableRef(TableReferenceType::BASE_TABLE), schema_name(INVALID_SCHEMA) {
 	}
 
+    BaseTableRef(BaseTableRef &btr) : TableRef(TableReferenceType::BASE_TABLE), schema_name(INVALID_SCHEMA){
+	    schema_name = btr.schema_name;
+	    table_name = btr.schema_name;
+	    column_name_alias = btr.column_name_alias;
+	}
+
 	//! Schema name
 	string schema_name;
 	//! Table name
@@ -33,6 +39,8 @@ public:
 	bool Equals(const TableRef *other_p) const override;
 
 	unique_ptr<TableRef> Copy() override;
+
+    unique_ptr<BaseTableRef> Copy_BaseTableRef();
 
 	//! Serializes a blob into a BaseTableRef
 	void Serialize(Serializer &serializer) override;

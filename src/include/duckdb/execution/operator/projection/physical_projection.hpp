@@ -20,6 +20,13 @@ public:
 	      select_list(move(select_list)) {
 	}
 
+    PhysicalProjection(PhysicalProjection const& pp) : PhysicalOperator(PhysicalOperatorType::PROJECTION, pp.types, pp.estimated_cardinality) {
+        select_list.reserve(pp.select_list.size());
+        for (auto const& exp: pp.select_list) {
+            select_list.push_back(exp->Copy());
+        }
+	}
+
 	vector<unique_ptr<Expression>> select_list;
 
 public:
@@ -29,6 +36,9 @@ public:
 	void FinalizeOperatorState(PhysicalOperatorState &state, ExecutionContext &context) override;
 
 	string ParamsToString() const override;
+    std::unique_ptr<PhysicalOperator> clone() const override {
+        return make_unique<PhysicalProjection>(*this);
+    }
 };
 
 } // namespace duckdb

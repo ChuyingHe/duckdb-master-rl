@@ -28,6 +28,9 @@ struct TableFilter {
 
 struct TableFilterSet {
 	unordered_map<idx_t, vector<TableFilter>> filters;
+    unique_ptr<TableFilterSet> clone() {
+        return make_unique<TableFilterSet>(*this);
+    }
 };
 
 } // namespace duckdb

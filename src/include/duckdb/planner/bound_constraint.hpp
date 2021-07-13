@@ -19,6 +19,10 @@ public:
 	virtual ~BoundConstraint() {
 	}
 
+    BoundConstraint(BoundConstraint &bc) {
+	    type = bc.type;
+	}
+
 	ConstraintType type;
 };
 } // namespace duckdb

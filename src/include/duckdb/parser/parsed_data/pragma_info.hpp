@@ -25,8 +25,13 @@ struct PragmaInfo : public ParseInfo {
 	//! Named parameter list (if any)
 	unordered_map<string, Value> named_parameters;
 
+
 public:
-	unique_ptr<PragmaInfo> Copy() const {
+    std::unique_ptr<ParseInfo> clone() const override {
+        Copy();
+    }
+
+    unique_ptr<PragmaInfo> Copy() const {
 		auto result = make_unique<PragmaInfo>();
 		result->name = name;
 		result->parameters = parameters;

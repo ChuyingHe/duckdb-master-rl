@@ -19,10 +19,19 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_CREATE_TABLE), schema(schema), info(move(info)) {
 	}
 
+    LogicalCreateTable(LogicalCreateTable const &lct) : LogicalOperator(LogicalOperatorType::LOGICAL_CREATE_TABLE),
+    schema(lct.schema), info(make_unique<BoundCreateTableInfo>(*lct.info)) {
+	}
+
 	//! Schema to insert to
 	SchemaCatalogEntry *schema;
 	//! Create Table information
 	unique_ptr<BoundCreateTableInfo> info;
+
+    std::unique_ptr<LogicalOperator> clone() const {
+        // return make_unique<LogicalCreateTable>(this->schema, make_unique<BoundCreateTableInfo>(*this->info));
+        return make_unique<LogicalCreateTable>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

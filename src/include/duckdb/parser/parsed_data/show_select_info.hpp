@@ -21,6 +21,14 @@ struct ShowSelectInfo : public ParseInfo {
 	//! Aliases of projected columns
 	vector<string> aliases;
 
+    std::unique_ptr<ParseInfo> clone() const override {
+        auto result = make_unique<ShowSelectInfo>();
+        result->types = types;
+        result->query = query->Copy();
+        result->aliases = aliases;
+        return result;
+    }
+
 	unique_ptr<ShowSelectInfo> Copy() {
 		auto result = make_unique<ShowSelectInfo>();
 		result->types = types;

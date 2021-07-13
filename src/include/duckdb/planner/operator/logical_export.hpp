@@ -19,8 +19,17 @@ public:
 	LogicalExport(CopyFunction function, unique_ptr<CopyInfo> copy_info)
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_EXPORT), function(function), copy_info(move(copy_info)) {
 	}
+    LogicalExport(LogicalExport const &le) : LogicalOperator(LogicalOperatorType::LOGICAL_EXPORT) ,
+    function(le.function), copy_info(le.copy_info->Copy()){
+	}
+
 	CopyFunction function;
 	unique_ptr<CopyInfo> copy_info;
+
+    std::unique_ptr<LogicalOperator> clone() const override {
+        // return make_unique<LogicalExport>(this->function, this->copy_info->Copy());
+        return make_unique<LogicalExport>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

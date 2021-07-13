@@ -21,10 +21,18 @@ public:
 	      info(move(info)) {
 	}
 
+    PhysicalVacuum(PhysicalVacuum const& pv) : PhysicalOperator(PhysicalOperatorType::VACUUM, {LogicalType::BOOLEAN}, estimated_cardinality),
+                                               info(pv.info->duplicate()) {
+	}
+
 	unique_ptr<VacuumInfo> info;
 
 public:
 	void GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) override;
+    std::unique_ptr<PhysicalOperator> clone() const override {
+        return make_unique<PhysicalVacuum>(*this);
+    }
+
 };
 
 } // namespace duckdb

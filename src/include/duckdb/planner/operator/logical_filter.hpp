@@ -18,6 +18,10 @@ public:
 	explicit LogicalFilter(unique_ptr<Expression> expression);
 	LogicalFilter();
 
+    LogicalFilter(LogicalFilter const& lf) : LogicalOperator(LogicalOperatorType::LOGICAL_FILTER),
+                                             projection_map(lf.projection_map){
+    }
+
 	vector<idx_t> projection_map;
 
 public:
@@ -29,6 +33,8 @@ public:
 	//! Splits up the predicates of the LogicalFilter into a set of predicates
 	//! separated by AND Returns whether or not any splits were made
 	static bool SplitPredicates(vector<unique_ptr<Expression>> &expressions);
+
+    std::unique_ptr<LogicalOperator> clone() const override;
 
 protected:
 	void ResolveTypes() override;

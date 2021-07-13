@@ -20,6 +20,14 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_ORDER_BY), orders(move(orders)) {
 	}
 
+    LogicalOrder(LogicalOrder const &lo) : LogicalOperator(LogicalOperatorType::LOGICAL_ORDER_BY) {
+        orders.reserve(lo.orders.size());
+        for (auto const& order : lo.orders) {
+            BoundOrderByNode bobn(order);
+            orders.push_back(bobn);
+        }
+	}
+
 	vector<BoundOrderByNode> orders;
 
 	string ParamsToString() const override {
@@ -37,6 +45,10 @@ public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return children[0]->GetColumnBindings();
 	}
+
+    std::unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalOrder>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

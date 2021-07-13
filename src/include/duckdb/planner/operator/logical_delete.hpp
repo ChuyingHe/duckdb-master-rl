@@ -18,7 +18,15 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_DELETE), table(table) {
 	}
 
+    LogicalDelete(LogicalDelete const &ld) : LogicalOperator(LogicalOperatorType::LOGICAL_DELETE),
+    table(ld.table) {
+	}
+
 	TableCatalogEntry *table;
+
+    std::unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalDelete>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

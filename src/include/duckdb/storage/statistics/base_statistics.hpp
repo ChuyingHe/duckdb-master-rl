@@ -24,6 +24,11 @@ public:
 	explicit BaseStatistics(LogicalType type);
 	virtual ~BaseStatistics();
 
+    BaseStatistics(BaseStatistics &bs) {
+        type = bs.type;
+        validity_stats = bs.validity_stats->Copy();
+    }
+
 	//! The type of the logical segment
 	LogicalType type;
 	//! The validity stats of the column (if any)

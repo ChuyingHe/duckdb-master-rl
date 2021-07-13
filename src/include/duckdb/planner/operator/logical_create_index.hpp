@@ -25,6 +25,29 @@ public:
 		this->expressions = move(expressions);
 	}
 
+    LogicalCreateIndex(LogicalCreateIndex const &lci) : LogicalOperator(LogicalOperatorType::LOGICAL_CREATE_INDEX),
+    table(lci.table), column_ids(lci.column_ids), info(make_unique<CreateIndexInfo>(*lci.info))
+    {
+        unbound_expressions.reserve(lci.unbound_expressions.size());
+        for (const auto& expression: lci.unbound_expressions) {
+            unbound_expressions.push_back(expression->Copy());
+        }
+    }
+
+    std::unique_ptr<LogicalOperator> clone() const {
+        /*vector<unique_ptr<Expression>> expressions;
+
+        expressions.reserve(this->expressions.size());
+        for (const auto& expression: this->expressions) {
+            expressions.push_back(expression->Copy());
+        }
+        // info = make_unique<CreateIndexInfo>(*this->info);
+        CreateIndexInfo cii = *this->info;
+
+        return make_unique<LogicalCreateIndex>(this->table, this->column_ids, expressions, make_unique<CreateIndexInfo>(*this->info));*/
+        return make_unique<LogicalCreateIndex>(*this);
+    }
+
 	//! The table to create the index for
 	TableCatalogEntry &table;
 	//! Column IDs needed for index creation

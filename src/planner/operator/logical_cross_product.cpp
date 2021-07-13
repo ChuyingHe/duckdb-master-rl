@@ -17,4 +17,9 @@ void LogicalCrossProduct::ResolveTypes() {
 	types.insert(types.end(), children[1]->types.begin(), children[1]->types.end());
 }
 
+std::unique_ptr<LogicalOperator> LogicalCrossProduct::clone() const {
+    return make_unique<LogicalCrossProduct>(*this);
+}
+
+
 } // namespace duckdb

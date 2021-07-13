@@ -56,7 +56,15 @@ public:
 	PhysicalOperator(PhysicalOperatorType type, vector<LogicalType> types, idx_t estimated_cardinality)
 	    : type(type), types(std::move(types)), estimated_cardinality(estimated_cardinality) {
 	}
+
 	virtual ~PhysicalOperator() {
+	}
+
+    PhysicalOperator(PhysicalOperator const &po): type(po.type), types(types), estimated_cardinality(po.estimated_cardinality) {
+        children.reserve(po.children.size());
+        for (auto const& child: po.children) {
+            children.push_back(child->clone());
+        }
 	}
 
 	//! The physical operator type
@@ -112,6 +120,8 @@ public:
 	virtual bool IsSink() const {
 		return false;
 	}
+
+    virtual std::unique_ptr<PhysicalOperator> clone() const = 0;
 };
 
 } // namespace duckdb

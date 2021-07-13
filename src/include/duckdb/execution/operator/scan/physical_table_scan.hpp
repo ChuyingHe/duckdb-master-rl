@@ -22,6 +22,11 @@ public:
 	                  vector<column_t> column_ids, vector<string> names, unique_ptr<TableFilterSet> table_filters,
 	                  idx_t estimated_cardinality);
 
+    PhysicalTableScan(PhysicalTableScan const& pts) : PhysicalOperator(PhysicalOperatorType::TABLE_SCAN, pts.types, pts.estimated_cardinality),
+    function(pts.function), bind_data(pts.bind_data->Copy()), column_ids(pts.column_ids), names(pts.names),
+                                                      table_filters(pts.table_filters->clone()) {
+    }
+
 	//! The table function
 	TableFunction function;
 	//! Bind data of the function
@@ -39,6 +44,9 @@ public:
 
 	void GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) override;
 	unique_ptr<PhysicalOperatorState> GetOperatorState() override;
+    std::unique_ptr<PhysicalOperator> clone() const override {
+        return make_unique<PhysicalTableScan>(*this);
+    }
 };
 
 } // namespace duckdb

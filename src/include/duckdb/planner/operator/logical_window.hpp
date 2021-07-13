@@ -20,10 +20,15 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_WINDOW), window_index(window_index) {
 	}
 
+    LogicalWindow(LogicalWindow const& lw) : LogicalOperator(LogicalOperatorType::LOGICAL_WINDOW),
+    window_index(lw.window_index) {
+	}
+
 	idx_t window_index;
 
 public:
 	vector<ColumnBinding> GetColumnBindings() override;
+    std::unique_ptr<LogicalOperator> clone() const override;
 
 protected:
 	void ResolveTypes() override;

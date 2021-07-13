@@ -19,6 +19,11 @@ class LogicalJoin : public LogicalOperator {
 public:
 	explicit LogicalJoin(JoinType type, LogicalOperatorType logical_type = LogicalOperatorType::LOGICAL_JOIN);
 
+	LogicalJoin(LogicalJoin const &lj) : LogicalOperator(LogicalOperatorType::LOGICAL_JOIN),
+	join_type(lj.join_type), mark_index(lj.mark_index), left_projection_map(lj.left_projection_map),
+	right_projection_map(lj.right_projection_map) {
+    }
+
 	// Gets the set of table references that are reachable from this node
 	static void GetTableReferences(LogicalOperator &op, unordered_set<idx_t> &bindings);
 	static void GetExpressionBindings(Expression &expr, unordered_set<idx_t> &bindings);
@@ -34,8 +39,9 @@ public:
 
 public:
 	vector<ColumnBinding> GetColumnBindings() override;
+    std::unique_ptr<LogicalOperator> clone() const override;
 
-protected:
+        protected:
 	void ResolveTypes() override;
 };
 

@@ -20,6 +20,13 @@ public:
 	explicit LogicalDistinct(vector<unique_ptr<Expression>> targets)
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_DISTINCT), distinct_targets(move(targets)) {
 	}
+    LogicalDistinct(LogicalDistinct const &ld) : LogicalOperator(LogicalOperatorType::LOGICAL_DISTINCT) {
+	    // distinct_targets = ld.distinct_targets;
+        distinct_targets.reserve(ld.distinct_targets.size());
+        for (auto const& dt:ld.distinct_targets) {
+            distinct_targets.push_back(dt->Copy());
+        }
+	}
 	//! The set of distinct targets (optional).
 	vector<unique_ptr<Expression>> distinct_targets;
 
@@ -29,6 +36,10 @@ public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return children[0]->GetColumnBindings();
 	}
+
+    std::unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalDistinct>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

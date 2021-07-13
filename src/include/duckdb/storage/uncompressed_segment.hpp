@@ -28,7 +28,13 @@ public:
 	UncompressedSegment(DatabaseInstance &db, PhysicalType type, idx_t row_start);
 	virtual ~UncompressedSegment();
 
-	//! The storage manager
+    /*UncompressedSegment(UncompressedSegment &us): db(us.db), row_start(us.row_start) {
+        type = us.type;
+    }*/
+
+    virtual std::unique_ptr<UncompressedSegment> clone() const = 0;
+
+    //! The storage manager
 	DatabaseInstance &db;
 	//! Type of the uncompressed segment
 	PhysicalType type;

@@ -23,6 +23,11 @@ public:
 		chunk_types = types;
 	}
 
+	LogicalChunkGet(LogicalChunkGet const &logicalChunkGet) : LogicalOperator(LogicalOperatorType::LOGICAL_CHUNK_GET),
+                                                              table_index(logicalChunkGet.table_index), chunk_types(logicalChunkGet.chunk_types),
+                                                              collection(make_unique<ChunkCollection>(*logicalChunkGet.collection)) {
+	}
+
 	//! The table index in the current bind context
 	idx_t table_index;
 	//! The types of the chunk
@@ -34,11 +39,15 @@ public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return GenerateColumnBindings(table_index, chunk_types.size());
 	}
+    std::unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalChunkGet>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {
 		// types are resolved in the constructor
 		this->types = chunk_types;
 	}
+
 };
 } // namespace duckdb

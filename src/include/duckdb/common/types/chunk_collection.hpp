@@ -27,6 +27,33 @@ public:
 	ChunkCollection() : count(0) {
 	}
 
+    void swap( ChunkCollection& other)
+    {
+        using std::swap;
+        swap(count, other.count);
+        swap(chunks, other.chunks);
+        swap(types, other.types);
+    }
+
+	ChunkCollection(ChunkCollection const &chunkCollection) {
+	    count = chunkCollection.count;
+
+	    chunks.reserve(chunkCollection.chunks.size());
+        for (const auto &chunk:chunkCollection.chunks) {
+            chunks.push_back(make_unique<DataChunk>(*chunk));
+        }
+
+        types = chunkCollection.types;
+	}
+
+	unique_ptr<ChunkCollection> Copy() {
+        return make_unique<ChunkCollection>(*this);
+	}
+
+    shared_ptr<ChunkCollection> duplicate() {
+        return make_shared<ChunkCollection>(*this);
+    }
+
 	//! The amount of columns in the ChunkCollection
 	DUCKDB_API vector<LogicalType> &Types() {
 		return types;

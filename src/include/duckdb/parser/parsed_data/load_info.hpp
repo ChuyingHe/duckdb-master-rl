@@ -21,6 +21,9 @@ public:
 		result->filename = filename;
 		return result;
 	}
+    std::unique_ptr<ParseInfo> clone() const override {
+        Copy();
+    }
 };
 
 } // namespace duckdb

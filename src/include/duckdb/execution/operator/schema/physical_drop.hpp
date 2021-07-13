@@ -20,11 +20,19 @@ public:
 	    : PhysicalOperator(PhysicalOperatorType::DROP, {LogicalType::BOOLEAN}, estimated_cardinality),
 	      info(move(info)) {
 	}
+    PhysicalDrop(PhysicalDrop const& pd) : PhysicalOperator(PhysicalOperatorType::DROP, {LogicalType::BOOLEAN}, pd.estimated_cardinality),
+                                           info(pd.info->Copy()) {
+	}
 
 	unique_ptr<DropInfo> info;
 
 public:
 	void GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) override;
+
+    std::unique_ptr<PhysicalOperator> clone() const override {
+        return make_unique<PhysicalDrop>(*this);
+    }
+
 };
 
 } // namespace duckdb

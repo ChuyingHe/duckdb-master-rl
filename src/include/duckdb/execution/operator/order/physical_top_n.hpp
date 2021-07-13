@@ -41,6 +41,7 @@ public:
 
 	string ParamsToString() const override;
 
+
 private:
 	unique_ptr<idx_t[]> ComputeTopN(ChunkCollection &big_data, idx_t &heap_size);
 };

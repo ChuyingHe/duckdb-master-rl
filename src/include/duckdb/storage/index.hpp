@@ -76,6 +76,8 @@ public:
 	//! Returns true if the index is affected by updates on the specified column ids, and false otherwise
 	bool IndexIsUpdated(const vector<column_t> &column_ids) const;
 
+	virtual Index* clone() const = 0;
+
 protected:
 	void ExecuteExpressions(DataChunk &input, DataChunk &result);
 

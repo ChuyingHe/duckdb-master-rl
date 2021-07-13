@@ -22,6 +22,14 @@ public:
 		children.push_back(move(bottom));
 	}
 
+    LogicalRecursiveCTE(LogicalRecursiveCTE const& lrcte) : LogicalOperator(type),
+    union_all(lrcte.union_all), table_index(lrcte.table_index), column_count(lrcte.column_count) {
+	    children.reserve(lrcte.children.size());
+        for (auto const& child: lrcte.children) {
+            children.push_back(child->clone());
+        }
+	}
+
 	bool union_all;
 	idx_t table_index;
 	idx_t column_count;
@@ -30,6 +38,10 @@ public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return GenerateColumnBindings(table_index, column_count);
 	}
+
+    std::unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalRecursiveCTE>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

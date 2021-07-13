@@ -30,6 +30,11 @@ public:
 	idx_t Append(SegmentStatistics &stats, VectorData &data, idx_t offset, idx_t count) override;
 	void RevertAppend(idx_t start_row) override;
 
+    std::unique_ptr<UncompressedSegment> clone() const override {
+        //ValiditySegment(DatabaseInstance &db, idx_t row_start, block_id_t block_id = INVALID_BLOCK);
+        return make_unique<ValiditySegment>(this->db, this->row_start, INVALID_BLOCK);
+    }
+
 protected:
 	void FetchBaseData(ColumnScanState &state, idx_t vector_index, Vector &result) override;
 };

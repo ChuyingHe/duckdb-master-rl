@@ -19,6 +19,10 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_DUMMY_SCAN), table_index(table_index) {
 	}
 
+    LogicalDummyScan(LogicalDummyScan const &lds) : LogicalOperator(LogicalOperatorType::LOGICAL_DUMMY_SCAN),
+    table_index(lds.table_index) {
+	}
+
 	idx_t table_index;
 
 public:
@@ -29,6 +33,10 @@ public:
 	idx_t EstimateCardinality(ClientContext &context) override {
 		return 1;
 	}
+
+    std::unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalDummyScan>(*this);
+    }
 
 protected:
 	void ResolveTypes() override {

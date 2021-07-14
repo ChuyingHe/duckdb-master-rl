@@ -18,8 +18,8 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_DELETE), table(table) {
 	}
 
-    LogicalDelete(LogicalDelete const &ld) : LogicalOperator(LogicalOperatorType::LOGICAL_DELETE),
-    table(ld.table) {
+    LogicalDelete(LogicalDelete const &ld) : LogicalOperator(ld) {
+        table = ld.table;
 	}
 
 	TableCatalogEntry *table;

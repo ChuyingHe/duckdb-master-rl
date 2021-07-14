@@ -18,8 +18,9 @@ class LogicalEmptyResult : public LogicalOperator {
 public:
 	explicit LogicalEmptyResult(unique_ptr<LogicalOperator> op);
 
-    LogicalEmptyResult(LogicalEmptyResult const &ler) : LogicalOperator(LogicalOperatorType::LOGICAL_EMPTY_RESULT),
-    return_types(ler.return_types), bindings(ler.bindings) {
+    LogicalEmptyResult(LogicalEmptyResult const &ler) : LogicalOperator(ler) {
+        return_types = ler.return_types;
+        bindings = ler.bindings;
     }
 
 	//! The set of return types of the empty result

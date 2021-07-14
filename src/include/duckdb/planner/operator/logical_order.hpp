@@ -20,7 +20,7 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_ORDER_BY), orders(move(orders)) {
 	}
 
-    LogicalOrder(LogicalOrder const &lo) : LogicalOperator(LogicalOperatorType::LOGICAL_ORDER_BY) {
+    LogicalOrder(LogicalOrder const &lo) : LogicalOperator(lo) {
         orders.reserve(lo.orders.size());
         for (auto const& order : lo.orders) {
             BoundOrderByNode bobn(order);

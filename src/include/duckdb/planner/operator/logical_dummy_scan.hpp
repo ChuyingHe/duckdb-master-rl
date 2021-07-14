@@ -19,9 +19,9 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_DUMMY_SCAN), table_index(table_index) {
 	}
 
-    LogicalDummyScan(LogicalDummyScan const &lds) : LogicalOperator(LogicalOperatorType::LOGICAL_DUMMY_SCAN),
-    table_index(lds.table_index) {
-	}
+    LogicalDummyScan(LogicalDummyScan const &lds) : LogicalOperator(lds) {
+        table_index = lds.table_index;
+    }
 
 	idx_t table_index;
 

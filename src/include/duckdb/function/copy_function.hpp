@@ -23,6 +23,13 @@ struct LocalFunctionData {
 struct GlobalFunctionData {
 	virtual ~GlobalFunctionData() {
 	}
+
+    GlobalFunctionData() {}
+
+    GlobalFunctionData(GlobalFunctionData const& gfd) {
+	}
+
+	virtual unique_ptr<GlobalFunctionData> clone() const = 0;
 };
 
 typedef unique_ptr<FunctionData> (*copy_to_bind_t)(ClientContext &context, CopyInfo &info, vector<string> &names,
@@ -44,6 +51,18 @@ public:
 	explicit CopyFunction(string name)
 	    : Function(name), copy_to_bind(nullptr), copy_to_initialize_local(nullptr), copy_to_initialize_global(nullptr),
 	      copy_to_sink(nullptr), copy_to_combine(nullptr), copy_to_finalize(nullptr), copy_from_bind(nullptr) {
+	}
+
+    CopyFunction(CopyFunction const& cf) : Function(cf) {
+        copy_to_bind = cf.copy_to_bind;
+        copy_to_initialize_local = cf.copy_to_initialize_local;
+        copy_to_initialize_global = cf.copy_to_initialize_global;
+        copy_to_sink = cf.copy_to_sink;
+        copy_to_combine = cf.copy_to_combine;
+        copy_to_finalize = cf.copy_to_finalize;
+        copy_from_bind = cf.copy_from_bind;
+        copy_from_function = cf.copy_from_function;
+        extension = cf.extension;
 	}
 
 	copy_to_bind_t copy_to_bind;

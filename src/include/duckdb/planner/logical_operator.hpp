@@ -31,7 +31,8 @@ public:
 	    : type(type), expressions(move(expressions)) {
 	}
 
-    LogicalOperator(LogicalOperator &lo) {
+    LogicalOperator(LogicalOperator const& lo) {
+	    printf("\n LogicalOperator Constructor \n");
 	    types = lo.types;
 	    type = lo.type;
 	    children.reserve(lo.children.size());

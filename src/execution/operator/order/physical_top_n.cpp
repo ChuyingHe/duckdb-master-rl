@@ -133,8 +133,7 @@ public:
 	}
 
 	//	TopNHeap(const vector<BoundOrderByNode> &orders, idx_t limit, idx_t offset)
-    TopNGlobalState(TopNGlobalState const& topgs) : heap(topgs.heap) {
-
+    TopNGlobalState(TopNGlobalState const& topgs) : GlobalOperatorState(topgs), heap(topgs.heap) {
 	}
 
 	mutex lock;

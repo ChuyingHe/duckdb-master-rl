@@ -23,10 +23,12 @@ public:
 		bound_columns = colnames;
 	}
 
-	LogicalCTERef(LogicalCTERef const &lcter) : LogicalOperator(LogicalOperatorType::LOGICAL_CTE_REF),
-                                                bound_columns(lcter.bound_columns), table_index(lcter.table_index),
-                                                cte_index(lcter.cte_index), chunk_types(lcter.chunk_types) {
-	}
+	LogicalCTERef(LogicalCTERef const &lcter) : LogicalOperator(lcter) {
+        bound_columns = lcter.bound_columns;
+        table_index = lcter.table_index;
+        cte_index = lcter.cte_index;
+        chunk_types = lcter.chunk_types;
+    }
 
 	vector<string> bound_columns;
 	//! The table index in the current bind context

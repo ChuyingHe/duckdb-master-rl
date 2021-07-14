@@ -19,9 +19,12 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_LIMIT), limit_val(limit_val), offset_val(offset_val),
 	      limit(move(limit)), offset(move(offset)) {
 	}
-    LogicalLimit(LogicalLimit const &ll) : LogicalOperator(LogicalOperatorType::LOGICAL_LIMIT),
-    limit_val(ll.limit_val), offset_val(ll.offset_val), limit(ll.limit->Copy()), offset(ll.offset->Copy())  {
-	}
+    LogicalLimit(LogicalLimit const &ll) : LogicalOperator(ll) {
+         limit_val = ll.limit_val;
+         offset_val = ll.offset_val;
+         limit = ll.limit->Copy();
+         offset = ll.offset->Copy();
+     }
 
 	//! Limit and offset values in case they are constants, used in optimizations.
 	int64_t limit_val;

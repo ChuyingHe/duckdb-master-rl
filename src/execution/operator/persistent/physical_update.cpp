@@ -15,9 +15,15 @@ class UpdateGlobalState : public GlobalOperatorState {
 public:
 	UpdateGlobalState() : updated_count(0) {
 	}
-
+    UpdateGlobalState(UpdateGlobalState const& ugs) : GlobalOperatorState(ugs) {
+	    updated_count = ugs.updated_count;
+	}
 	mutex lock;
 	idx_t updated_count;
+
+    unique_ptr <GlobalOperatorState> clone() {
+        return make_unique<UpdateGlobalState>(*this);
+    }
 };
 
 class UpdateLocalState : public LocalSinkState {

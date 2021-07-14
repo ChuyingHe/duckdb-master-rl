@@ -49,6 +49,15 @@ public:
 	MergeJoinGlobalState() : has_null(false), right_outer_position(0) {
 	}
 
+    MergeJoinGlobalState(MergeJoinGlobalState const& mjgs) : GlobalOperatorState(mjgs) {
+        right_chunks = mjgs.right_chunks;
+        right_conditions = mjgs.right_conditions;
+        right_orders = mjgs.right_orders;
+        has_null = mjgs.has_null;
+        right_found_match = mjgs.right_found_match;
+        right_outer_position = mjgs.right_outer_position;
+	}
+
 	//! The materialized data of the RHS
 	ChunkCollection right_chunks;
 	//! The materialized join keys of the RHS
@@ -61,6 +70,11 @@ public:
 	unique_ptr<bool[]> right_found_match;
 	//! The position in the RHS in the final scan of the FULL OUTER JOIN
 	idx_t right_outer_position;
+
+    unique_ptr<GlobalOperatorState> clone() {
+        return make_unique<MergeJoinGlobalState>(*this);
+    }
+
 };
 
 unique_ptr<GlobalOperatorState> PhysicalPiecewiseMergeJoin::GetGlobalState(ClientContext &context) {

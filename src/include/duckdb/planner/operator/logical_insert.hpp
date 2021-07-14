@@ -19,9 +19,7 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_INSERT), table(table) {
 	}
 
-    LogicalInsert(LogicalInsert const &li) : LogicalOperator(LogicalOperatorType::LOGICAL_INSERT),
-    column_index_map(li.column_index_map), expected_types(li.expected_types), table(li.table) {
-	    //FIXME: insert_values
+    LogicalInsert(LogicalInsert const &li) : LogicalOperator(li) {
         insert_values.reserve(li.insert_values.size());
         for(const auto& row: li.insert_values) {
             vector<unique_ptr<Expression>> tmp;
@@ -31,7 +29,9 @@ public:
             insert_values.push_back(tmp); // temp: vector<unique_ptr<Expression>>
         }
 
-	    // bound_defaults
+        column_index_map = li.column_index_map;
+        expected_types = li.expected_types;
+        table = li.table;
         bound_defaults.reserve(li.bound_defaults.size());
         for (auto const& bd:li.bound_defaults) {
             bound_defaults.push_back(bd->Copy());

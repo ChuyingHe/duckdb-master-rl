@@ -14,8 +14,14 @@ class DeleteGlobalState : public GlobalOperatorState {
 public:
 	DeleteGlobalState() : deleted_count(0) {
 	}
+    DeleteGlobalState(DeleteGlobalState const& dgs) : GlobalOperatorState(dgs) {
+	}
 
 	atomic<idx_t> deleted_count;
+
+    unique_ptr <GlobalOperatorState> clone() {
+        return make_unique<DeleteGlobalState>(*this);
+    }
 };
 
 void PhysicalDelete::Sink(ExecutionContext &context, GlobalOperatorState &state, LocalSinkState &lstate,

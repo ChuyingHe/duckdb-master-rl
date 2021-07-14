@@ -20,9 +20,8 @@ public:
 	explicit LogicalDistinct(vector<unique_ptr<Expression>> targets)
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_DISTINCT), distinct_targets(move(targets)) {
 	}
-    LogicalDistinct(LogicalDistinct const &ld) : LogicalOperator(LogicalOperatorType::LOGICAL_DISTINCT) {
-	    // distinct_targets = ld.distinct_targets;
-        distinct_targets.reserve(ld.distinct_targets.size());
+    LogicalDistinct(LogicalDistinct const &ld) : LogicalOperator(ld) {
+	    distinct_targets.reserve(ld.distinct_targets.size());
         for (auto const& dt:ld.distinct_targets) {
             distinct_targets.push_back(dt->Copy());
         }

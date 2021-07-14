@@ -407,6 +407,10 @@ struct GlobalWriteCSVData : public GlobalFunctionData {
 		handle = fs.OpenFile(file_path, FileFlags::FILE_FLAGS_WRITE | FileFlags::FILE_FLAGS_FILE_CREATE_NEW,
 		                     FileLockType::WRITE_LOCK);
 	}
+    GlobalWriteCSVData(GlobalWriteCSVData const& gwd): GlobalFunctionData(gwd) {
+        fs = gwd.fs;
+        // handle = gwd.handle;
+	}
 
 	void WriteData(const_data_ptr_t data, idx_t size) {
 		lock_guard<mutex> flock(lock);
@@ -418,6 +422,11 @@ struct GlobalWriteCSVData : public GlobalFunctionData {
 	mutex lock;
 	//! The file handle to write to
 	unique_ptr<FileHandle> handle;
+
+	unique_ptr<GlobalFunctionData> clone() const override {
+        return make_unique<GlobalWriteCSVData>(*this);
+	}
+
 };
 
 static unique_ptr<LocalFunctionData> WriteCSVInitializeLocal(ClientContext &context, FunctionData &bind_data) {

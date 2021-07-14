@@ -32,11 +32,22 @@ public:
 	BlockwiseNLJoinGlobalState() : right_outer_position(0) {
 	}
 
+    BlockwiseNLJoinGlobalState(BlockwiseNLJoinGlobalState const& bnljgs) : GlobalOperatorState(bnljgs) {
+	    right_chunks = bnljgs.right_chunks;
+        rhs_found_match = bnljgs.rhs_found_match;
+        right_outer_position = bnljgs.right_outer_position;
+	}
+
 	ChunkCollection right_chunks;
 	//! Whether or not a tuple on the RHS has found a match, only used for FULL OUTER joins
 	unique_ptr<bool[]> rhs_found_match;
 	//! The position in the RHS in the final scan of the FULL OUTER JOIN
 	idx_t right_outer_position;
+
+    unique_ptr <GlobalOperatorState> clone() {
+        return make_unique<BlockwiseNLJoinGlobalState>(*this);
+    }
+
 };
 
 unique_ptr<GlobalOperatorState> PhysicalBlockwiseNLJoin::GetGlobalState(ClientContext &context) {

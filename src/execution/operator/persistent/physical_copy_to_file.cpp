@@ -11,8 +11,17 @@ public:
 	    : rows_copied(0), global_state(move(global_state)) {
 	}
 
+    CopyToFunctionGlobalState(CopyToFunctionGlobalState const& ctfgs) : GlobalOperatorState(ctfgs) {
+        rows_copied = ctfgs.rows_copied;
+        global_state = ctfgs.global_state;
+	}
+
 	idx_t rows_copied;
 	unique_ptr<GlobalFunctionData> global_state;
+
+    unique_ptr <GlobalOperatorState> clone() {
+        return make_unique<CopyToFunctionGlobalState>(*this);
+    }
 };
 
 class CopyToFunctionLocalState : public LocalSinkState {

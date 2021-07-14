@@ -19,8 +19,9 @@ public:
 	LogicalExport(CopyFunction function, unique_ptr<CopyInfo> copy_info)
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_EXPORT), function(function), copy_info(move(copy_info)) {
 	}
-    LogicalExport(LogicalExport const &le) : LogicalOperator(LogicalOperatorType::LOGICAL_EXPORT) ,
-    function(le.function), copy_info(le.copy_info->Copy()){
+    LogicalExport(LogicalExport const &le) : LogicalOperator(le) ,
+    function(le.function) {
+        copy_info = le.copy_info->Copy();
 	}
 
 	CopyFunction function;

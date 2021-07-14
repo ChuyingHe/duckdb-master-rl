@@ -16,8 +16,16 @@ public:
 	InsertGlobalState() : insert_count(0) {
 	}
 
+    InsertGlobalState(InsertGlobalState const& igs) : GlobalOperatorState(igs) {
+        insert_count = igs.insert_count;
+	}
+
 	mutex lock;
 	idx_t insert_count;
+
+    unique_ptr<GlobalOperatorState> clone() {
+        return make_unique<InsertGlobalState>(*this);
+    }
 };
 
 class InsertLocalState : public LocalSinkState {

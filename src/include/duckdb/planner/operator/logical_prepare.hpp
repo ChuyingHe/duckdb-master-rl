@@ -24,8 +24,8 @@ public:
 		children.push_back(move(logical_plan));
 	}
 
-    LogicalPrepare(LogicalPrepare const &lp) : LogicalOperator(LogicalOperatorType::LOGICAL_PREPARE),
-    name(lp.name), prepared(move(prepared)) {
+    LogicalPrepare(LogicalPrepare const &lp) : LogicalOperator(lp) {
+        name = lp.name;
         prepared = std::make_shared<PreparedStatementData>(*lp.prepared);
     }
 

@@ -20,8 +20,9 @@ public:
 	    : LogicalOperator(type), schema(schema), info(move(info)) {
 	}
 
-    LogicalCreate(LogicalCreate const &lc): LogicalOperator(lc.type),
-    schema(lc.schema), info(this->info->Copy()) {
+    LogicalCreate(LogicalCreate const &lc): LogicalOperator(lc) {
+        schema = lc.schema;
+        info = this->info->Copy();
 	}
 
 	SchemaCatalogEntry *schema;

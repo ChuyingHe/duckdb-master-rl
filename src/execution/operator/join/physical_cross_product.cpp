@@ -18,8 +18,17 @@ class CrossProductGlobalState : public GlobalOperatorState {
 public:
 	CrossProductGlobalState() {
 	}
+
+    CrossProductGlobalState(CrossProductGlobalState const& cpgs) : GlobalOperatorState(cpgs) {
+        rhs_materialized = cpgs.rhs_materialized;
+	}
+
 	ChunkCollection rhs_materialized;
 	mutex rhs_lock;
+
+    unique_ptr <GlobalOperatorState> clone() {
+        return make_unique<CrossProductGlobalState>(*this);
+    }
 };
 
 unique_ptr<GlobalOperatorState> PhysicalCrossProduct::GetGlobalState(ClientContext &context) {

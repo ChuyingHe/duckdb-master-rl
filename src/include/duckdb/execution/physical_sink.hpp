@@ -19,6 +19,10 @@ public:
 	virtual ~GlobalOperatorState() {
 	}
 
+    GlobalOperatorState(){}
+
+    GlobalOperatorState(GlobalOperatorState const& gos) {}
+
 	virtual unique_ptr<GlobalOperatorState> clone() = 0;
 };
 
@@ -34,7 +38,7 @@ public:
 	    : PhysicalOperator(type, move(types), estimated_cardinality) {
 	}
     PhysicalSink(PhysicalSink const& ps) : PhysicalOperator(ps.type, ps.types, ps.estimated_cardinality) {
-        sink_state = ps.sink_state;
+        // sink_state = ps.sink_state;
 	}
 
 	unique_ptr<GlobalOperatorState> sink_state;

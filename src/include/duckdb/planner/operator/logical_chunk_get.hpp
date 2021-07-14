@@ -23,9 +23,10 @@ public:
 		chunk_types = types;
 	}
 
-	LogicalChunkGet(LogicalChunkGet const &logicalChunkGet) : LogicalOperator(LogicalOperatorType::LOGICAL_CHUNK_GET),
-                                                              table_index(logicalChunkGet.table_index), chunk_types(logicalChunkGet.chunk_types),
-                                                              collection(make_unique<ChunkCollection>(*logicalChunkGet.collection)) {
+	LogicalChunkGet(LogicalChunkGet const &lcg) : LogicalOperator(lcg) {
+        table_index = lcg.table_index;
+        chunk_types = lcg.chunk_types;
+        collection = make_unique<ChunkCollection>(*lcg.collection);
 	}
 
 	//! The table index in the current bind context

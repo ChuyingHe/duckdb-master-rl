@@ -97,6 +97,15 @@ public:
 	    : op(op_p), is_empty(true), total_groups(0),
 	      partition_info((idx_t)TaskScheduler::GetScheduler(context).NumberOfThreads()) {
 	}
+    HashAggregateGlobalState(HashAggregateGlobalState const& hags) : GlobalOperatorState(hags),
+    op(hags.op) {
+
+        intermediate_hts = hags.intermediate_hts;
+        hags.finalized_hts;
+        is_empty = hags.is_empty;
+        //FIXME: total_groups
+        partition_info = hags.partition_info;
+	}
 
 	PhysicalHashAggregate &op;
 	vector<unique_ptr<PartitionableHashTable>> intermediate_hts;
@@ -110,6 +119,10 @@ public:
 	atomic<idx_t> total_groups;
 
 	RadixPartitionInfo partition_info;
+
+    unique_ptr <GlobalOperatorState> clone() {
+        return make_unique<HashAggregateGlobalState>(*this);
+    }
 };
 
 class HashAggregateLocalState : public LocalSinkState {

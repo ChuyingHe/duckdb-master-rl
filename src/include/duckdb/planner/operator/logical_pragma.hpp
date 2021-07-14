@@ -21,9 +21,9 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_PRAGMA), function(move(function_p)), info(move(info_p)) {
 	}
 
-    LogicalPragma(LogicalPragma const &lp) : LogicalOperator(LogicalOperatorType::LOGICAL_PRAGMA),
-    function(lp.function), info(lp.info) {
-	}
+    LogicalPragma(LogicalPragma const &lp) : LogicalOperator(lp), function(lp.function) {
+        info = lp.info;
+    }
 
 	//! The pragma function to call
 	PragmaFunction function;

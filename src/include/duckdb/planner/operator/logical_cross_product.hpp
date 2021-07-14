@@ -16,7 +16,7 @@ namespace duckdb {
 class LogicalCrossProduct : public LogicalOperator {
 public:
 	LogicalCrossProduct();
-    LogicalCrossProduct(LogicalCrossProduct const &lcp) : LogicalOperator(LogicalOperatorType::LOGICAL_CROSS_PRODUCT) {
+    LogicalCrossProduct(LogicalCrossProduct const &lcp) : LogicalOperator(lcp) {
     };
 
 public:

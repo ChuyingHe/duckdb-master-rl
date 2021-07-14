@@ -21,10 +21,15 @@ public:
 		types = prepared->types;
 	}
 
-    LogicalExecute(LogicalExecute const &le) : LogicalOperator(LogicalOperatorType::LOGICAL_EXECUTE),
-    prepared(le.prepared) {
-	    types = le.prepared->types; //mimic the constructor
-	}
+    /*LogicalExecute(LogicalExecute const &le) : LogicalOperator(LogicalOperatorType::LOGICAL_EXECUTE) {
+	    types = le.prepared->types;
+        prepared = le.prepared;
+	}*/
+
+    LogicalExecute(LogicalExecute const &le) : LogicalOperator(le) {
+        types = le.prepared->types;
+        prepared = le.prepared;
+    }
 
 	shared_ptr<PreparedStatementData> prepared;
 

@@ -23,6 +23,11 @@ struct JoinHTScanState {
 	JoinHTScanState() : position(0), block_position(0) {
 	}
 
+    JoinHTScanState(JoinHTScanState const& jhtss) {
+	    position = jhtss.position;
+	    block_position = jhtss.block_position;
+	}
+
 	idx_t position;
 	idx_t block_position;
 	mutex lock;
@@ -126,7 +131,15 @@ public:
 	              JoinType type);
 	~JoinHashTable();
 
-	//! Add the given data to the HT
+    JoinHashTable(JoinHashTable const& jht): buffer_manager(jht.buffer_manager) {
+        // FIXME
+    }
+
+    unique_ptr<JoinHashTable> clone() {
+        return make_unique<JoinHashTable>(*this);
+    }
+
+    //! Add the given data to the HT
 	void Build(DataChunk &keys, DataChunk &input);
 	//! Finalize the build of the HT, constructing the actual hash table and making the HT ready for probing. Finalize
 	//! must be called before any call to Probe, and after Finalize is called Build should no longer be ever called.
@@ -218,7 +231,7 @@ private:
 	vector<bool> null_values_are_equal;
 
 	//! Copying not allowed
-	JoinHashTable(const JoinHashTable &) = delete;
+	// JoinHashTable(const JoinHashTable &) = delete;
 };
 
 } // namespace duckdb

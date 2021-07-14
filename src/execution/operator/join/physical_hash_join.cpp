@@ -50,10 +50,18 @@ public:
 	HashJoinGlobalState() {
 	}
 
+    HashJoinGlobalState(HashJoinGlobalState const& hjgs) : GlobalOperatorState(hjgs), ht_scan_state(hjgs.ht_scan_state) {
+        hash_table = hjgs.hash_table;
+	}
+
 	//! The HT used by the join
 	unique_ptr<JoinHashTable> hash_table;
 	//! Only used for FULL OUTER JOIN: scan state of the final scan to find unmatched tuples in the build-side
 	JoinHTScanState ht_scan_state;
+
+    unique_ptr <GlobalOperatorState> clone() {
+        return make_unique<HashJoinGlobalState>(*this);
+    }
 };
 
 unique_ptr<GlobalOperatorState> PhysicalHashJoin::GetGlobalState(ClientContext &context) {

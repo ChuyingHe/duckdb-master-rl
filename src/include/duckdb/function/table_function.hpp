@@ -107,6 +107,26 @@ public:
 	TableFunction() : SimpleNamedParameterFunction("", {}) {
 	}
 
+    TableFunction(TableFunction const& tf) : SimpleNamedParameterFunction(tf) {
+        bind = tf.bind;
+        init = tf.init;
+        function = tf.function;
+        statistics = tf.statistics;
+        cleanup = tf.cleanup;
+        dependency = tf.dependency;
+        cardinality = tf.cardinality;
+        pushdown_complex_filter = tf.pushdown_complex_filter;
+        to_string = tf.to_string;
+        max_threads = tf.max_threads;
+        init_parallel_state = tf.init_parallel_state;
+        parallel_function = tf.parallel_function;
+        parallel_init = tf.parallel_init;
+        parallel_state_next = tf.parallel_state_next;
+        table_scan_progress = tf.table_scan_progress;
+        projection_pushdown = tf.projection_pushdown;
+        filter_pushdown = tf.filter_pushdown;
+	}
+
 	//! Bind function
 	//! This function is used for determining the return type of a table producing function and returning bind data
 	//! The returned FunctionData object should be constant and should not be changed during execution.

@@ -74,6 +74,10 @@ public:
 	virtual ~Function() {
 	}
 
+    Function(Function const* f) {
+	    name = f->name;
+	}
+
 	//! The name of the function
 	string name;
 
@@ -118,6 +122,11 @@ public:
 	~SimpleFunction() override {
 	}
 
+    SimpleFunction(SimpleFunction const& sf) : Function(sf) {
+        arguments = sf.arguments;
+        varargs = sf.varargs;
+	}
+
 	//! The set of arguments of the function
 	vector<LogicalType> arguments;
 	//! The type of varargs to support, or LogicalTypeId::INVALID if the function does not accept variable length
@@ -141,6 +150,10 @@ public:
 	    : SimpleFunction(name, move(arguments), varargs) {
 	}
 	~SimpleNamedParameterFunction() override {
+	}
+
+    SimpleNamedParameterFunction(SimpleNamedParameterFunction const& snpf) : SimpleFunction(snpf) {
+        named_parameters = snpf.named_parameters;
 	}
 
 	//! The named parameters of the function

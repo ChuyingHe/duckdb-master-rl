@@ -44,13 +44,15 @@ struct PayloadState {
 
 class OrderGlobalState : public GlobalOperatorState {
 public:
-	explicit OrderGlobalState(BufferManager &buffer_manager)
-	    : buffer_manager(buffer_manager), total_count(0), sorting_block_capacity(0),
+	explicit OrderGlobalState(BufferManager &buffer_manager) : buffer_manager(buffer_manager), total_count(0), sorting_block_capacity(0),
 	      payload_data_block_dims(std::make_pair(0, 0)), payload_offset_block_capacity(0) {
 	}
 
-    OrderGlobalState(OrderGlobalState const& ogs) : buffer_manager(ogs.buffer_manager), total_count(ogs.total_count), sorting_block_capacity(ogs.sorting_block_capacity),
-                                                    payload_data_block_dims(ogs.payload_data_block_dims), payload_offset_block_capacity(ogs.payload_offset_block_capacity) {
+    OrderGlobalState(OrderGlobalState const& ogs) : GlobalOperatorState(ogs), buffer_manager(ogs.buffer_manager) {
+        total_count = ogs.total_count;
+        sorting_block_capacity = ogs.sorting_block_capacity;
+        payload_data_block_dims = ogs.payload_data_block_dims;
+        payload_offset_block_capacity = ogs.payload_offset_block_capacity;
 	}
 
 	~OrderGlobalState() override;

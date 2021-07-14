@@ -48,9 +48,19 @@ public:
 		cached_chunk_scan.collection = &lhs_data;
 	}
 
+    DelimJoinGlobalState(DelimJoinGlobalState const& djgs) : GlobalOperatorState(djgs) {
+        lhs_data = djgs.lhs_data;
+        delim_data = djgs.delim_data;
+        distinct_state = djgs.distinct_state->clone();
+	}
+
 	ChunkCollection lhs_data;
 	ChunkCollection delim_data;
 	unique_ptr<GlobalOperatorState> distinct_state;
+
+    unique_ptr <GlobalOperatorState> clone() {
+        return make_unique<DelimJoinGlobalState>(*this);
+    }
 };
 
 unique_ptr<GlobalOperatorState> PhysicalDelimJoin::GetGlobalState(ClientContext &context) {

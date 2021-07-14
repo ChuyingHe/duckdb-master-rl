@@ -129,6 +129,14 @@ public:
 	NestedLoopJoinGlobalState() : has_null(false), right_outer_position(0) {
 	}
 
+    NestedLoopJoinGlobalState(NestedLoopJoinGlobalState const& nljgs) : GlobalOperatorState(nljgs) {
+        right_data = nljgs.right_data;
+        right_chunks = nljgs.right_chunks;
+        has_null = nljgs.has_null;
+        right_found_match = nljgs.right_found_match;
+        right_outer_position = nljgs.right_outer_position;
+	}
+
 	//! Materialized data of the RHS
 	ChunkCollection right_data;
 	//! Materialized join condition of the RHS
@@ -139,6 +147,10 @@ public:
 	unique_ptr<bool[]> right_found_match;
 	//! The position in the RHS in the final scan of the FULL OUTER JOIN
 	idx_t right_outer_position;
+
+    unique_ptr<GlobalOperatorState> clone() {
+        return make_unique<NestedLoopJoinGlobalState>(*this);
+    }
 };
 
 void PhysicalNestedLoopJoin::Sink(ExecutionContext &context, GlobalOperatorState &state, LocalSinkState &lstate,

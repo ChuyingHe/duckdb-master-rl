@@ -26,6 +26,26 @@ public:
 	                      vector<unique_ptr<Expression>> groups, idx_t estimated_cardinality,
 	                      PhysicalOperatorType type = PhysicalOperatorType::HASH_GROUP_BY);
 
+    PhysicalHashAggregate(PhysicalHashAggregate const& pha) : PhysicalSink(pha) {
+        groups.reserve(pha.groups.size());
+        for (auto const& g: pha.groups) {
+            groups.push_back(g->Copy());
+        }
+
+        aggregates.reserve(pha.aggregates.size());
+        for (auto const& g: pha.aggregates) {
+            aggregates.push_back(g->Copy());
+        }
+
+        is_implicit_aggr = pha.is_implicit_aggr;
+        all_combinable = pha.all_combinable;
+        any_distinct = pha.any_distinct;
+        group_types = pha.group_types;
+        payload_types = pha.payload_types;
+        aggregate_return_types = pha.aggregate_return_types;
+        bindings = pha.bindings;
+        filter_indexes = pha.filter_indexes;
+    }
 	//! The groups
 	vector<unique_ptr<Expression>> groups;
 	//! The aggregates that have to be computed

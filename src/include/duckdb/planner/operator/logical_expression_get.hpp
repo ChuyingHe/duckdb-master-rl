@@ -21,8 +21,9 @@ public:
 	      expressions(move(expressions)) {
 	}
 
-    LogicalExpressionGet(LogicalExpressionGet const &leg) : LogicalOperator(LogicalOperatorType::LOGICAL_EXPRESSION_GET),
-    table_index(leg.table_index), expr_types(leg.types) {
+    LogicalExpressionGet(LogicalExpressionGet const &leg) : LogicalOperator(leg) {
+        table_index = leg.table_index;
+        expr_types = leg.types;
         expressions.reserve(leg.expressions.size());
         for(const auto& row: leg.expressions) {
             vector<unique_ptr<Expression>> tmp;

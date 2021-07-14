@@ -19,9 +19,11 @@ class LogicalJoin : public LogicalOperator {
 public:
 	explicit LogicalJoin(JoinType type, LogicalOperatorType logical_type = LogicalOperatorType::LOGICAL_JOIN);
 
-	LogicalJoin(LogicalJoin const &lj) : LogicalOperator(LogicalOperatorType::LOGICAL_JOIN),
-	join_type(lj.join_type), mark_index(lj.mark_index), left_projection_map(lj.left_projection_map),
-	right_projection_map(lj.right_projection_map) {
+	LogicalJoin(LogicalJoin const &lj) : LogicalOperator(lj) {
+        join_type = lj.join_type;
+        mark_index = lj.mark_index;
+        left_projection_map = lj.left_projection_map;
+        right_projection_map = lj.right_projection_map;
     }
 
 	// Gets the set of table references that are reachable from this node

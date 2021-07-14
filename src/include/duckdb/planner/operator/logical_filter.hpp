@@ -18,8 +18,8 @@ public:
 	explicit LogicalFilter(unique_ptr<Expression> expression);
 	LogicalFilter();
 
-    LogicalFilter(LogicalFilter const& lf) : LogicalOperator(LogicalOperatorType::LOGICAL_FILTER),
-                                             projection_map(lf.projection_map){
+    LogicalFilter(LogicalFilter const& lf) : LogicalOperator(lf) {
+        projection_map = lf.projection_map;
     }
 
 	vector<idx_t> projection_map;

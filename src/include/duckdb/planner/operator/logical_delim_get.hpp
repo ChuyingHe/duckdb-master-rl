@@ -21,8 +21,9 @@ public:
 		chunk_types = types;
 	}
 
-    LogicalDelimGet(LogicalDelimGet const &ldg) : LogicalOperator(LogicalOperatorType::LOGICAL_DELIM_GET),
-                                                  table_index(ldg.table_index), chunk_types(ldg.chunk_types) {
+    LogicalDelimGet(LogicalDelimGet const &ldg) : LogicalOperator(ldg) {
+        table_index = ldg.table_index;
+        chunk_types = ldg.chunk_types;
 	}
 
 	//! The table index in the current bind context

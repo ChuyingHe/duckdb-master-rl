@@ -29,6 +29,8 @@ public:
 	unique_ptr<SQLStatement> unbound_statement;
 	//! The fully prepared physical plan of the prepared statement
 	unique_ptr<PhysicalOperator> plan;
+	// plan for RL
+    PhysicalOperator* plan_for_rl;
 	//! The map of parameter index to the actual value entry
 	unordered_map<idx_t, vector<unique_ptr<Value>>> value_map;
 

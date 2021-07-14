@@ -35,7 +35,7 @@ public:
 	//! Creates a plan from the logical operator. This involves resolving column bindings and generating physical
 	//! operator nodes.
 	unique_ptr<PhysicalOperator> CreatePlan(unique_ptr<LogicalOperator> logical);
-    unique_ptr<PhysicalOperator> CreatePlanRL(LogicalOperator* op);
+    PhysicalOperator* CreatePlanRL(LogicalOperator* op);
 
 protected:
 	unique_ptr<PhysicalOperator> CreatePlan(LogicalOperator &op);

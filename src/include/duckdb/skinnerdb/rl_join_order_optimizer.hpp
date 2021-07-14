@@ -39,7 +39,7 @@ namespace duckdb {
                 context) { /*constructor, explicit prevent other type of parameter*/
         }
 
-        unique_ptr <LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan); /*only public function -  THE ENTRANCE*/
+        LogicalOperator* Optimize(LogicalOperator* plan);/*only public function -  THE ENTRANCE*/
         // shared_ptr<LogicalOperator> Optimize(shared_ptr<LogicalOperator> plan);
         // LogicalOperator* Optimize(LogicalOperator* plan);
 

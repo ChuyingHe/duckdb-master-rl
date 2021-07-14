@@ -56,20 +56,14 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
     // pre-optimizer
     profiler.StartPhase("pre_optimizer");
     Optimizer optimizer(*planner.binder, context);
-    plan = optimizer.OptimizeBeforeRLOptimizer(move(plan));
+    plan = optimizer.OptimizeBeforeRLOptimizer(move(plan));         // plan still has the ownership
     D_ASSERT(plan);
     profiler.EndPhase();
-
-    // convert UNIQUE to SHARE
-    // shared_ptr<LogicalOperator> plan_share = move(plan);
-
-    // rl-optimizer
-    // profiler.StartPhase("rl_optimizer");
 
     root_node_for_uct = new NodeForUCT{nullptr, nullptr, 0, 0.0, nullptr};
 
     int loop_count = 0;
-    // FIXME: fixme
+    // FIXME:
     while (loop_count < 100) {
     //while (!context.query_finished) {
         std::cout<<" 🦄️ loop_count = " << loop_count <<"\n";
@@ -78,24 +72,19 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         profiler.StartPhase("rl_optimizer");
         RLJoinOrderOptimizer rl_optimizer(context);
 
-        // DEEP COPY of unique_ptr
-        //LogicalOperator copy = *plan;
-        // unique_ptr<LogicalOperator> copy_of_plan = make_unique<LogicalOperator>(*plan);
-        //unique_ptr<LogicalOperator> copy_of_plan = *plan;
 
-        // unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(plan_share);
-        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(plan));    // CHECK HERE, erst kopieren dann
+        LogicalOperator* rl_plan = rl_optimizer.Optimize(plan.get());    // CHECK HERE, erst kopieren dann
 
         profiler.EndPhase();
 
         profiler.StartPhase("physical_planner");
         // now convert logical query plan into a physical query plan
         PhysicalPlanGenerator physical_planner(context);
-        auto physical_plan = physical_planner.CreatePlan(move(rl_plan));    // CHECK HERE, erst kopieren dann
+        auto physical_plan = physical_planner.CreatePlanRL(rl_plan);    // CHECK HERE, erst kopieren dann
         // auto physical_plan = physical_planner.CreatePlanRL(plan.get());
         profiler.EndPhase();
 
-        result->plan = move(physical_plan);
+        result->plan_for_rl = physical_plan;
         //auto prepared = result;
 
         vector<Value> bound_values;

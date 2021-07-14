@@ -48,7 +48,7 @@ unique_ptr<PhysicalOperator> PhysicalPlanGenerator::CreatePlan(unique_ptr<Logica
 	return plan;
 }
 
-unique_ptr<PhysicalOperator> PhysicalPlanGenerator::CreatePlanRL(LogicalOperator* op) {
+PhysicalOperator* PhysicalPlanGenerator::CreatePlanRL(LogicalOperator* op) {
     // first resolve column references
     context.profiler.StartPhase("column_binding");
     ColumnBindingResolver resolver;
@@ -68,7 +68,7 @@ unique_ptr<PhysicalOperator> PhysicalPlanGenerator::CreatePlanRL(LogicalOperator
     context.profiler.StartPhase("create_plan");
     auto plan = CreatePlan(*op);
     context.profiler.EndPhase();
-    return plan;
+    return plan.get();
 }
 
 unique_ptr<PhysicalOperator> PhysicalPlanGenerator::CreatePlan(LogicalOperator &op) {

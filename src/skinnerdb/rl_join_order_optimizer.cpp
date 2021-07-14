@@ -119,7 +119,7 @@ bool RLJoinOrderOptimizer::ExtractJoinRelations(LogicalOperator &input_op, vecto
             op->type == LogicalOperatorType::LOGICAL_WINDOW) {
             // don't push filters through projection or aggregate and group by
             RLJoinOrderOptimizer optimizer(context);
-            op->children[0] = optimizer.Optimize(move(op->children[0]));
+            op->children[0] = optimizer.Optimize(op->children[0].get());
             return false;
         }
         op = op->children[0].get();
@@ -620,10 +620,10 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<Logical
 
 
 
-unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOperator> plan) {
+LogicalOperator* RLJoinOrderOptimizer::Optimize(LogicalOperator* plan) {
     printf("\n\n Optimize \n\n");
     D_ASSERT(filters.empty() && relations.empty()); // assert that the RLJoinOrderOptimizer has not been used before
-    LogicalOperator *op = plan.get();
+    LogicalOperator *op = plan;
     vector<LogicalOperator *> filter_operators;
 
     /*Cases that doesnt need Join Order Optimizer:*/

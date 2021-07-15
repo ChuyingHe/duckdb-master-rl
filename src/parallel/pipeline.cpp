@@ -79,7 +79,7 @@ bool Pipeline::GetProgress(int &current_percentage) {
 	return GetProgress(client, child, current_percentage);
 }
 
-void Pipeline::Execute(TaskContext &task) {
+void Pipeline::Execute(TaskContext &task) {	//execution of task(pipeline without dependencies
 	auto &client = executor.context;
 	if (client.interrupted) {
 		return;
@@ -91,11 +91,11 @@ void Pipeline::Execute(TaskContext &task) {
 	ThreadContext thread(client);
 	ExecutionContext context(client, thread, task);
 	try {
-		auto state = child->GetOperatorState();
+		auto state = child->GetOperatorState();	//child is a PhysicalOperator
 		auto lstate = sink->GetLocalSinkState(context);
 		// incrementally process the pipeline
 		DataChunk intermediate;
-		child->InitializeChunkEmpty(intermediate);  /*initialize intermediate with pre-defined type*/
+		child->InitializeChunkEmpty(intermediate);  //initialize intermediate with pre-defined type: TABLE_SCAN of "company_type": intermediate is initialized with 2 data [Vector, Vector]
 		while (true) {
 			child->GetChunk(context, intermediate, state.get());
 			thread.profiler.StartOperator(sink);
@@ -259,7 +259,7 @@ void Pipeline::Schedule() {	// here: this = current pipeline from executor.cpp E
 			// not all aggregates are parallelizable: switch to sequential mode
 			break;
 		}
-		if (ScheduleOperator(sink->children[0].get())) {
+		if (ScheduleOperator(sink->children[0].get())) {	// whether possible to parallel tasks
 			// all parallel tasks have been scheduled: return
 			return;
 		}

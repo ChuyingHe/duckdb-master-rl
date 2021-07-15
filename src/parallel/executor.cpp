@@ -29,16 +29,16 @@ void Executor::Initialize(PhysicalOperator *plan) {
 
 	context.profiler.Initialize(physical_plan);
 	auto &scheduler = TaskScheduler::GetScheduler(context);
-	this->producer = scheduler.CreateProducer();
+	this->producer = scheduler.CreateProducer();        // returns unique_ptr<ProducerToken>
 
-	BuildPipelines(physical_plan, nullptr); //update this->pipelines
+	BuildPipelines(physical_plan, nullptr);     //create this->pipelines
 
 	this->total_pipelines = pipelines.size();
 
 	// schedule pipelines that do not have dependents
 	for (auto &pipeline : pipelines) {
 		if (!pipeline->HasDependencies()) {
-			pipeline->Schedule();
+			pipeline->Schedule();   // if current pipeline doesn't have dependencies/child, then pipeline.total_tasks+1
 		}
 	}
 
@@ -46,7 +46,7 @@ void Executor::Initialize(PhysicalOperator *plan) {
 	while (completed_pipelines < total_pipelines) {
 		unique_ptr<Task> task;
 		while (scheduler.GetTaskFromProducer(*producer, task)) {
-			task->Execute();
+			task->Execute();    // get tasks from pipelines  = pipeline which doesn't have dependencies
 			task.reset();
 		}
 	}

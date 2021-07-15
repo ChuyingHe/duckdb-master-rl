@@ -26,7 +26,7 @@ void loadTables(Connection con) {
         con.Query(IMDB_TABLE_CREATE_SQL[t]);
         con.Query(IMDB_TABLE_FROM_CSV_SQL[t]);
 
-        /*TODO: delet the following test code*/
+        /*TODO: delete the following test code*/
         auto test = con.Query(TEST_QUERY[t]);
         test->Print();
     }
@@ -63,7 +63,7 @@ void runJOBQuerys(Connection con) {
             con.Query("PRAGMA enable_progress_bar");
             std::cout <<" 📒 after enable_progress_bar \n";
 
-            con.Query("PRAGMA enable_rl_join_order_optimizer");
+            //con.Query("PRAGMA enable_rl_join_order_optimizer");
             std::string job_query = readFileIntoString(entry.path());
             std::cout <<"entry_path" <<entry.path() <<"\n JOB query = " << job_query;
             auto result = con.Query(job_query);

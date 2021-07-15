@@ -25,6 +25,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include <iostream>
 
 namespace duckdb {
 
@@ -54,6 +55,9 @@ TableCatalogEntry::TableCatalogEntry(Catalog *catalog, SchemaCatalogEntry *schem
     : StandardEntry(CatalogType::TABLE_ENTRY, schema, catalog, info->Base().table), storage(move(inherited_storage)),
       columns(move(info->Base().columns)), constraints(move(info->Base().constraints)),
       bound_constraints(move(info->bound_constraints)), name_map(info->name_map) {
+    printf("");
+    std::cout<<"call constructor of TableCatalogEntry for "<< schema->name <<"\n" ;
+
 	this->temporary = info->Base().temporary;
 	// add lower case aliases
 	AddLowerCaseAliases(name_map);

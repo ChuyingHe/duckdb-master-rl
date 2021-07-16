@@ -15,6 +15,7 @@ public:
 	DeleteGlobalState() : deleted_count(0) {
 	}
     DeleteGlobalState(DeleteGlobalState const& dgs) : GlobalOperatorState(dgs) {
+        deleted_count = dgs.deleted_count.load();
 	}
 
 	atomic<idx_t> deleted_count;

@@ -13,7 +13,7 @@ public:
 
     CopyToFunctionGlobalState(CopyToFunctionGlobalState const& ctfgs) : GlobalOperatorState(ctfgs) {
         rows_copied = ctfgs.rows_copied;
-        global_state = ctfgs.global_state;
+        global_state = ctfgs.global_state->clone();
 	}
 
 	idx_t rows_copied;

@@ -28,6 +28,21 @@ public:
 	                       vector<LogicalType> group_types_p, vector<LogicalType> payload_types_p,
 	                       vector<BoundAggregateExpression *> bindings_p);
 
+    PartitionableHashTable(PartitionableHashTable const& pht): buffer_manager(pht.buffer_manager), partition_info(pht.partition_info) {
+        group_types = pht.group_types;
+        payload_types = pht.payload_types;
+        bindings = pht.bindings;
+        is_partitioned = pht.is_partitioned;
+        sel_vectors = pht.sel_vectors;
+        sel_vector_sizes = pht.sel_vector_sizes;
+        group_subset = pht.group_subset;
+        payload_subset = pht.payload_subset;
+        hashes = pht.hashes;
+        hashes_subset = pht.hashes_subset;
+        unpartitioned_hts = pht.unpartitioned_hts;
+        radix_partitioned_hts = pht.radix_partitioned_hts;
+    }
+
 	idx_t AddChunk(DataChunk &groups, DataChunk &payload, bool do_partition);
 	void Partition();
 	bool IsPartitioned();
@@ -36,6 +51,10 @@ public:
 	HashTableList GetUnpartitioned();
 
 	void Finalize();
+
+    unique_ptr<PartitionableHashTable> clone() {
+
+    }
 
 private:
 	BufferManager &buffer_manager;

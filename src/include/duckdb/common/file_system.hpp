@@ -29,9 +29,14 @@ struct FileHandle {
 public:
 	FileHandle(FileSystem &file_system, string path) : file_system(file_system), path(path) {
 	}
-	FileHandle(const FileHandle &) = delete;
+	// FileHandle(const FileHandle &) = delete; //from duckdb original
+    FileHandle(FileHandle const& fh): file_system(fh.file_system) {
+        path = fh.path;
+	}
 	virtual ~FileHandle() {
 	}
+
+    virtual unique_ptr<FileHandle> clone() const;
 
 	void Read(void *buffer, idx_t nr_bytes, idx_t location);
 	void Write(void *buffer, idx_t nr_bytes, idx_t location);

@@ -407,9 +407,8 @@ struct GlobalWriteCSVData : public GlobalFunctionData {
 		handle = fs.OpenFile(file_path, FileFlags::FILE_FLAGS_WRITE | FileFlags::FILE_FLAGS_FILE_CREATE_NEW,
 		                     FileLockType::WRITE_LOCK);
 	}
-    GlobalWriteCSVData(GlobalWriteCSVData const& gwd): GlobalFunctionData(gwd) {
-        fs = gwd.fs;
-        // handle = gwd.handle;
+    GlobalWriteCSVData(GlobalWriteCSVData const& gwd): GlobalFunctionData(gwd), fs(gwd.fs){
+        handle = gwd.handle->clone();
 	}
 
 	void WriteData(const_data_ptr_t data, idx_t size) {

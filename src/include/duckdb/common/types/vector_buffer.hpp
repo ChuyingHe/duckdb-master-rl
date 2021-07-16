@@ -68,6 +68,22 @@ public:
 	VectorBuffer(VectorType vectorType) : vector_type(vectorType) {
 	}
 
+    VectorBuffer(VectorBuffer const& vb) {
+        data = vb.data;     // uint8_t
+        vector_type = vb.vector_type;
+        type = vb.type;
+        buffer_type = vb.buffer_type;
+	}
+
+    unique_ptr<data_t[]> vb_data_clone(unique_ptr<data_t[]> data) {
+
+	}
+
+
+    buffer_ptr<VectorBuffer> clone() const {
+        return make_shared<VectorBuffer>(*this);
+	}
+
 public:
 	data_ptr_t GetData() {
 		return data.get();

@@ -68,9 +68,19 @@ struct UnixFileHandle : public FileHandle {
 public:
 	UnixFileHandle(FileSystem &file_system, string path, int fd) : FileHandle(file_system, move(path)), fd(fd) {
 	}
+
 	~UnixFileHandle() override {
 		Close();
 	}
+
+    UnixFileHandle(UnixFileHandle const& ufh): FileHandle(ufh) {
+        fd = ufh.fd;
+	}
+
+    virtual unique_ptr<FileHandle> clone() const override {
+        return make_unique<UnixFileHandle>(*this);
+	}
+
 
 protected:
 	void Close() override {

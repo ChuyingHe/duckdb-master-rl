@@ -98,13 +98,18 @@ public:
 	      partition_info((idx_t)TaskScheduler::GetScheduler(context).NumberOfThreads()) {
 	}
     HashAggregateGlobalState(HashAggregateGlobalState const& hags) : GlobalOperatorState(hags),
-    op(hags.op) {
+    op(hags.op), partition_info(hags.partition_info) {
+        intermediate_hts.reserve(hags.intermediate_hts.size());
+        for(auto const& elem: hags.intermediate_hts) {
+            intermediate_hts.push_back(elem);   // need clone()
+        }
 
         intermediate_hts = hags.intermediate_hts;
-        hags.finalized_hts;
+        finalized_hts = hags.finalized_hts;
+
         is_empty = hags.is_empty;
-        //FIXME: total_groups
-        partition_info = hags.partition_info;
+        //FIXME: lock
+        total_groups = hags.total_groups.load();
 	}
 
 	PhysicalHashAggregate &op;

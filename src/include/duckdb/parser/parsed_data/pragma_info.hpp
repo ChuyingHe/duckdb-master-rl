@@ -27,7 +27,7 @@ struct PragmaInfo : public ParseInfo {
 
 
 public:
-    std::unique_ptr<ParseInfo> clone() const override {
+    unique_ptr<ParseInfo> clone() const override {
         Copy();
     }
 

@@ -21,13 +21,7 @@ public:
 		types = prepared->types;
 	}
 
-    /*LogicalExecute(LogicalExecute const &le) : LogicalOperator(LogicalOperatorType::LOGICAL_EXECUTE) {
-	    types = le.prepared->types;
-        prepared = le.prepared;
-	}*/
-
     LogicalExecute(LogicalExecute const &le) : LogicalOperator(le) {
-        types = le.prepared->types;
         prepared = le.prepared;
     }
 

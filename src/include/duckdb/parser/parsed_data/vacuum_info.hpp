@@ -17,7 +17,7 @@ struct VacuumInfo : public ParseInfo {
     VacuumInfo(VacuumInfo const& vi) {
     }
 
-    std::unique_ptr<ParseInfo> clone() const override {
+    unique_ptr<ParseInfo> clone() const override {
         return make_unique<VacuumInfo>(*this);
     }
 

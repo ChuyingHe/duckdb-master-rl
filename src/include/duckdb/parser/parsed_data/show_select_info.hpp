@@ -27,7 +27,7 @@ struct ShowSelectInfo : public ParseInfo {
         aliases = ssi.aliases;
     }
 
-    std::unique_ptr<ParseInfo> clone() const override {
+    unique_ptr<ParseInfo> clone() const override {
         return make_unique<ShowSelectInfo>(*this);
     }
 

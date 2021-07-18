@@ -75,8 +75,12 @@ struct RenameColumnInfo : public AlterTableInfo {
 	}
 	~RenameColumnInfo() override {
 	}
+    RenameColumnInfo(RenameColumnInfo const& rci) : AlterTableInfo(rci) {
+	    old_name = rci.old_name;
+	    new_name = rci.new_name;
+	}
 
-	//! Column old name
+    //! Column old name
 	string old_name;
 	//! Column new name
 	string new_name;
@@ -85,7 +89,7 @@ public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &source, string schema, string table);
-    std::unique_ptr<ParseInfo> clone() const override;
+    unique_ptr<ParseInfo> clone() const override;
 };
 
 //===--------------------------------------------------------------------===//
@@ -98,6 +102,10 @@ struct RenameTableInfo : public AlterTableInfo {
 	~RenameTableInfo() override {
 	}
 
+    RenameTableInfo(RenameTableInfo const& rti) : AlterTableInfo(rti) {
+	    new_table_name = rti.new_table_name;
+	}
+
 	//! Relation new name
 	string new_table_name;
 
@@ -105,7 +113,7 @@ public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &source, string schema, string table);
-    std::unique_ptr<ParseInfo> clone() const override;
+    unique_ptr<ParseInfo> clone() const override;
 };
 
 //===--------------------------------------------------------------------===//
@@ -117,6 +125,8 @@ struct AddColumnInfo : public AlterTableInfo {
 	}
 	~AddColumnInfo() override {
 	}
+    AddColumnInfo(AddColumnInfo const& aci) : AlterTableInfo(aci), new_column(aci.new_column) {
+	}
 
 	//! New column
 	ColumnDefinition new_column;
@@ -125,7 +135,7 @@ public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &source, string schema, string table);
-    std::unique_ptr<ParseInfo> clone() const override;
+    unique_ptr<ParseInfo> clone() const override;
 };
 
 //===--------------------------------------------------------------------===//
@@ -138,6 +148,10 @@ struct RemoveColumnInfo : public AlterTableInfo {
 	}
 	~RemoveColumnInfo() override {
 	}
+    RemoveColumnInfo(RemoveColumnInfo const& rci) : AlterTableInfo(rci) {
+	    removed_column = rci.removed_column;
+	    if_exists = rci.if_exists;
+	}
 
 	//! The column to remove
 	string removed_column;
@@ -148,7 +162,7 @@ public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &source, string schema, string table);
-    std::unique_ptr<ParseInfo> clone() const override;
+    unique_ptr<ParseInfo> clone() const override;
 };
 
 //===--------------------------------------------------------------------===//
@@ -162,6 +176,11 @@ struct ChangeColumnTypeInfo : public AlterTableInfo {
 	}
 	~ChangeColumnTypeInfo() override {
 	}
+    ChangeColumnTypeInfo(ChangeColumnTypeInfo const& ccti) : AlterTableInfo(ccti) {
+	    column_name = ccti.column_name;
+	    target_type = ccti.target_type;
+        expression = ccti.expression->Copy();
+	}
 
 	//! The column name to alter
 	string column_name;
@@ -174,7 +193,7 @@ public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &source, string schema, string table);
-    std::unique_ptr<ParseInfo> clone() const override;
+    unique_ptr<ParseInfo> clone() const override;
 };
 
 //===--------------------------------------------------------------------===//
@@ -187,6 +206,10 @@ struct SetDefaultInfo : public AlterTableInfo {
 	}
 	~SetDefaultInfo() override {
 	}
+    SetDefaultInfo(SetDefaultInfo const& sdi) : AlterTableInfo(sdi) {
+        column_name = sdi.column_name;
+        expression = sdi.expression->Copy();
+	}
 
 	//! The column name to alter
 	string column_name;
@@ -197,7 +220,7 @@ public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &source, string schema, string table);
-    std::unique_ptr<ParseInfo> clone() const override;
+    unique_ptr<ParseInfo> clone() const override;
 };
 
 //===--------------------------------------------------------------------===//
@@ -231,6 +254,9 @@ struct RenameViewInfo : public AlterViewInfo {
 	}
 	~RenameViewInfo() override {
 	}
+    RenameViewInfo(RenameViewInfo const& rvi) : AlterViewInfo(rvi) {
+        new_view_name = rvi.new_view_name;
+	}
 
 	//! Relation new name
 	string new_view_name;
@@ -239,7 +265,7 @@ public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
 	static unique_ptr<AlterInfo> Deserialize(Deserializer &source, string schema, string table);
-    std::unique_ptr<ParseInfo> clone() const override;
+    unique_ptr<ParseInfo> clone() const override;
 };
 
 } // namespace duckdb

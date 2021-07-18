@@ -11,6 +11,19 @@ PreparedStatementData::PreparedStatementData(StatementType type)
 PreparedStatementData::~PreparedStatementData() {
 }
 
+PreparedStatementData::PreparedStatementData(PreparedStatementData const& psd) {
+	statement_type = psd.statement_type;
+	unbound_statement = psd.unbound_statement->Copy();
+
+	plan = psd.plan->clone();
+
+	for(auto const& item:psd.value_map) {
+		value_map[item.first].reserve(item.second.size());
+		for (auto const& value:item.second) {
+			value_map[item.first].push_back(make_unique<Value>(value->Copy()));
+		}
+	}
+}
 std::shared_ptr<PreparedStatementData> PreparedStatementData::clone() const {
 	return make_shared<PreparedStatementData>(*this);
 }

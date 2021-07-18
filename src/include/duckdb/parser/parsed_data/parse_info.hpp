@@ -16,7 +16,7 @@ struct ParseInfo {
 	virtual ~ParseInfo() {
 	}
 
-    virtual std::unique_ptr<ParseInfo> clone() const = 0; // Virtual constructor (copying)
+    virtual unique_ptr<ParseInfo> clone() const = 0; // Virtual constructor (copying)
 };
 
 } // namespace duckdb

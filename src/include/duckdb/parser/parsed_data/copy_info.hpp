@@ -46,7 +46,7 @@ public:
 		result->options = options;
 		return result;
 	}
-    std::unique_ptr<ParseInfo> clone() const override {
+    unique_ptr<ParseInfo> clone() const override {
         Copy();
     }
 };

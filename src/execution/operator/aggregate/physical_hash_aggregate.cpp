@@ -108,7 +108,6 @@ public:
         finalized_hts = hags.finalized_hts;
 
         is_empty = hags.is_empty;
-        //FIXME: lock
         total_groups = hags.total_groups.load();
 	}
 
@@ -125,7 +124,7 @@ public:
 
 	RadixPartitionInfo partition_info;
 
-    unique_ptr <GlobalOperatorState> clone() {
+    unique_ptr<GlobalOperatorState> clone() {
         return make_unique<HashAggregateGlobalState>(*this);
     }
 };

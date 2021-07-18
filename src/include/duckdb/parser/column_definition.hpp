@@ -23,6 +23,13 @@ public:
 	    : name(name), type(type), default_value(move(default_value)) {
 	}
 
+    ColumnDefinition(ColumnDefinition const& cd) {
+	    name = cd.name;
+	    oid = cd.oid;
+	    type = cd.type;
+        default_value = cd.default_value->Copy();
+	}
+
 	//! The name of the entry
 	string name;
 	//! The index of the column in the table

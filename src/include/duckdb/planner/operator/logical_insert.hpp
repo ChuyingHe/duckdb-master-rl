@@ -31,10 +31,11 @@ public:
 
         column_index_map = li.column_index_map;
         expected_types = li.expected_types;
-        table = li.table;
+        TableCatalogEntry table_content = *li.table;
+        table = &table_content;
         bound_defaults.reserve(li.bound_defaults.size());
-        for (auto const& bd:li.bound_defaults) {
-            bound_defaults.push_back(bd->Copy());
+        for (auto const& elem:li.bound_defaults) {
+            bound_defaults.push_back(elem->Copy());
         }
 	}
 

@@ -25,6 +25,12 @@ public:
 	FileBuffer(FileBufferType type, uint64_t bufsiz);
 	virtual ~FileBuffer();
 
+    unique_ptr<FileBuffer> Copy() {
+        auto copy = make_unique<FileBuffer>(type, size);
+        copy->type = type;
+        return move(copy);
+    }
+
 	//! The type of the buffer
 	FileBufferType type;
 	//! The buffer that users can write to

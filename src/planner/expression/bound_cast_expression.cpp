@@ -71,10 +71,12 @@ bool BoundCastExpression::Equals(const BaseExpression *other_p) const {
 	return true;
 }
 
+BoundCastExpression::BoundCastExpression(BoundCastExpression const& bce) : Expression(bce) {
+    child = bce.child->Copy();
+}
+
 unique_ptr<Expression> BoundCastExpression::Copy() {
-	auto copy = make_unique<BoundCastExpression>(child->Copy(), return_type);
-	copy->CopyProperties(*this);
-	return move(copy);
+	return make_unique<BoundCastExpression>(*this);
 }
 
 } // namespace duckdb

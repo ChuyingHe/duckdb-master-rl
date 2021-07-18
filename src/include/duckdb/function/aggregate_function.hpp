@@ -70,6 +70,19 @@ public:
 	                        simple_update, bind, destructor, statistics, frame) {
 	}
 
+    AggregateFunction(AggregateFunction const& af) : BaseScalarFunction(af) {
+        state_size = af.state_size;
+        initialize = af.initialize;
+        update = af.update;
+        combine = af.combine;
+        finalize = af.finalize;
+        simple_update = af.simple_update;
+        frame = af.frame;
+        bind = af.bind;
+        destructor = af.destructor;
+        statistics = af.statistics;
+	}
+
 	//! The hashed aggregate state sizing function
 	aggregate_size_t state_size;
 	//! The hashed aggregate state initialization function

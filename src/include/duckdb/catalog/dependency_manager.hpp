@@ -22,7 +22,14 @@ class DependencyManager {
 
 public:
 	explicit DependencyManager(Catalog &catalog);
-
+    DependencyManager(DependencyManager const& dm) : catalog(dm.catalog) {
+        for (auto const& elem: dm.dependents_map) {
+            dependents_map[elem.first] = elem.second;
+        }
+        for (auto const& elem: dm.dependencies_map) {
+            dependencies_map[elem.first] = elem.second;
+        }
+    }
 	//! Erase the object from the DependencyManager; this should only happen when the object itself is destroyed
 	void EraseObject(CatalogEntry *object);
 	// //! Clear all the dependencies of all entries in the catalog set
@@ -36,6 +43,10 @@ private:
 	//! Map of objects that the source object DEPENDS on, i.e. when any of the entries in the vector perform a CASCADE
 	//! drop then [object] is deleted as wel
 	unordered_map<CatalogEntry *, unordered_set<CatalogEntry *>> dependencies_map;
+
+    unique_ptr<DependencyManager> clone() {
+        return make_unique<DependencyManager>(*this);
+    }
 
 private:
 	void AddObject(ClientContext &context, CatalogEntry *object, unordered_set<CatalogEntry *> &dependencies);

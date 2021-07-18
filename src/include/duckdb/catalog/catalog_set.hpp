@@ -29,6 +29,16 @@ struct MappingValue {
 	explicit MappingValue(idx_t index_) : index(index_), timestamp(0), deleted(false), parent(nullptr) {
 	}
 
+    unique_ptr<MappingValue> Copy() const {
+	    MappingValue* parent_raw_ptr = parent->Copy().get();
+	    auto copy = make_unique<MappingValue>(index);
+        copy->timestamp = timestamp;
+        copy->deleted = deleted;
+        copy->parent = parent_raw_ptr;
+        copy->child = child->Copy();
+        return move(copy);
+	}
+
 	idx_t index;
 	transaction_t timestamp;
 	bool deleted;
@@ -41,7 +51,24 @@ class CatalogSet {
 	friend class DependencyManager;
 
 public:
+    CatalogSet(CatalogSet const& cs): catalog(cs.catalog) {
+        for (auto const& elem: cs.mapping) {
+            mapping[elem.first] = elem.second->Copy();
+        }
+        //FIXME:	unordered_map<idx_t, unique_ptr<CatalogEntry>> entries;
+        for (auto const& elem: cs.entries) {
+            entries[elem.first] = elem.second->Copy();    // Copy(context) throw exception, therefore wrote Copy()
+        }
+        current_entry = cs.current_entry;
+        defaults = cs.defaults->Copy();
+    }
+
+public:
 	explicit CatalogSet(Catalog &catalog, unique_ptr<DefaultGenerator> defaults = nullptr);
+
+    unique_ptr<CatalogSet> Copy() const {
+        return make_unique<CatalogSet>(*this);
+    }
 
 	//! Create an entry in the catalog set. Returns whether or not it was
 	//! successful.

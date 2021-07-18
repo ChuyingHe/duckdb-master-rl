@@ -21,7 +21,7 @@ public:
 	      info(move(info)) {
 	}
     PhysicalCreateFunction(PhysicalCreateFunction const& pcf) : PhysicalOperator(PhysicalOperatorType::CREATE_MACRO, {LogicalType::BIGINT}, pcf.estimated_cardinality),
-                                                                info(pcf.info->clone()) {
+                                                                info(pcf.info->cloneCreateMacroInfo()) {
 	}
 	unique_ptr<CreateMacroInfo> info;
 

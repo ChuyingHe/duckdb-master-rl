@@ -22,12 +22,10 @@ public:
 		children.push_back(move(bottom));
 	}
 
-    LogicalRecursiveCTE(LogicalRecursiveCTE const& lrcte) : LogicalOperator(type),
-    union_all(lrcte.union_all), table_index(lrcte.table_index), column_count(lrcte.column_count) {
-	    children.reserve(lrcte.children.size());
-        for (auto const& child: lrcte.children) {
-            children.push_back(child->clone());
-        }
+    LogicalRecursiveCTE(LogicalRecursiveCTE const& lrcte) : LogicalOperator(lrcte) {
+        union_all = lrcte.union_all;
+        table_index = lrcte.table_index;
+        column_count = lrcte.column_count;
 	}
 
 	bool union_all;

@@ -32,11 +32,11 @@ bool BoundUnnestExpression::Equals(const BaseExpression *other_p) const {
 	}
 	return true;
 }
-
+BoundUnnestExpression::BoundUnnestExpression(BoundUnnestExpression const& bue) : Expression(bue) {
+    child = bue.child->Copy();
+}
 unique_ptr<Expression> BoundUnnestExpression::Copy() {
-	auto copy = make_unique<BoundUnnestExpression>(return_type);
-	copy->child = child->Copy();
-	return move(copy);
+	return make_unique<BoundUnnestExpression>(*this);
 }
 
 } // namespace duckdb

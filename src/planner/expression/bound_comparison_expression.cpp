@@ -24,11 +24,12 @@ bool BoundComparisonExpression::Equals(const BaseExpression *other_p) const {
 	}
 	return true;
 }
-
+BoundComparisonExpression::BoundComparisonExpression(BoundComparisonExpression const& bce) : Expression(bce) {
+    left = bce.left->Copy();
+    right = bce.right->Copy();
+}
 unique_ptr<Expression> BoundComparisonExpression::Copy() {
-	auto copy = make_unique<BoundComparisonExpression>(type, left->Copy(), right->Copy());
-	copy->CopyProperties(*this);
-	return move(copy);
+	auto copy = make_unique<BoundComparisonExpression>(*this);
 }
 
 } // namespace duckdb

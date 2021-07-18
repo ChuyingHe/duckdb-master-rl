@@ -32,11 +32,11 @@ struct CreateScalarFunctionInfo : public CreateFunctionInfo {
 
 public:
 	unique_ptr<CreateInfo> Copy() const override {
-		ScalarFunctionSet set(name);
-		set.functions = functions;
-		auto result = make_unique<CreateScalarFunctionInfo>(move(set));
-		CopyProperties(*result);
-		return move(result);
+        ScalarFunctionSet set(name);
+        set.functions = functions;
+        auto result = make_unique<CreateScalarFunctionInfo>(move(set));
+        CopyProperties(*result);
+        return move(result);
 	}
     std::unique_ptr<ParseInfo> clone() const override {
         Copy();

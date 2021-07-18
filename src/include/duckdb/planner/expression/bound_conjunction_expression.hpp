@@ -16,7 +16,7 @@ class BoundConjunctionExpression : public Expression {
 public:
 	explicit BoundConjunctionExpression(ExpressionType type);
 	BoundConjunctionExpression(ExpressionType type, unique_ptr<Expression> left, unique_ptr<Expression> right);
-
+    BoundConjunctionExpression(BoundConjunctionExpression const& bce);
 	vector<unique_ptr<Expression>> children;
 
 public:

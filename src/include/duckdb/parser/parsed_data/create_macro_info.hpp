@@ -16,13 +16,11 @@ namespace duckdb {
 struct CreateMacroInfo : public CreateFunctionInfo {
 	CreateMacroInfo() : CreateFunctionInfo(CatalogType::MACRO_ENTRY) {
 	}
-    CreateMacroInfo(CreateMacroInfo const &cmi) : CreateFunctionInfo(CatalogType::MACRO_ENTRY),
-    function(cmi.function->Copy()){
-	}
 
 	unique_ptr<MacroFunction> function;
 
 public:
+
 	unique_ptr<CreateInfo> Copy() const override {
 		auto result = make_unique<CreateMacroInfo>();
 		result->function = function->Copy();
@@ -35,7 +33,7 @@ public:
     }
 
     std::unique_ptr<CreateMacroInfo> clone() {
-        return make_unique<CreateMacroInfo>(*this);
+        Copy();
     }
 };
 

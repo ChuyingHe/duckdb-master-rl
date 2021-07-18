@@ -27,10 +27,12 @@ hash_t BoundConstantExpression::Hash() const {
 	return CombineHash(ValueOperations::Hash(value), result);
 }
 
+BoundConstantExpression::BoundConstantExpression(BoundConstantExpression const& bce) : Expression(bce){
+    value = bce.value.Copy();
+}
+
 unique_ptr<Expression> BoundConstantExpression::Copy() {
-	auto copy = make_unique<BoundConstantExpression>(value);
-	copy->CopyProperties(*this);
-	return move(copy);
+	return make_unique<BoundConstantExpression>(*this);
 }
 
 } // namespace duckdb

@@ -44,7 +44,9 @@ class SchemaCatalogEntry : public CatalogEntry {
 
 public:
 	SchemaCatalogEntry(Catalog *catalog, string name, bool is_internal);
-
+    SchemaCatalogEntry(SchemaCatalogEntry const& sce): CatalogEntry(sce), tables(sce.tables), indexes(sce.indexes), table_functions(sce.table_functions), copy_functions(sce.copy_functions),
+    pragma_functions(sce.pragma_functions), functions(sce.functions), sequences(sce.sequences), collations(sce.collations) {
+    }
 private:
 	//! The catalog set holding the tables
 	CatalogSet tables;

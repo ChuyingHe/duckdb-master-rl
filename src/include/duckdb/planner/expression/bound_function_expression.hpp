@@ -20,7 +20,7 @@ public:
 	BoundFunctionExpression(LogicalType return_type, ScalarFunction bound_function,
 	                        vector<unique_ptr<Expression>> arguments, unique_ptr<FunctionData> bind_info,
 	                        bool is_operator = false);
-
+    BoundFunctionExpression(BoundFunctionExpression const& bfe);
 	// The bound function expression
 	ScalarFunction function;
 	//! List of child-expressions of the function

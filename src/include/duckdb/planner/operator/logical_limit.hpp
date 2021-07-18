@@ -39,7 +39,6 @@ public:
 		return children[0]->GetColumnBindings();
 	}
     std::unique_ptr<LogicalOperator> clone() const override {
-        // return make_unique<LogicalLimit>(this->limit_val, this->offset_val, this->limit->Copy(), this->offset->Copy());
         return make_unique<LogicalLimit>(*this);
     }
 

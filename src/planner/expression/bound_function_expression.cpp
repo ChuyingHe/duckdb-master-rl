@@ -56,18 +56,17 @@ bool BoundFunctionExpression::Equals(const BaseExpression *other_p) const {
 	}
 	return true;
 }
+BoundFunctionExpression::BoundFunctionExpression(BoundFunctionExpression const& bfe) : Expression(bfe), function(bfe.function) {
+    children.reserve(bfe.children.size());
+    for (auto &child : bfe.children) {
+        children.push_back(child->Copy());
+    }
+    bind_info = bfe.bind_info->Copy();
+    is_operator = bfe.is_operator;
+}
 
 unique_ptr<Expression> BoundFunctionExpression::Copy() {
-	vector<unique_ptr<Expression>> new_children;
-	for (auto &child : children) {
-		new_children.push_back(child->Copy());
-	}
-	unique_ptr<FunctionData> new_bind_info = bind_info ? bind_info->Copy() : nullptr;
-
-	auto copy = make_unique<BoundFunctionExpression>(return_type, function, move(new_children), move(new_bind_info),
-	                                                 is_operator);
-	copy->CopyProperties(*this);
-	return move(copy);
+	return make_unique<BoundFunctionExpression>(*this);
 }
 
 } // namespace duckdb

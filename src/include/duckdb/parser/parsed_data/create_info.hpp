@@ -30,7 +30,7 @@ struct CreateInfo : public ParseInfo {
 	~CreateInfo() override {
 	}
 
-	CreateInfo(CreateInfo &ci) {
+	CreateInfo(CreateInfo const &ci) {
         schema = ci.schema;
         type = ci.type;
         internal = ci.internal;
@@ -54,7 +54,7 @@ struct CreateInfo : public ParseInfo {
 
 public:
 	virtual unique_ptr<CreateInfo> Copy() const = 0;
-	void CopyProperties(CreateInfo &other) const {
+	void CopyProperties(CreateInfo &other) const {  //copy value Current to Other
 		other.type = type;
 		other.schema = schema;
 		other.on_conflict = on_conflict;

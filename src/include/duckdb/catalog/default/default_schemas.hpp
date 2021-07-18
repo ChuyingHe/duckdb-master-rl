@@ -16,6 +16,9 @@ class DefaultSchemaGenerator : public DefaultGenerator {
 public:
 	explicit DefaultSchemaGenerator(Catalog &catalog);
 
+    unique_ptr<DefaultGenerator> Copy() const override {
+        return make_unique<DefaultSchemaGenerator>(catalog);
+    }
 public:
 	unique_ptr<CatalogEntry> CreateDefaultEntry(ClientContext &context, const string &entry_name) override;
 };

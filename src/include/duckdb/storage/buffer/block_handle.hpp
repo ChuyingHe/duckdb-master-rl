@@ -32,7 +32,19 @@ public:
 	            idx_t alloc_size);
 	~BlockHandle();
 
+    weak_ptr<BlockHandle> Copy() {
+        auto copy = make_shared<BlockHandle>(db, block_id);
+
+        copy->state = state;
+        copy->readers = readers.load();
+        copy->buffer = buffer->Copy();
+        // ignore the const copy->can_destroy = can_destroy;
+        copy->eviction_timestamp = eviction_timestamp.load();
+        return move(copy);
+    }
+
 	DatabaseInstance &db;
+
 
 public:
 	block_id_t BlockId() {

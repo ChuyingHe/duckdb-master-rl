@@ -49,6 +49,13 @@ public:
 	                     varargs) {
 	}
 
+    ScalarFunction(ScalarFunction const& sf) : BaseScalarFunction(sf) {
+        function = sf.function;
+        bind = sf.bind;
+        dependency = sf.dependency;
+        statistics = sf.statistics;
+	}
+
 	//! The main scalar function to execute
 	scalar_function_t function;
 	//! The bind function (if any)

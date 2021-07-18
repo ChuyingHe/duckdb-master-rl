@@ -29,9 +29,11 @@ bool BoundReferenceExpression::Equals(const BaseExpression *other_p) const {
 hash_t BoundReferenceExpression::Hash() const {
 	return CombineHash(Expression::Hash(), duckdb::Hash<idx_t>(index));
 }
-
+BoundReferenceExpression::BoundReferenceExpression(BoundReferenceExpression const& bre) : Expression(bre) {
+    index = bre.index;
+}
 unique_ptr<Expression> BoundReferenceExpression::Copy() {
-	return make_unique<BoundReferenceExpression>(alias, return_type, index);
+	return make_unique<BoundReferenceExpression>(*this);
 }
 
 } // namespace duckdb

@@ -20,8 +20,8 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_WINDOW), window_index(window_index) {
 	}
 
-    LogicalWindow(LogicalWindow const& lw) : LogicalOperator(LogicalOperatorType::LOGICAL_WINDOW),
-    window_index(lw.window_index) {
+    LogicalWindow(LogicalWindow const& lw) : LogicalOperator(lw) {
+        window_index = lw.window_index;
 	}
 
 	idx_t window_index;

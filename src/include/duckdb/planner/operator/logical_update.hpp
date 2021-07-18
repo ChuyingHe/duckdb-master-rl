@@ -18,14 +18,17 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_UPDATE), table(table) {
 	}
 
-    LogicalUpdate(LogicalUpdate const& lu) : LogicalOperator(LogicalOperatorType::LOGICAL_UPDATE),
-    table(lu.table), columns(lu.columns),  is_index_update(lu.is_index_update) {
-	    //FIXME: TableCatalogEntry
+    LogicalUpdate(LogicalUpdate const& lu) : LogicalOperator(lu) {
+        TableCatalogEntry copy = *lu.table;
+        table = &copy;
+
+        columns = lu.columns;
 
         bound_defaults.reserve(lu.bound_defaults.size());
         for (auto const& bd: lu.bound_defaults) {
             bound_defaults.push_back(bd->Copy());
         }
+        is_index_update = lu.is_index_update;
 	}
 
 	TableCatalogEntry *table;

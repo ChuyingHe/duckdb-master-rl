@@ -18,6 +18,10 @@ class DefaultViewGenerator : public DefaultGenerator {
 public:
 	DefaultViewGenerator(Catalog &catalog, SchemaCatalogEntry *schema);
 
+    unique_ptr<DefaultGenerator> Copy() const override {
+        return make_unique<DefaultViewGenerator>(catalog, schema);
+    }
+
 	SchemaCatalogEntry *schema;
 
 public:

@@ -40,14 +40,14 @@ bool BoundOperatorExpression::Equals(const BaseExpression *other_p) const {
 	}
 	return true;
 }
-
+BoundOperatorExpression::BoundOperatorExpression(BoundOperatorExpression const& boe) : Expression(boe) {
+    children.reserve(boe.children.size());
+    for (auto const &elem : boe.children) {
+        children.push_back(elem->Copy());
+    }
+}
 unique_ptr<Expression> BoundOperatorExpression::Copy() {
-	auto copy = make_unique<BoundOperatorExpression>(type, return_type);
-	copy->CopyProperties(*this);
-	for (auto &child : children) {
-		copy->children.push_back(child->Copy());
-	}
-	return move(copy);
+	return make_unique<BoundOperatorExpression>(*this);
 }
 
 } // namespace duckdb

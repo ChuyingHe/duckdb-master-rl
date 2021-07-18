@@ -30,13 +30,16 @@ bool BoundConjunctionExpression::Equals(const BaseExpression *other_p) const {
 	return ExpressionUtil::SetEquals(children, other->children);
 }
 
+BoundConjunctionExpression::BoundConjunctionExpression(BoundConjunctionExpression const& bce) : Expression(bce) {
+    children.reserve(bce.children.size());
+
+    for (auto const& elem : bce.children) {
+        children.push_back(elem->Copy());
+    }
+}
+
 unique_ptr<Expression> BoundConjunctionExpression::Copy() {
-	auto copy = make_unique<BoundConjunctionExpression>(type);
-	for (auto &expr : children) {
-		copy->children.push_back(expr->Copy());
-	}
-	copy->CopyProperties(*this);
-	return move(copy);
+	return make_unique<BoundConjunctionExpression>(*this);
 }
 
 } // namespace duckdb

@@ -44,6 +44,15 @@ public:
 
 	static DatabaseInstance &GetDatabase(ClientContext &context);
 
+    DatabaseInstance(DatabaseInstance const& di) {
+        /*unique_ptr<StorageManager> storage;
+	unique_ptr<Catalog> catalog;
+	unique_ptr<TransactionManager> transaction_manager;
+	unique_ptr<TaskScheduler> scheduler;
+	unique_ptr<ObjectCache> object_cache;
+	unique_ptr<ConnectionManager> connection_manager;*/
+    }
+
 private:
 	void Initialize(const char *path, DBConfig *config);
 

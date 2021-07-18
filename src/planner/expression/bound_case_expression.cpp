@@ -33,11 +33,13 @@ bool BoundCaseExpression::Equals(const BaseExpression *other_p) const {
 	}
 	return true;
 }
-
+BoundCaseExpression::BoundCaseExpression(BoundCaseExpression const& bce) : Expression(bce) {
+    check = bce.check->Copy();
+    result_if_true = bce.result_if_true->Copy();
+    result_if_false = bce.result_if_false->Copy();
+}
 unique_ptr<Expression> BoundCaseExpression::Copy() {
-	auto new_case = make_unique<BoundCaseExpression>(check->Copy(), result_if_true->Copy(), result_if_false->Copy());
-	new_case->CopyProperties(*this);
-	return move(new_case);
+	return make_unique<BoundCaseExpression>(*this);
 }
 
 } // namespace duckdb

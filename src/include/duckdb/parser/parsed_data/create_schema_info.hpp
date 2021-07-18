@@ -15,14 +15,12 @@ namespace duckdb {
 struct CreateSchemaInfo : public CreateInfo {
 	CreateSchemaInfo() : CreateInfo(CatalogType::SCHEMA_ENTRY) {
 	}
-    CreateSchemaInfo(CreateSchemaInfo const& csi) : CreateInfo(CatalogType::SCHEMA_ENTRY) {
-	}
 
 public:
 	unique_ptr<CreateInfo> Copy() const override {
-		auto result = make_unique<CreateSchemaInfo>();
-		CopyProperties(*result);
-		return move(result);
+        auto result = make_unique<CreateSchemaInfo>();
+        CopyProperties(*result);
+        return move(result);
 	}
 
     std::unique_ptr<ParseInfo> clone() const override {
@@ -30,7 +28,7 @@ public:
     }
 
     std::unique_ptr<CreateSchemaInfo> duplicate(){
-        return make_unique<CreateSchemaInfo>(*this);
+        Copy();
     }
 };
 

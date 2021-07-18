@@ -20,8 +20,8 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_UNNEST), unnest_index(unnest_index) {
 	}
 
-    LogicalUnnest(LogicalUnnest const& lu) : LogicalOperator(LogicalOperatorType::LOGICAL_UNNEST),
-    unnest_index(lu.unnest_index) {
+    LogicalUnnest(LogicalUnnest const& lu) : LogicalOperator(lu) {
+        unnest_index = lu.unnest_index;
 	}
 
 	idx_t unnest_index;

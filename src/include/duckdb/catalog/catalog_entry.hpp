@@ -28,12 +28,28 @@ public:
 	    : type(type), catalog(catalog), set(nullptr), name(name), deleted(false), temporary(false), internal(false),
 	      parent(nullptr) {
 	}
+
+    CatalogEntry(CatalogEntry const& ce) {
+        type = ce.type;
+        catalog = ce.catalog;
+        set = ce.set;
+        name = ce.name;
+        deleted = ce.deleted;
+        temporary = ce.temporary;
+        internal = ce.internal;
+        timestamp = ce.timestamp.load();
+        child = ce.child->Copy();    //FIXME: Copy(context) throw exception
+        parent = ce.parent;
+	}
+
 	virtual ~CatalogEntry();
 
 	virtual unique_ptr<CatalogEntry> AlterEntry(ClientContext &context, AlterInfo *info) {
 		throw CatalogException("Unsupported alter type for catalog entry!");
 	}
-
+    unique_ptr<CatalogEntry> Copy() {
+	    return make_unique<CatalogEntry>(*this);
+	}
 	virtual unique_ptr<CatalogEntry> Copy(ClientContext &context) {
 		throw CatalogException("Unsupported copy type for catalog entry!");
 	}

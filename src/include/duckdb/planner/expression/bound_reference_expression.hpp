@@ -17,7 +17,7 @@ class BoundReferenceExpression : public Expression {
 public:
 	BoundReferenceExpression(string alias, LogicalType type, idx_t index);
 	BoundReferenceExpression(LogicalType type, idx_t index);
-
+    BoundReferenceExpression(BoundReferenceExpression const& bre);
 	//! Index used to access data in the chunks
 	idx_t index;
 

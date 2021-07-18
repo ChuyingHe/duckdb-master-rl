@@ -15,7 +15,7 @@ namespace duckdb {
 class BoundComparisonExpression : public Expression {
 public:
 	BoundComparisonExpression(ExpressionType type, unique_ptr<Expression> left, unique_ptr<Expression> right);
-
+    BoundComparisonExpression(BoundComparisonExpression const& bce);
 	unique_ptr<Expression> left;
 	unique_ptr<Expression> right;
 

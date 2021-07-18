@@ -20,11 +20,13 @@ public:
 	    : LogicalOperator(LogicalOperatorType::LOGICAL_TOP_N), orders(move(orders)), limit(limit), offset(offset) {
 	}
 
-    LogicalTopN(LogicalTopN const& ltopn) : LogicalOperator(LogicalOperatorType::LOGICAL_TOP_N),
-    limit(ltopn.limit), offset(ltopn.offset) {
+    LogicalTopN(LogicalTopN const& ltopn) : LogicalOperator(ltopn) {
+        limit = ltopn.limit;
+        offset = ltopn.offset;
+
         orders.reserve(ltopn.orders.size());
         for (auto const& order : ltopn.orders) {
-            BoundOrderByNode bobn(order);
+            BoundOrderByNode bobn = order;
             orders.push_back(bobn);
         }
 	}

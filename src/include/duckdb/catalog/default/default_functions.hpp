@@ -19,6 +19,10 @@ public:
 
 	SchemaCatalogEntry *schema;
 
+	unique_ptr<DefaultGenerator> Copy() const override {
+        return make_unique<DefaultFunctionGenerator>(catalog, schema);
+    }
+
 public:
 	unique_ptr<CatalogEntry> CreateDefaultEntry(ClientContext &context, const string &entry_name) override;
 };

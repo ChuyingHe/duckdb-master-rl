@@ -23,13 +23,10 @@ public:
 		children.push_back(move(bottom));
 	}
 
-    LogicalSetOperation(LogicalSetOperation const &lso) : LogicalOperator(lso.type),
-    table_index(lso.table_index), column_count(lso.column_count) {
-        children.reserve(lso.children.size());
-        for (auto const& child: lso.children) {
-            children.push_back(child->clone());
-        }
-	}
+    LogicalSetOperation(LogicalSetOperation const &lso) : LogicalOperator(lso) {
+        table_index = lso.table_index;
+        column_count = lso.column_count;
+    }
 
 	idx_t table_index;
 	idx_t column_count;

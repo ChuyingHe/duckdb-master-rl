@@ -30,11 +30,17 @@ bool BoundBetweenExpression::Equals(const BaseExpression *other_p) const {
 	return lower_inclusive == other->lower_inclusive && upper_inclusive == other->upper_inclusive;
 }
 
+BoundBetweenExpression::BoundBetweenExpression(BoundBetweenExpression const& bbe) : Expression(bbe) {
+    input = bbe.input->Copy();
+    lower = bbe.lower->Copy();
+    upper = bbe.upper->Copy();
+
+    lower_inclusive = bbe.lower_inclusive;
+    upper_inclusive = bbe.upper_inclusive;
+}
+
 unique_ptr<Expression> BoundBetweenExpression::Copy() {
-	auto copy = make_unique<BoundBetweenExpression>(input->Copy(), lower->Copy(), upper->Copy(), lower_inclusive,
-	                                                upper_inclusive);
-	copy->CopyProperties(*this);
-	return move(copy);
+    return make_unique<BoundBetweenExpression>(*this);
 }
 
 } // namespace duckdb

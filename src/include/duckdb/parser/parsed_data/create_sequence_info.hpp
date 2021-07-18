@@ -18,10 +18,6 @@ struct CreateSequenceInfo : public CreateInfo {
 	    : CreateInfo(CatalogType::SEQUENCE_ENTRY), name(string()), usage_count(0), increment(1), min_value(1),
 	      max_value(NumericLimits<int64_t>::Maximum()), start_value(1), cycle(false) {
 	}
-    CreateSequenceInfo(CreateSequenceInfo const& csi) : CreateInfo(CatalogType::SEQUENCE_ENTRY),
-    name(csi.name), usage_count(csi.usage_count), increment(csi.increment), min_value(csi.min_value),
-    max_value(csi.max_value), start_value(csi.start_value), cycle(csi.cycle) {
-	}
 
 	//! Sequence name to create
 	string name;
@@ -40,16 +36,16 @@ struct CreateSequenceInfo : public CreateInfo {
 
 public:
 	unique_ptr<CreateInfo> Copy() const override {
-		auto result = make_unique<CreateSequenceInfo>();
-		CopyProperties(*result);
-		result->name = name;
-		result->usage_count = usage_count;
-		result->increment = increment;
-		result->min_value = min_value;
-		result->max_value = max_value;
-		result->start_value = start_value;
-		result->cycle = cycle;
-		return move(result);
+        auto result = make_unique<CreateSequenceInfo>();
+        CopyProperties(*result);
+        result->name = name;
+        result->usage_count = usage_count;
+        result->increment = increment;
+        result->min_value = min_value;
+        result->max_value = max_value;
+        result->start_value = start_value;
+        result->cycle = cycle;
+        return move(result);
 	}
 
     unique_ptr<ParseInfo> clone() const override {
@@ -57,7 +53,7 @@ public:
     }
 
     unique_ptr<CreateSequenceInfo> duplicate() {
-	    return make_unique<CreateSequenceInfo>(*this);
+        Copy();
 	}
 };
 

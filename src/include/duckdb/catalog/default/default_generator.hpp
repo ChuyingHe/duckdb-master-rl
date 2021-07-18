@@ -19,7 +19,7 @@ public:
 	}
 	virtual ~DefaultGenerator() {
 	}
-
+    virtual unique_ptr<DefaultGenerator> Copy() const;
 	Catalog &catalog;
 
 public:

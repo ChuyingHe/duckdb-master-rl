@@ -49,6 +49,10 @@ class Catalog {
 public:
 	explicit Catalog(DatabaseInstance &db);
 	~Catalog();
+    Catalog(Catalog const& catalog) : db(db) {
+        // schemas = catalog.schemas;
+        // dependency_manager: Copy)_ throw exception
+    }
 
 	//! Reference to the database
 	DatabaseInstance &db;

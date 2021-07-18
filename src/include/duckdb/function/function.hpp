@@ -183,6 +183,11 @@ public:
 	~BaseScalarFunction() override {
 	}
 
+    BaseScalarFunction(BaseScalarFunction const& bsf) : SimpleFunction(bsf) {
+        return_type = bsf.return_type;
+        has_side_effects = bsf.has_side_effects;
+	}
+
 	//! Return type of the function
 	LogicalType return_type;
 	//! Whether or not the function has side effects (e.g. sequence increments, random() functions, NOW()). Functions

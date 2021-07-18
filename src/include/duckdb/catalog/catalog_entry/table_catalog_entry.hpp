@@ -34,6 +34,10 @@ public:
 	//! Create a real TableCatalogEntry and initialize storage for it
 	TableCatalogEntry(Catalog *catalog, SchemaCatalogEntry *schema, BoundCreateTableInfo *info,
 	                  std::shared_ptr<DataTable> inherited_storage = nullptr);
+
+    TableCatalogEntry(TableCatalogEntry const& tce) : StandardEntry(tce) {
+
+    }
 	//! A reference to the underlying storage unit used for this table
 	std::shared_ptr<DataTable> storage;
 	//! A list of columns that are part of this table

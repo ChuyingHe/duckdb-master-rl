@@ -20,7 +20,7 @@ class Expression : public BaseExpression {
 public:
 	Expression(ExpressionType type, ExpressionClass expression_class, LogicalType return_type);
 
-    Expression(Expression &ex) : BaseExpression(ex.type, ex.expression_class) {
+    Expression(Expression const& ex) : BaseExpression(ex.type, ex.expression_class) {
         // CopyProperties(ex);
         /*type = ex.type;
         expression_class = ex.expression_class;

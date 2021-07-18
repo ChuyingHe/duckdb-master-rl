@@ -16,7 +16,7 @@ class BoundBetweenExpression : public Expression {
 public:
 	BoundBetweenExpression(unique_ptr<Expression> input, unique_ptr<Expression> lower, unique_ptr<Expression> upper,
 	                       bool lower_inclusive, bool upper_inclusive);
-
+    BoundBetweenExpression(BoundBetweenExpression const& bbe);
 	unique_ptr<Expression> input;
 	unique_ptr<Expression> lower;
 	unique_ptr<Expression> upper;

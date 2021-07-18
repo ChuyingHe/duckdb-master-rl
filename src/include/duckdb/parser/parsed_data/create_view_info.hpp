@@ -20,10 +20,6 @@ struct CreateViewInfo : public CreateInfo {
 	    : CreateInfo(CatalogType::VIEW_ENTRY, schema), view_name(view_name) {
 	}
 
-    /*CreateViewInfo(CreateViewInfo const& cvi) : CreateInfo(CatalogType::VIEW_ENTRY, schema),
-    view_name(cvi.view_name), aliases(cvi.aliases), types(cvi.types), query(cvi.query->Copy()) {
-	}*/
-
 	//! Table name to insert to
 	string view_name;
 	//! Aliases of the view
@@ -48,7 +44,7 @@ public:
     }
 
     unique_ptr<CreateViewInfo> duplicate() {
-        return make_unique<CreateViewInfo>(*this);
+        Copy();
 	}
 
 };

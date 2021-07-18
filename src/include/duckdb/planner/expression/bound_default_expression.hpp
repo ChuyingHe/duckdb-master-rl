@@ -17,6 +17,8 @@ public:
 	explicit BoundDefaultExpression(LogicalType type = LogicalType())
 	    : Expression(ExpressionType::VALUE_DEFAULT, ExpressionClass::BOUND_DEFAULT, type) {
 	}
+    BoundDefaultExpression(BoundDefaultExpression const& bde) : Expression(bde) {
+	}
 
 public:
 	bool IsScalar() const override {
@@ -31,7 +33,7 @@ public:
 	}
 
 	unique_ptr<Expression> Copy() override {
-		return make_unique<BoundDefaultExpression>(return_type);
+		return make_unique<BoundDefaultExpression>(*this);
 	}
 };
 } // namespace duckdb

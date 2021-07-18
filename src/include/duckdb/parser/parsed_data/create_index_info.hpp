@@ -20,18 +20,6 @@ struct CreateIndexInfo : public CreateInfo {
 	CreateIndexInfo() : CreateInfo(CatalogType::INDEX_ENTRY) {
 	}
 
-    CreateIndexInfo(CreateIndexInfo &cii): CreateInfo(cii) {
-        CopyProperties(cii);
-        index_type = cii.index_type;
-        index_name = cii.index_name;
-        unique = cii.unique;
-        table = this->table->Copy_BaseTableRef();
-
-        for (const auto & exp: cii.expressions) {
-            expressions.push_back(exp->Copy());
-        }
-	}
-
 	//! Index Type (e.g., B+-tree, Skip-List, ...)
 	IndexType index_type;
 	//! Name of the Index
@@ -61,7 +49,7 @@ public:
     }
 
     unique_ptr<CreateIndexInfo> duplicate() {
-        return make_unique<CreateIndexInfo>(*this);
+        Copy();
 	}
 
 };

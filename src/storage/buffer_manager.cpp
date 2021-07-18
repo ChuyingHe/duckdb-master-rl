@@ -120,6 +120,10 @@ typedef duckdb_moodycamel::ConcurrentQueue<unique_ptr<BufferEvictionNode>> evict
 
 struct EvictionQueue {
 	eviction_queue_t q;
+
+	std::unique_ptr<EvictionQueue> Copy() {
+		return make_unique<EvictionQueue>(q);
+	}
 };
 
 BufferManager::BufferManager(DatabaseInstance &db, string tmp, idx_t maximum_memory)

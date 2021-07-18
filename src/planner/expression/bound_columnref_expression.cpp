@@ -15,8 +15,12 @@ BoundColumnRefExpression::BoundColumnRefExpression(LogicalType type, ColumnBindi
     : BoundColumnRefExpression(string(), move(type), binding, depth) {
 }
 
+BoundColumnRefExpression::BoundColumnRefExpression(BoundColumnRefExpression const& bcre) : Expression(bcre) {
+    binding = bcre.binding;
+    depth = bcre.depth;
+}
 unique_ptr<Expression> BoundColumnRefExpression::Copy() {
-	return make_unique<BoundColumnRefExpression>(alias, return_type, binding, depth);
+	return make_unique<BoundColumnRefExpression>(*this);
 }
 
 hash_t BoundColumnRefExpression::Hash() const {

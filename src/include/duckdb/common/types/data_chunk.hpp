@@ -41,7 +41,7 @@ public:
 
     DataChunk(DataChunk &dc) {
         data = dc.data;
-        count =  dc.count;
+        count =  dc.count;  //FIXME: Vector doesnt have copy constructor
     }
 
 	//! The vectors owned by the DataChunk.

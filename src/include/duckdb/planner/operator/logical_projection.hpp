@@ -17,8 +17,8 @@ class LogicalProjection : public LogicalOperator {
 public:
 	LogicalProjection(idx_t table_index, vector<unique_ptr<Expression>> select_list);
 
-    LogicalProjection(LogicalProjection const &lp) : LogicalOperator(LogicalOperatorType::LOGICAL_PROJECTION), table_index(lp.table_index) {
-        //FIXME: vector<unique_ptr<Expression>> select_list in LogicalOperator()
+    LogicalProjection(LogicalProjection const &lp) : LogicalOperator(lp) {
+        table_index = lp.table_index;
     }
 
 	idx_t table_index;

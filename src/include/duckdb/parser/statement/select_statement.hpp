@@ -23,9 +23,7 @@ class SelectStatement : public SQLStatement {
 public:
 	SelectStatement() : SQLStatement(StatementType::SELECT_STATEMENT) {
 	}
-    SelectStatement(SelectStatement const& ss) : SQLStatement(StatementType::SELECT_STATEMENT) {
-	}
-
+    SelectStatement(SelectStatement const& ss);
 	//! The main query node
 	unique_ptr<QueryNode> node;
 

@@ -38,7 +38,7 @@ public:
 	ChunkCollection(ChunkCollection const &chunkCollection) {
 	    count = chunkCollection.count;
 
-	    chunks.reserve(chunkCollection.chunks.size());
+	    chunks.reserve(chunkCollection.chunks.size());      //FIXME: vector<unique_ptr<DataChunk>>
         for (const auto &chunk:chunkCollection.chunks) {
             chunks.push_back(make_unique<DataChunk>(*chunk));
         }

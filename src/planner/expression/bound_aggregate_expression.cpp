@@ -18,6 +18,16 @@ BoundAggregateExpression::BoundAggregateExpression(AggregateFunction function, v
       filter(move(filter)) {
 }
 
+BoundAggregateExpression::BoundAggregateExpression(BoundAggregateExpression const& bae) : Expression(bae), function(bae.function) {
+    children.reserve(bae.children.size());
+    for (auto const& elem: bae.children) {
+        children.push_back(elem->Copy());
+    }
+    bind_info = bind_info->Copy();
+    distinct = bae.distinct;
+    filter = bae.filter->Copy();
+}
+
 string BoundAggregateExpression::ToString() const {
 	string result = function.name + "(";
 	if (distinct) {
@@ -65,16 +75,7 @@ bool BoundAggregateExpression::Equals(const BaseExpression *other_p) const {
 }
 
 unique_ptr<Expression> BoundAggregateExpression::Copy() {
-	vector<unique_ptr<Expression>> new_children;
-	for (auto &child : children) {
-		new_children.push_back(child->Copy());
-	}
-	auto new_bind_info = bind_info->Copy();
-	auto new_filter = filter->Copy();
-	auto copy = make_unique<BoundAggregateExpression>(function, move(new_children), move(new_filter),
-	                                                  move(new_bind_info), distinct);
-	copy->CopyProperties(*this);
-	return move(copy);
+    return make_unique<BoundAggregateExpression>(*this);
 }
 
 } // namespace duckdb

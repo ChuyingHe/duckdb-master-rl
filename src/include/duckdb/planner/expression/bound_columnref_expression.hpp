@@ -20,7 +20,7 @@ class BoundColumnRefExpression : public Expression {
 public:
 	BoundColumnRefExpression(LogicalType type, ColumnBinding binding, idx_t depth = 0);
 	BoundColumnRefExpression(string alias, LogicalType type, ColumnBinding binding, idx_t depth = 0);
-
+    BoundColumnRefExpression(BoundColumnRefExpression const& bcre);
 	//! Column index set by the binder, used to generate the final BoundExpression
 	ColumnBinding binding;
 	//! The subquery depth (i.e. depth 0 = current query, depth 1 = parent query, depth 2 = parent of parent, etc...).

@@ -23,17 +23,22 @@ struct CreateTableFunctionInfo : public CreateFunctionInfo {
 		functions.push_back(move(function));
 	}
 
+    /*CreateTableFunctionInfo(CreateTableFunctionInfo const& ctfi) : CreateFunctionInfo(ctfi) {
+	    functions = ctfi.functions;
+	}*/
+
 	//! The table functions
 	vector<TableFunction> functions;
 
 public:
 	unique_ptr<CreateInfo> Copy() const override {
-		TableFunctionSet set(name);
-		set.functions = functions;
-		auto result = make_unique<CreateTableFunctionInfo>(move(set));
-		CopyProperties(*result);
-		return move(result);
+        TableFunctionSet set(name);
+        set.functions = functions;
+        auto result = make_unique<CreateTableFunctionInfo>(move(set));
+        CopyProperties(*result);
+        return move(result);
 	}
+
     std::unique_ptr<ParseInfo> clone() const override {
         Copy();
     }

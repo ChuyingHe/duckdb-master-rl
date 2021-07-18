@@ -34,7 +34,21 @@ public:
 	BufferManager(DatabaseInstance &db, string temp_directory, idx_t maximum_memory);
 	~BufferManager();
 
-	//! Register a block with the given block id in the base file
+    BufferManager(BufferManager const& bm): db(bm.db) {
+        current_memory = bm.current_memory.load();
+        maximum_memory = bm.maximum_memory.load();
+        temp_directory = bm.temp_directory;
+
+        //FIXME: unique_ptr<EvictionQueue> queue;
+        temporary_id = bm.temporary_id.load();
+    }
+
+    unique_ptr<BufferManager> Copy() {
+        return make_unique<BufferManager>(*this);
+    }
+
+
+    //! Register a block with the given block id in the base file
 	shared_ptr<BlockHandle> RegisterBlock(block_id_t block_id);
 
 	//! Register an in-memory buffer of arbitrary size, as long as it is >= BLOCK_SIZE. can_destroy signifies whether or

@@ -37,12 +37,13 @@ hash_t BoundParameterExpression::Hash() const {
 	result = CombineHash(duckdb::Hash(parameter_nr), result);
 	return result;
 }
-
+BoundParameterExpression::BoundParameterExpression(BoundParameterExpression const& bpe) : Expression(bpe) {
+    parameter_nr = bpe.parameter_nr;
+    auto value_content = bpe.value->Copy();
+    value = &value_content;
+}
 unique_ptr<Expression> BoundParameterExpression::Copy() {
-	auto result = make_unique<BoundParameterExpression>(parameter_nr);
-	result->value = value;
-	result->return_type = return_type;
-	return move(result);
+	return make_unique<BoundParameterExpression>(*this);
 }
 
 } // namespace duckdb

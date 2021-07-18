@@ -29,7 +29,6 @@ public:
 	unique_ptr<CreateInfo> info;
 
     std::unique_ptr<LogicalOperator> clone() const {
-        // return make_unique<LogicalCreate>(this->type, this->info->Copy(), this->schema);
         return make_unique<LogicalCreate>(*this);
     }
 

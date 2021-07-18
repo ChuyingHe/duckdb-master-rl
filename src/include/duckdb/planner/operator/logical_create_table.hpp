@@ -21,7 +21,7 @@ public:
 
     LogicalCreateTable(LogicalCreateTable const &lct) : LogicalOperator(lct) {
         schema = lct.schema;
-        info = make_unique<BoundCreateTableInfo>(*lct.info);
+        info = lct.info->clone();
 	}
 
 	//! Schema to insert to

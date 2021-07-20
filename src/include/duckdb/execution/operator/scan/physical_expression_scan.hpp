@@ -26,10 +26,11 @@ public:
         expressions.reserve(pes.expressions.size());
         for(const auto& row: pes.expressions) {
             vector<unique_ptr<Expression>> tmp;
+            tmp.reserve(row.size());
             for(const auto& exp: row) {
                 tmp.push_back(exp->Copy());    // elem: unique_ptr<Expression> Copy()
             }
-            expressions.push_back(tmp); // temp: vector<unique_ptr<Expression>>
+            expressions.push_back(move(tmp)); // temp: vector<unique_ptr<Expression>>
         }
 	}
 

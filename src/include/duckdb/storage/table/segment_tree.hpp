@@ -25,6 +25,8 @@ struct SegmentNode {
 //! by row number
 class SegmentTree {
 public:
+    SegmentTree() {}
+
 	//! The initial segment of the tree
 	unique_ptr<SegmentBase> root_node;
 	//! The nodes in the tree, can be binary searched

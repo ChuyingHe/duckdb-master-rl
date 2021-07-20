@@ -22,6 +22,11 @@ struct RowDataBlock {
 		capacity += added_capacity;
 		block = buffer_manager.RegisterMemory(capacity * entry_size, false);
 	}
+    RowDataBlock(RowDataBlock const& rdb) : capacity(rdb.capacity), entry_size(rdb.entry_size) {
+        count = rdb.count;
+        byte_offset = rdb.byte_offset;
+        block = rdb.block->Copy_shared();
+	}
 	shared_ptr<BlockHandle> block;
 	const idx_t capacity;
 	const idx_t entry_size;

@@ -49,11 +49,20 @@ public:
 	}
 
     unique_ptr<ParseInfo> clone() const override {
-        Copy();
+        return Copy();
     }
 
     unique_ptr<CreateSequenceInfo> duplicate() {
-        Copy();
+        auto result = make_unique<CreateSequenceInfo>();
+        CopyProperties(*result);
+        result->name = name;
+        result->usage_count = usage_count;
+        result->increment = increment;
+        result->min_value = min_value;
+        result->max_value = max_value;
+        result->start_value = start_value;
+        result->cycle = cycle;
+        return move(result);
 	}
 };
 

@@ -24,7 +24,15 @@ struct AggregateObject {
 	    : function(move(function)), bind_data(bind_data), child_count(child_count), payload_size(payload_size),
 	      distinct(distinct), return_type(return_type), filter(filter) {
 	}
-
+    AggregateObject(AggregateObject const& ao) : function(ao.function) {
+        FunctionData bind_data_content = *ao.bind_data;
+        bind_data = &bind_data_content;
+        child_count = ao.child_count;
+        payload_size = ao.payload_size;
+        distinct = ao.distinct;
+        return_type = ao.return_type;
+        filter = ao.filter;
+	}
 	AggregateFunction function;
 	FunctionData *bind_data;
 	idx_t child_count;
@@ -41,6 +49,16 @@ public:
 	BaseAggregateHashTable(BufferManager &buffer_manager, vector<LogicalType> group_types,
 	                       vector<LogicalType> payload_types, vector<AggregateObject> aggregate_objects);
 	virtual ~BaseAggregateHashTable() {
+	}
+
+    BaseAggregateHashTable(BaseAggregateHashTable const& baht) :  buffer_manager(baht.buffer_manager) {
+        aggregates = baht.aggregates;
+        group_types = baht.group_types;
+        payload_types = baht.payload_types;
+        group_width = baht.group_width;
+        group_padding = baht.group_padding;
+        payload_width = baht.payload_width;
+        //FIXME: unique_ptr<data_t[]> empty_payload_data; how to
 	}
 
 	static idx_t Align(idx_t n) {

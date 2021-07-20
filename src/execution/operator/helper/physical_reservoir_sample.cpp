@@ -23,11 +23,18 @@ public:
 			sample = make_unique<ReservoirSample>(size, options.seed);
 		}
 	}
+    SampleGlobalOperatorState(SampleGlobalOperatorState const& sgos) : GlobalOperatorState(sgos) {
+        sample = sgos.sample->clone();
+	}
 
 	//! The lock for updating the global aggregate state
 	mutex lock;
 	//! The reservoir sample
 	unique_ptr<BlockingSample> sample;
+
+    unique_ptr<GlobalOperatorState> clone() override {
+        return make_unique<SampleGlobalOperatorState>(*this);
+    }
 };
 
 unique_ptr<GlobalOperatorState> PhysicalReservoirSample::GetGlobalState(ClientContext &context) {

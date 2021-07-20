@@ -22,7 +22,7 @@ public:
 public:
 	vector<ColumnBinding> GetColumnBindings() override;
 
-    std::unique_ptr<LogicalOperator> clone() const override;
+    unique_ptr<LogicalOperator> clone() const override;
 
 protected:
 	void ResolveTypes() override;

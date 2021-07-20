@@ -37,8 +37,8 @@ public:
         sel_vector_sizes = pht.sel_vector_sizes;
         group_subset = pht.group_subset;
         payload_subset = pht.payload_subset;
-        hashes = pht.hashes;
-        hashes_subset = pht.hashes_subset;
+        //FIXME: hashes = std::move(pht.hashes);
+        //FIXME: hashes_subset = pht.hashes_subset;
         unpartitioned_hts = pht.unpartitioned_hts;
         radix_partitioned_hts = pht.radix_partitioned_hts;
     }
@@ -53,7 +53,7 @@ public:
 	void Finalize();
 
     unique_ptr<PartitionableHashTable> clone() {
-
+        return make_unique<PartitionableHashTable>(*this);
     }
 
 private:

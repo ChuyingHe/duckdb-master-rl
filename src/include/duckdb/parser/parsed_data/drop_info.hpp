@@ -32,7 +32,7 @@ struct DropInfo : public ParseInfo {
 public:
 
     unique_ptr<ParseInfo> clone() const override {
-        Copy();
+        return Copy();
     }
 
     unique_ptr<DropInfo> Copy() const {

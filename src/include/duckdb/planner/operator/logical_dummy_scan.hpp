@@ -34,7 +34,7 @@ public:
 		return 1;
 	}
 
-    std::unique_ptr<LogicalOperator> clone() const override {
+    unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalDummyScan>(*this);
     }
 

@@ -37,7 +37,7 @@ public:
 	    type = lo.type;
 	    children.reserve(lo.children.size());
         for (const auto& child:lo.children) {
-            children.push_back(child);
+            children.push_back(child->clone());
         }
 
         expressions.reserve(lo.expressions.size());
@@ -50,7 +50,7 @@ public:
 	virtual ~LogicalOperator() {
 	}
 
-    virtual std::unique_ptr<LogicalOperator> clone() const = 0; // Virtual constructor (copying)
+    virtual unique_ptr<LogicalOperator> clone() const = 0; // Virtual constructor (copying)
 
 	//! The type of the logical operator
 	LogicalOperatorType type;

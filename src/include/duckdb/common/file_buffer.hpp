@@ -28,7 +28,7 @@ public:
     unique_ptr<FileBuffer> Copy() {
         auto copy = make_unique<FileBuffer>(type, size);
         copy->type = type;
-        return move(copy);
+        return copy;
     }
 
 	//! The type of the buffer

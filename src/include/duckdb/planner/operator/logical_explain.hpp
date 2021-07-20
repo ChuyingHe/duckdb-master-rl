@@ -28,7 +28,7 @@ public:
 	string logical_plan_unopt;
 	string logical_plan_opt;
 
-    std::unique_ptr<LogicalOperator> clone() const override {
+    unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalExplain>(*this);
     }
 

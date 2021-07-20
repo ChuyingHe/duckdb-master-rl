@@ -113,7 +113,14 @@ public:
 	//! Constructs a DataTable as a delta on an existing data table but with one column changed type
 	DataTable(ClientContext &context, DataTable &parent, idx_t changed_idx, const LogicalType &target_type,
 	          vector<column_t> bound_columns, Expression &cast_expr);
-
+    DataTable(DataTable const& dt) : db(dt.db) {
+        info = dt.info;
+        types = dt.types;
+        versions = dt.versions;
+        total_rows = dt.total_rows.load();
+        columns = dt.columns;
+        is_root = dt.is_root.load();
+    }
 	shared_ptr<DataTableInfo> info;
 	//! Types managed by data table
 	vector<LogicalType> types;

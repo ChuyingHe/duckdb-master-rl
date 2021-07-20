@@ -49,12 +49,11 @@ class Catalog {
 public:
 	explicit Catalog(DatabaseInstance &db);
 	~Catalog();
-    Catalog(Catalog const& catalog) : db(db) {
-        // schemas = catalog.schemas;
-        // dependency_manager: Copy)_ throw exception
+    Catalog(Catalog const& catalog);
+    unique_ptr<Catalog> clone() {
+        return make_unique<Catalog>(*this);
     }
-
-	//! Reference to the database
+    //! Reference to the database
 	DatabaseInstance &db;
 	//! The catalog set holding the schemas
 	unique_ptr<CatalogSet> schemas;

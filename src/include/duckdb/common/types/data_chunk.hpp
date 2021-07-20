@@ -40,10 +40,12 @@ public:
 	DataChunk();
 
     DataChunk(DataChunk &dc) {
-        data = dc.data;
-        count =  dc.count;  //FIXME: Vector doesnt have copy constructor
+        data = std::move(dc.data);  //FIXME: Vector doesnt have copy constructor, because it has a move constructor
+        count = dc.count;
     }
-
+    unique_ptr<DataChunk> clone() {
+        return make_unique<DataChunk>(*this);
+    }
 	//! The vectors owned by the DataChunk.
 	vector<Vector> data;
 

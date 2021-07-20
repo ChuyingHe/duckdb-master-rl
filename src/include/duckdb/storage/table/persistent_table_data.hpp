@@ -11,6 +11,7 @@
 #include "duckdb/common/constants.hpp"
 #include "duckdb/common/vector.hpp"
 #include "duckdb/storage/table/segment_tree.hpp"
+#include "duckdb/storage/table/persistent_segment.hpp"
 
 namespace duckdb {
 class BaseStatistics;
@@ -25,7 +26,7 @@ public:
         stats = pcd.stats->Copy();
         segments.reserve(pcd.segments.size());
         for (const auto& sg:pcd.segments) {
-            segments.push_back(make_unique<PersistentSegment>(*sg));
+            segments.push_back(sg->clone());
         }
     }
 

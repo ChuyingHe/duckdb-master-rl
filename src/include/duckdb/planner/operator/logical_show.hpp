@@ -24,7 +24,7 @@ public:
 	vector<LogicalType> types_select;
 	vector<string> aliases;
 	
-    std::unique_ptr<LogicalOperator> clone() const override {
+    unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalShow>(*this);
     }
 

@@ -23,6 +23,9 @@ class ObjectCacheEntry {
 public:
 	virtual ~ObjectCacheEntry() {
 	}
+    shared_ptr<ObjectCacheEntry> clone() {
+        return make_shared<ObjectCacheEntry>(*this);
+	}
 };
 
 class ObjectCache {
@@ -36,9 +39,23 @@ public:
 		return entry->second;
 	}
 
+
 	void Put(string key, shared_ptr<ObjectCacheEntry> value) {
 		lock_guard<mutex> glock(lock);
 		cache[key] = move(value);
+	}
+
+    ObjectCache() {
+	}
+
+    ObjectCache(ObjectCache const& oc) {
+        for (auto const& elem: oc.cache) {
+            cache[elem.first] = elem.second->clone();
+        }
+	}
+
+    unique_ptr<ObjectCache> clone() {
+        return make_unique<ObjectCache>(*this);
 	}
 
 	static ObjectCache &GetObjectCache(ClientContext &context);

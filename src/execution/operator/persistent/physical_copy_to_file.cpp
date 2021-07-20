@@ -19,7 +19,7 @@ public:
 	idx_t rows_copied;
 	unique_ptr<GlobalFunctionData> global_state;
 
-    unique_ptr <GlobalOperatorState> clone() {
+    unique_ptr<GlobalOperatorState> clone() override {
         return make_unique<CopyToFunctionGlobalState>(*this);
     }
 };

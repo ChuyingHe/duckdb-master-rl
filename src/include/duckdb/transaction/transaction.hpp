@@ -41,6 +41,10 @@ public:
 	      catalog_version(catalog_version), storage(*this), is_invalidated(false) {
 	}
 
+    unique_ptr<Transaction> clone() const {
+	    return make_unique<Transaction>(*this);
+	}
+
 	weak_ptr<ClientContext> context;
 	//! The start timestamp of this transaction
 	transaction_t start_time;
@@ -100,12 +104,28 @@ public:
 	void PushAppend(DataTable *table, idx_t row_start, idx_t row_count);
 	UpdateInfo *CreateUpdateInfo(idx_t type_size, idx_t entries);
 
+    Transaction(Transaction const& ta) : storage(ta.storage) {
+        context = ta.context;
+        start_time = ta.start_time;
+        transaction_id = ta.transaction_id;
+        commit_id = ta.commit_id;
+        highest_active_query = ta.highest_active_query;
+        active_query = ta.active_query.load();
+        start_timestamp = ta.start_timestamp;
+        catalog_version = ta.catalog_version;
+        is_invalidated = ta.is_invalidated;
+        // 	unordered_map<SequenceCatalogEntry *, SequenceValue> sequence_usage;
+        for (auto const& elem: ta.sequence_usage) {
+            sequence_usage[elem.first] = elem.second;
+        }
+    }
+
 private:
 	//! The undo buffer is used to store old versions of rows that are updated
 	//! or deleted
 	UndoBuffer undo_buffer;
 
-	Transaction(const Transaction &) = delete;
+	// Transaction(const Transaction &) = delete;
 };
 
 } // namespace duckdb

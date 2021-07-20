@@ -28,7 +28,7 @@ public:
 	SchemaCatalogEntry *schema;
 	unique_ptr<CreateInfo> info;
 
-    std::unique_ptr<LogicalOperator> clone() const {
+    std::unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalCreate>(*this);
     }
 

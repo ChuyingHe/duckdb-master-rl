@@ -26,7 +26,7 @@ public:
         bind_data = lctf.bind_data->Copy();
     }
 
-    std::unique_ptr<LogicalOperator> clone() const {
+    std::unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalCopyToFile>(*this);
     }
 

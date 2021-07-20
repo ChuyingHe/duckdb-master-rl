@@ -20,7 +20,7 @@ public:
 
 	atomic<idx_t> deleted_count;
 
-    unique_ptr <GlobalOperatorState> clone() {
+    unique_ptr <GlobalOperatorState> clone() override {
         return make_unique<DeleteGlobalState>(*this);
     }
 };

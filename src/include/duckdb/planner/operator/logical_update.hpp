@@ -36,7 +36,7 @@ public:
 	vector<unique_ptr<Expression>> bound_defaults;
 	bool is_index_update;
 
-    std::unique_ptr<LogicalOperator> clone() const override {
+    unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalUpdate>(*this);
     }
 

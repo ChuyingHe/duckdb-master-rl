@@ -132,14 +132,13 @@ public:
 	TopNGlobalState(const vector<BoundOrderByNode> &orders, idx_t limit, idx_t offset) : heap(orders, limit, offset) {
 	}
 
-	//	TopNHeap(const vector<BoundOrderByNode> &orders, idx_t limit, idx_t offset)
     TopNGlobalState(TopNGlobalState const& topgs) : GlobalOperatorState(topgs), heap(topgs.heap) {
 	}
 
 	mutex lock;
 	TopNHeap heap;
 
-    unique_ptr <GlobalOperatorState> clone() {
+    unique_ptr<GlobalOperatorState> clone() override {
         return make_unique<TopNGlobalState> (*this);
     }
 };

@@ -47,7 +47,7 @@ public:
 		return move(result);
 	}
     std::unique_ptr<ParseInfo> clone() const override {
-        Copy();
+        return Copy();
     }
 };
 

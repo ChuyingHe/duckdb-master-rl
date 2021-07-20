@@ -34,7 +34,7 @@ public:
 	//! separated by AND Returns whether or not any splits were made
 	static bool SplitPredicates(vector<unique_ptr<Expression>> &expressions);
 
-    std::unique_ptr<LogicalOperator> clone() const override;
+    unique_ptr<LogicalOperator> clone() const override;
 
 protected:
 	void ResolveTypes() override;

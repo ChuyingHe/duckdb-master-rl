@@ -27,6 +27,17 @@ public:
 	StorageManager(DatabaseInstance &db, string path, bool read_only);
 	~StorageManager();
 
+    StorageManager(StorageManager const& sm): db(sm.db), wal(sm.wal) {
+        block_manager = sm.block_manager->clone();
+        buffer_manager = sm.buffer_manager->clone();
+        path = sm.path;
+        read_only = sm.read_only;
+    }
+
+    unique_ptr<StorageManager> clone() const {
+        return make_unique<StorageManager>(*this);
+    }
+
 	//! The BlockManager to read/store meta information and data in blocks
 	unique_ptr<BlockManager> block_manager;
 	//! The BufferManager of the database

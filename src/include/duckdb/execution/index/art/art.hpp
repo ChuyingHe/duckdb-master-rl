@@ -67,10 +67,14 @@ public:
 	ART(vector<column_t> column_ids, vector<unique_ptr<Expression>> unbound_expressions, bool is_unique = false);
 	~ART() override;
 
-    ART(ART const *art) : Index(IndexType::ART, move(column_ids), move(unbound_expressions)) {
-        tree = art->tree;
-        is_little_endian = art->is_little_endian;
-        is_unique = art->is_unique;
+    ART(ART const& art) : Index(art) {
+        tree = art.tree->clone();
+        is_little_endian = art.is_little_endian;
+        is_unique = art.is_unique;
+    }
+
+    unique_ptr<Index> clone() const override {
+        return make_unique<ART>(*this);
     }
 
 	//! Root of the tree
@@ -107,10 +111,6 @@ public:
 	bool SearchEqual(ARTIndexScanState *state, idx_t max_count, vector<row_t> &result_ids);
 	//! Search Equal used for Joins that do not need to fetch data
 	void SearchEqualJoinNoFetch(Value &equal_value, idx_t &result_size);
-
-	Index* clone() const override {
-        return this;
-	}
 
 private:
 	DataChunk expression_result;

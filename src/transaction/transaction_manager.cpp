@@ -50,6 +50,25 @@ TransactionManager::TransactionManager(DatabaseInstance &db) : db(db), thread_is
 	current_query_number = 1;
 }
 
+TransactionManager::TransactionManager(TransactionManager const& tm) : db(tm.db) {
+	current_query_number = tm.current_query_number.load();
+	current_start_timestamp = tm.current_start_timestamp;
+	current_transaction_id = tm.current_transaction_id;
+	active_transactions.reserve(tm.active_transactions.size());
+	for (auto const& elem:tm.active_transactions) {
+		active_transactions.push_back(elem->clone());
+	}
+	recently_committed_transactions.reserve(tm.recently_committed_transactions.size());
+	for (auto const& elem:tm.recently_committed_transactions) {
+		recently_committed_transactions.push_back(elem->clone());
+	}
+	old_transactions.reserve(tm.old_transactions.size());
+	for (auto const& elem:tm.old_transactions) {
+		old_transactions.push_back(elem->clone());
+	}
+	thread_is_checkpointing = tm.thread_is_checkpointing;
+}
+
 TransactionManager::~TransactionManager() {
 }
 

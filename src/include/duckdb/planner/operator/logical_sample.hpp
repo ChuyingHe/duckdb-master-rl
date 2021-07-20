@@ -37,8 +37,7 @@ public:
 		return children[0]->GetColumnBindings();
 	}
 
-    std::unique_ptr<LogicalOperator> clone() const override {
-        //return make_unique<LogicalSample>(this->sample_options->Copy(), this->children[0]->clone());
+    unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalSample>(*this);
     }
 

@@ -57,10 +57,17 @@ public:
 	explicit SimpleAggregateGlobalState(vector<unique_ptr<Expression>> &aggregates) : state(aggregates) {
 	}
 
+    SimpleAggregateGlobalState(SimpleAggregateGlobalState const& sags): GlobalOperatorState(sags), state(sags.state) { //FIXME: AggregateState has Vector and unique_ptr<uint8_t[]>
+	}
+
 	//! The lock for updating the global aggregate state
 	mutex lock;
 	//! The global aggregate state
 	AggregateState state;
+
+    unique_ptr<GlobalOperatorState> clone() override {
+
+    }
 };
 
 class SimpleAggregateLocalState : public LocalSinkState {

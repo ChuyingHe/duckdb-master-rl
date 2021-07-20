@@ -27,6 +27,20 @@ class SingleFileBlockManager : public BlockManager {
 public:
 	SingleFileBlockManager(DatabaseInstance &db, string path, bool read_only, bool create_new, bool use_direct_io);
 
+    SingleFileBlockManager(SingleFileBlockManager const& sfbm) : BlockManager(sfbm), db(sfbm.db), header_buffer(sfbm.header_buffer) {
+        active_header = sfbm.active_header;
+        path = sfbm.path;
+        handle = sfbm.handle->clone();
+        free_list = sfbm.free_list;
+        modified_blocks = sfbm.modified_blocks;
+        meta_block = sfbm.meta_block;
+        max_block = sfbm.max_block;
+        free_list_id = sfbm.free_list_id;
+        iteration_count = sfbm.iteration_count;
+        read_only = sfbm.read_only;
+        use_direct_io = sfbm.use_direct_io;
+    }
+
 	void StartCheckpoint() override;
 	//! Creates a new Block and returns a pointer
 	unique_ptr<Block> CreateBlock() override;
@@ -55,6 +69,10 @@ public:
 	}
 	//! Load the free list from the file
 	void LoadFreeList();
+
+    unique_ptr<BlockManager> clone() const override {
+        return make_unique<SingleFileBlockManager>(*this);
+    }
 
 private:
 	void Initialize(DatabaseHeader &header);

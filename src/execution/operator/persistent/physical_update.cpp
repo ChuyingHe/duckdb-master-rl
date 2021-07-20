@@ -21,7 +21,7 @@ public:
 	mutex lock;
 	idx_t updated_count;
 
-    unique_ptr <GlobalOperatorState> clone() {
+    unique_ptr <GlobalOperatorState> clone() override {
         return make_unique<UpdateGlobalState>(*this);
     }
 };

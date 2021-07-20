@@ -46,7 +46,7 @@ public:
 		return children[0]->GetColumnBindings();
 	}
 
-    std::unique_ptr<LogicalOperator> clone() const override {
+    unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalOrder>(*this);
     }
 

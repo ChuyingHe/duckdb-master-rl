@@ -133,7 +133,7 @@ public:
         right_data = nljgs.right_data;
         right_chunks = nljgs.right_chunks;
         has_null = nljgs.has_null;
-        right_found_match = nljgs.right_found_match;
+        //FIXME: right_found_match = nljgs.right_found_match;
         right_outer_position = nljgs.right_outer_position;
 	}
 
@@ -148,7 +148,7 @@ public:
 	//! The position in the RHS in the final scan of the FULL OUTER JOIN
 	idx_t right_outer_position;
 
-    unique_ptr<GlobalOperatorState> clone() {
+    unique_ptr<GlobalOperatorState> clone() override {
         return make_unique<NestedLoopJoinGlobalState>(*this);
     }
 };

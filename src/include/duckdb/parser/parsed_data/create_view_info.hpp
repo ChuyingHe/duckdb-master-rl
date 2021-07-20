@@ -40,11 +40,16 @@ public:
 	}
 
     unique_ptr<ParseInfo> clone() const override {
-        Copy();
+        return Copy();
     }
 
     unique_ptr<CreateViewInfo> duplicate() {
-        Copy();
+        auto result = make_unique<CreateViewInfo>(schema, view_name);
+        CopyProperties(*result);
+        result->aliases = aliases;
+        result->types = types;
+        result->query = unique_ptr_cast<SQLStatement, SelectStatement>(query->Copy());
+        return move(result);
 	}
 
 };

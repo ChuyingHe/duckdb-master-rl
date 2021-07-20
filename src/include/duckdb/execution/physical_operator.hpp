@@ -60,7 +60,7 @@ public:
 	virtual ~PhysicalOperator() {
 	}
 
-    PhysicalOperator(PhysicalOperator const &po): type(po.type), types(types), estimated_cardinality(po.estimated_cardinality) {
+    PhysicalOperator(PhysicalOperator const &po): type(po.type), types(po.types), estimated_cardinality(po.estimated_cardinality) {
         children.reserve(po.children.size());
         for (auto const& child: po.children) {
             children.push_back(child->clone());

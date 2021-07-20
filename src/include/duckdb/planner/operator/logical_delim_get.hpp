@@ -35,7 +35,7 @@ public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return GenerateColumnBindings(table_index, chunk_types.size());
 	}
-    std::unique_ptr<LogicalOperator> clone() const {
+    unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalDelimGet>(*this);
     }
 

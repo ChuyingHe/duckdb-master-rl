@@ -38,6 +38,11 @@ class TransactionManager {
 public:
 	explicit TransactionManager(DatabaseInstance &db);
 	~TransactionManager();
+    TransactionManager(TransactionManager const& tm);
+
+    unique_ptr<TransactionManager> clone() {
+        return make_unique<TransactionManager>(*this);
+    }
 
 	//! Start a new transaction
 	Transaction *StartTransaction(ClientContext &context);

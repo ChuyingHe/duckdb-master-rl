@@ -33,6 +33,13 @@ Catalog::Catalog(DatabaseInstance &db)
 Catalog::~Catalog() {
 }
 
+Catalog::Catalog(Catalog const& catalog) : db(db) {
+    //FIXME: DatabaseInstance &db; needs a copy constructor
+    // schemas = catalog.schemas;
+    // dependency_manager: Copy)_ throw exception
+    dependency_manager = catalog.dependency_manager->clone();
+}
+
 Catalog &Catalog::GetCatalog(ClientContext &context) {
 	return context.db->GetCatalog();
 }

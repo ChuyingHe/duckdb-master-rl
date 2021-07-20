@@ -30,13 +30,12 @@ struct MappingValue {
 	}
 
     unique_ptr<MappingValue> Copy() const {
-	    MappingValue* parent_raw_ptr = parent->Copy().get();
 	    auto copy = make_unique<MappingValue>(index);
         copy->timestamp = timestamp;
         copy->deleted = deleted;
-        copy->parent = parent_raw_ptr;
+        copy->parent = parent;
         copy->child = child->Copy();
-        return move(copy);
+        return copy;
 	}
 
 	idx_t index;
@@ -55,7 +54,6 @@ public:
         for (auto const& elem: cs.mapping) {
             mapping[elem.first] = elem.second->Copy();
         }
-        //FIXME:	unordered_map<idx_t, unique_ptr<CatalogEntry>> entries;
         for (auto const& elem: cs.entries) {
             entries[elem.first] = elem.second->Copy();    // Copy(context) throw exception, therefore wrote Copy()
         }

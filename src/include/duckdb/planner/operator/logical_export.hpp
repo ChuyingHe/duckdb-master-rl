@@ -27,8 +27,7 @@ public:
 	CopyFunction function;
 	unique_ptr<CopyInfo> copy_info;
 
-    std::unique_ptr<LogicalOperator> clone() const override {
-        // return make_unique<LogicalExport>(this->function, this->copy_info->Copy());
+    unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalExport>(*this);
     }
 

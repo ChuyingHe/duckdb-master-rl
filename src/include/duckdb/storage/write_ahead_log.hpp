@@ -37,6 +37,12 @@ class TransactionManager;
 class WriteAheadLog {
 public:
 	explicit WriteAheadLog(DatabaseInstance &database);
+    WriteAheadLog(WriteAheadLog const& wa): database(wa.database) {
+        initialized = wa.initialized;
+        skip_writing = wa.skip_writing;
+        wal_path = wa.wal_path;
+        writer = wa.writer->clone();
+    }
 
 	//! Whether or not the WAL has been initialized
 	bool initialized;

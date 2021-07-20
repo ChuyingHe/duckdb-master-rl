@@ -29,6 +29,19 @@ public:
 	Index(IndexType type, vector<column_t> column_ids, vector<unique_ptr<Expression>> unbound_expressions);
 	virtual ~Index() = default;
 
+    Index(Index const& index) {
+        type = index.type;
+        column_ids = index.column_ids;
+        column_id_set = index.column_id_set;
+        unbound_expressions.reserve(index.unbound_expressions.size());
+        for (auto const& elem:index.unbound_expressions) {
+            unbound_expressions.push_back(elem->Copy());
+        }
+        types = index.types;
+        logical_types = index.logical_types;
+    }
+    virtual unique_ptr<Index> clone() const = 0;
+
 	//! The type of the index
 	IndexType type;
 	//! Column identifiers to extract from the base table
@@ -75,8 +88,6 @@ public:
 
 	//! Returns true if the index is affected by updates on the specified column ids, and false otherwise
 	bool IndexIsUpdated(const vector<column_t> &column_ids) const;
-
-	virtual Index* clone() const = 0;
 
 protected:
 	void ExecuteExpressions(DataChunk &input, DataChunk &result);

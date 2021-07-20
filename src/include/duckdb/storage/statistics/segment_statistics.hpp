@@ -20,6 +20,12 @@ public:
 	SegmentStatistics(LogicalType type, idx_t type_size);
 	SegmentStatistics(LogicalType type, idx_t type_size, unique_ptr<BaseStatistics> statistics);
 
+    SegmentStatistics(SegmentStatistics const& ss) {
+        type = ss.type;
+        type_size = ss.type_size;
+        statistics = ss.statistics->Copy();
+    }
+
 	LogicalType type;
 	idx_t type_size;
 

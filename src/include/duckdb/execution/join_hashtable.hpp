@@ -131,14 +131,6 @@ public:
 	              JoinType type);
 	~JoinHashTable();
 
-    JoinHashTable(JoinHashTable const& jht): buffer_manager(jht.buffer_manager) {
-        // FIXME
-    }
-
-    unique_ptr<JoinHashTable> clone() {
-        return make_unique<JoinHashTable>(*this);
-    }
-
     //! Add the given data to the HT
 	void Build(DataChunk &keys, DataChunk &input);
 	//! Finalize the build of the HT, constructing the actual hash table and making the HT ready for probing. Finalize
@@ -204,6 +196,16 @@ public:
 		//! Result chunk used for aggregating into correlated_counts
 		DataChunk result_chunk;
 	} correlated_mark_join_info;
+
+	// copy constructor is deleted below in line 236
+    JoinHashTable(JoinHashTable const& jht): buffer_manager(jht.buffer_manager) {
+        // FIXME
+    }
+
+    unique_ptr<JoinHashTable> clone() {
+        return make_unique<JoinHashTable>(*this);
+    }
+
 
 private:
 	//! Apply a bitmask to the hashes

@@ -33,9 +33,8 @@ public:
 		return bindings;
 	}
 
-    std::unique_ptr<LogicalOperator> clone() const override {
+    unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalEmptyResult>(*this);
-        // return make_unique_base<LogicalOperator, LogicalEmptyResult>(*this);
     }
 
 protected:

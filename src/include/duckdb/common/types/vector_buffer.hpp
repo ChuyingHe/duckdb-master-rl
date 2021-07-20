@@ -69,15 +69,15 @@ public:
 	}
 
     VectorBuffer(VectorBuffer const& vb) {
-        data = vb.data;     // uint8_t
+        // data = vb.data;     // FIXME: unique_ptr<uint8_t[]> how to copy
         vector_type = vb.vector_type;
         type = vb.type;
         buffer_type = vb.buffer_type;
 	}
 
-    unique_ptr<data_t[]> vb_data_clone(unique_ptr<data_t[]> data) {
+    /*unique_ptr<data_t[]> vb_data_clone(unique_ptr<data_t[]> data) {
 
-	}
+	}*/
 
 
     buffer_ptr<VectorBuffer> clone() const {

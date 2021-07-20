@@ -19,6 +19,16 @@ namespace duckdb {
 struct CreateIndexInfo : public CreateInfo {
 	CreateIndexInfo() : CreateInfo(CatalogType::INDEX_ENTRY) {
 	}
+    CreateIndexInfo(CreateIndexInfo const& cii) : CreateInfo(cii) {
+        index_type = cii.index_type;
+        index_name = cii.index_name;
+        unique = cii.unique;
+        table = cii.table->Copy_BaseTableRef();
+        expressions.reserve(cii.expressions.size());
+        for (auto const& elem: cii.expressions) {
+            expressions.push_back(elem->Copy());
+        }
+	}
 
 	//! Index Type (e.g., B+-tree, Skip-List, ...)
 	IndexType index_type;
@@ -45,11 +55,20 @@ public:
 		return move(result);
 	}
     std::unique_ptr<ParseInfo> clone() const override {
-        Copy();
+        return Copy();
     }
 
     unique_ptr<CreateIndexInfo> duplicate() {
-        Copy();
+        auto result = make_unique<CreateIndexInfo>();
+        CopyProperties(*result);
+        result->index_type = index_type;
+        result->index_name = index_name;
+        result->unique = unique;
+        result->table = unique_ptr_cast<TableRef, BaseTableRef>(table->Copy());
+        for (auto &expr : expressions) {
+            result->expressions.push_back(expr->Copy());
+        }
+        return result;
 	}
 
 };

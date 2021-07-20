@@ -27,7 +27,7 @@ public:
 
 	shared_ptr<PreparedStatementData> prepared;
 
-    std::unique_ptr<LogicalOperator> clone() const override {
+    unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalExecute>(*this);
     }
 

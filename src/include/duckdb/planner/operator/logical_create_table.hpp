@@ -29,7 +29,7 @@ public:
 	//! Create Table information
 	unique_ptr<BoundCreateTableInfo> info;
 
-    std::unique_ptr<LogicalOperator> clone() const {
+    std::unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalCreateTable>(*this);
     }
 

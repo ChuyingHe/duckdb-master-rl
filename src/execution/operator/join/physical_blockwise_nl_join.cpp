@@ -34,7 +34,7 @@ public:
 
     BlockwiseNLJoinGlobalState(BlockwiseNLJoinGlobalState const& bnljgs) : GlobalOperatorState(bnljgs) {
 	    right_chunks = bnljgs.right_chunks;
-        rhs_found_match = bnljgs.rhs_found_match;
+        //FIXME: rhs_found_match = bnljgs.rhs_found_match;
         right_outer_position = bnljgs.right_outer_position;
 	}
 
@@ -44,7 +44,7 @@ public:
 	//! The position in the RHS in the final scan of the FULL OUTER JOIN
 	idx_t right_outer_position;
 
-    unique_ptr <GlobalOperatorState> clone() {
+    unique_ptr<GlobalOperatorState> clone() override {
         return make_unique<BlockwiseNLJoinGlobalState>(*this);
     }
 

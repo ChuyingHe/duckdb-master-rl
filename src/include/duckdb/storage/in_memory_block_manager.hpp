@@ -38,5 +38,9 @@ public:
 	void WriteHeader(DatabaseHeader header) override {
 		throw Exception("Cannot perform IO in in-memory database!");
 	}
+
+    unique_ptr<BlockManager> clone() const override {
+        return make_unique<InMemoryBlockManager>(*this);
+	}
 };
 } // namespace duckdb

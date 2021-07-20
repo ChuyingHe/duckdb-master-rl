@@ -18,6 +18,21 @@ public:
 	                          vector<LogicalType> payload_types_p, vector<AggregateObject> aggregate_objects,
 	                          vector<Value> group_minima, vector<idx_t> required_bits);
 	~PerfectAggregateHashTable() override;
+    PerfectAggregateHashTable(PerfectAggregateHashTable const& paht) : BaseAggregateHashTable(paht) {
+        //FIXME: Vector addresses;
+        required_bits = paht.required_bits;
+        total_required_bits = paht.total_required_bits;
+        total_groups = paht.total_groups;
+        tuple_size = paht.tuple_size;
+        data = paht.data;
+        //FIXME:  unique_ptr<data_t[]> owned_data;
+        //FIXME:  unique_ptr<bool[]> group_is_set;
+        //FIXME:  vector<Value> group_minima;
+    }
+    unique_ptr<PerfectAggregateHashTable> clone() {
+        //auto copy = make_unique<PerfectAggregateHashTable>(buffer_manager, group_types, pay);
+        return make_unique<PerfectAggregateHashTable>(*this);
+    }
 
 public:
 	//! Add the given data to the HT

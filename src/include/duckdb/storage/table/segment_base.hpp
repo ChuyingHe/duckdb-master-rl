@@ -24,6 +24,15 @@ public:
 		}
 	}
 
+    SegmentBase(SegmentBase const& sb): start(sb.start) {
+	    count = sb.count.load();
+        next = sb.next->clone();
+	}
+
+    unique_ptr<SegmentBase> clone() {
+        return make_unique<SegmentBase>(*this);
+	}
+
 	//! The start row id of this chunk
 	const idx_t start;
 	//! The amount of entries in this storage chunk

@@ -24,11 +24,13 @@ public:
 	}
 
     std::unique_ptr<ParseInfo> clone() const override {
-        Copy();
+        return Copy();
     }
 
     std::unique_ptr<CreateSchemaInfo> duplicate(){
-        Copy();
+        auto result = make_unique<CreateSchemaInfo>();
+        CopyProperties(*result);
+        return move(result);
     }
 };
 

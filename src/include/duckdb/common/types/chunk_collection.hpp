@@ -35,15 +35,15 @@ public:
         swap(types, other.types);
     }
 
-	ChunkCollection(ChunkCollection const &chunkCollection) {
-	    count = chunkCollection.count;
+	ChunkCollection(ChunkCollection const &cc) {
+	    count = cc.count;
 
-	    chunks.reserve(chunkCollection.chunks.size());      //FIXME: vector<unique_ptr<DataChunk>>
-        for (const auto &chunk:chunkCollection.chunks) {
-            chunks.push_back(make_unique<DataChunk>(*chunk));
+	    chunks.reserve(cc.chunks.size());
+        for (const auto &elem:cc.chunks) {
+            chunks.push_back(elem->clone());
         }
 
-        types = chunkCollection.types;
+        types = cc.types;
 	}
 
 	unique_ptr<ChunkCollection> Copy() {

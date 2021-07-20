@@ -28,6 +28,7 @@ class DatabaseInstance : public std::enable_shared_from_this<DatabaseInstance> {
 public:
 	DUCKDB_API DatabaseInstance();
 	DUCKDB_API ~DatabaseInstance();
+    DatabaseInstance(DatabaseInstance const& di);
 
 	DBConfig config;        // this is optional and only used in tests at the moment
 
@@ -43,15 +44,6 @@ public:
 	idx_t NumberOfThreads();
 
 	static DatabaseInstance &GetDatabase(ClientContext &context);
-
-    DatabaseInstance(DatabaseInstance const& di) {
-        /*unique_ptr<StorageManager> storage;
-	unique_ptr<Catalog> catalog;
-	unique_ptr<TransactionManager> transaction_manager;
-	unique_ptr<TaskScheduler> scheduler;
-	unique_ptr<ObjectCache> object_cache;
-	unique_ptr<ConnectionManager> connection_manager;*/
-    }
 
 private:
 	void Initialize(const char *path, DBConfig *config);

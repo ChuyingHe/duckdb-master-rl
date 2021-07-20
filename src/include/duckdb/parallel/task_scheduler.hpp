@@ -40,6 +40,11 @@ class TaskScheduler {
 public:
 	TaskScheduler();
 	~TaskScheduler();
+    TaskScheduler(TaskScheduler const& ts);
+
+    unique_ptr<TaskScheduler> clone() {
+        return make_unique<TaskScheduler>(*this);
+    }
 
 	static TaskScheduler &GetScheduler(ClientContext &context);
 

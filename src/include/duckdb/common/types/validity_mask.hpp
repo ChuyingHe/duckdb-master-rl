@@ -26,7 +26,15 @@ public:
 	DUCKDB_API explicit ValidityData(idx_t count);
 	DUCKDB_API ValidityData(const ValidityMask &original, idx_t count);
 
-	unique_ptr<validity_t[]> owned_data;
+    ValidityData(ValidityData const& vd) {
+        //FIXME: how to copy unique_ptr<validity_t[]> owned_data;
+
+    }
+    buffer_ptr<ValidityData> clone() {
+        return make_shared<ValidityData>(*this);
+    }
+
+    unique_ptr<validity_t[]> owned_data;
 
 public:
 	static inline idx_t EntryCount(idx_t count) {
@@ -55,6 +63,11 @@ public:
 	}
 	ValidityMask(const ValidityMask &original, idx_t count) {
 		Copy(original, count);
+	}
+    ValidityMask(ValidityMask const& vm) {
+	    validity_t vm_content = *vm.validity_mask;
+	    validity_mask = &vm_content;
+        validity_data = vm.validity_data->clone();
 	}
 
 	static inline idx_t ValidityMaskSize(idx_t count = STANDARD_VECTOR_SIZE) {

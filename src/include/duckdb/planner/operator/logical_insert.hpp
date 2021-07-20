@@ -23,10 +23,11 @@ public:
         insert_values.reserve(li.insert_values.size());
         for(const auto& row: li.insert_values) {
             vector<unique_ptr<Expression>> tmp;
+            tmp.reserve(row.size());
             for(const auto& exp: row) {
                 tmp.push_back(exp->Copy());    // elem: unique_ptr<Expression> Copy()
             }
-            insert_values.push_back(tmp); // temp: vector<unique_ptr<Expression>>
+            insert_values.push_back(move(tmp)); // temp: vector<unique_ptr<Expression>>
         }
 
         column_index_map = li.column_index_map;
@@ -49,7 +50,7 @@ public:
 	//! The default statements used by the table
 	vector<unique_ptr<Expression>> bound_defaults;
 
-    std::unique_ptr<LogicalOperator> clone() const override {
+    unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalInsert>(*this);
     }
 

@@ -35,6 +35,12 @@ public:
 	ColumnSegment(LogicalType type, ColumnSegmentType segment_type, idx_t start, idx_t count,
 	              unique_ptr<BaseStatistics> statistics);
 
+    ColumnSegment(ColumnSegment const& cs): SegmentBase(cs), stats(cs.stats) {
+        type = cs.type;
+        type_size = cs.type_size;
+        segment_type = cs.segment_type;
+    }
+
 	~ColumnSegment() override = default;
 
 	//! The type stored in the column

@@ -35,7 +35,7 @@ public:
         }
     }
 
-    std::unique_ptr<LogicalOperator> clone() const {
+    std::unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalCreateIndex>(*this);
     }
 

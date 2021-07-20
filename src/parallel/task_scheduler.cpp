@@ -18,6 +18,12 @@ struct SchedulerThread {
 #ifndef DUCKDB_NO_THREADS
 	explicit SchedulerThread(unique_ptr<thread> thread_p) : internal_thread(move(thread_p)) {
 	}
+	SchedulerThread(SchedulerThread const& st) {
+
+	}
+	unique_ptr<SchedulerThread> clone() {
+        return make_unique<SchedulerThread>(*this);
+	}
 
 	unique_ptr<thread> internal_thread;
 #endif
@@ -33,6 +39,15 @@ struct ConcurrentQueue {
 
 	void Enqueue(ProducerToken &token, unique_ptr<Task> task);
 	bool DequeueFromProducer(ProducerToken &token, unique_ptr<Task> &task);
+    ConcurrentQueue() {
+    }
+    ConcurrentQueue(ConcurrentQueue const& cq) {
+        // q = cq.q;
+        // semaphore = cq.semaphore;
+    }
+    unique_ptr<ConcurrentQueue> clone() {
+        return make_unique<ConcurrentQueue>(*this);
+    }
 };
 
 struct QueueProducerToken {
@@ -94,6 +109,22 @@ ProducerToken::~ProducerToken() {
 }
 
 TaskScheduler::TaskScheduler() : queue(make_unique<ConcurrentQueue>()) {
+}
+
+TaskScheduler::TaskScheduler(TaskScheduler const& ts) {
+    threads.reserve(ts.threads.size());
+    for (auto const& elem:ts.threads) {
+        threads.push_back(elem->clone());
+    }
+
+    queue = ts.queue->clone();
+
+    markers.reserve(ts.markers.size());
+    for (auto const& elem:ts.markers) {
+        auto elem_raw = elem.get();
+        auto elem_value = elem_raw->load();
+        markers.push_back(make_unique<atomic<bool>>(elem_value));
+    }
 }
 
 TaskScheduler::~TaskScheduler() {

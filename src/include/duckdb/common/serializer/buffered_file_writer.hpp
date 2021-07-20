@@ -28,6 +28,17 @@ public:
 	idx_t total_written;
 	unique_ptr<FileHandle> handle;
 
+    BufferedFileWriter(BufferedFileWriter const& bfw): fs(bfw.fs) {
+        //FIXME:unique_ptr<data_t[]> data;
+        offset = bfw.offset;
+        total_written = bfw.total_written;
+        handle = bfw.handle->clone();
+    }
+
+    unique_ptr<BufferedFileWriter> clone() const {
+        return make_unique<BufferedFileWriter>(*this);
+    }
+
 public:
 	void WriteData(const_data_ptr_t buffer, uint64_t write_size) override;
 	//! Flush the buffer to disk and sync the file to ensure writing is completed

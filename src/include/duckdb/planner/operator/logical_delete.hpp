@@ -24,7 +24,7 @@ public:
 
 	TableCatalogEntry *table;
 
-    std::unique_ptr<LogicalOperator> clone() const override {
+    unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalDelete>(*this);
     }
 

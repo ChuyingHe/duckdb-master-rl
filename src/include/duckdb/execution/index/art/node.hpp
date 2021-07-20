@@ -35,6 +35,10 @@ public:
         node.prefix;*/
 	}
 
+    unique_ptr<Node> clone() {
+	    return make_unique<Node>(*this);
+	}
+
 	//! length of the compressed path (prefix)
 	uint32_t prefix_length;
 	//! number of non-null children

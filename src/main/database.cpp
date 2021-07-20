@@ -84,6 +84,16 @@ ConnectionManager &ConnectionManager::Get(ClientContext &context) {
 	return ConnectionManager::Get(DatabaseInstance::GetDatabase(context));
 }
 
+DatabaseInstance::DatabaseInstance(DatabaseInstance const& di) {
+	storage = di.storage->clone();
+	catalog = di.catalog->clone();
+	transaction_manager = di.transaction_manager->clone();
+	//TODO:unique_ptr<TaskScheduler> scheduler;
+	scheduler = di.scheduler->clone();
+	object_cache = di.object_cache->clone();
+	connection_manager = di.connection_manager->clone();
+}
+
 void DatabaseInstance::Initialize(const char *path, DBConfig *new_config) {
 	if (new_config) {
 		// user-supplied configuration

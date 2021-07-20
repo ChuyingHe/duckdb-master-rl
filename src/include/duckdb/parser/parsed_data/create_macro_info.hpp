@@ -29,11 +29,15 @@ public:
 		return move(result);
 	}
     std::unique_ptr<ParseInfo> clone() const override {
-        Copy();
+        return Copy();
     }
 
     std::unique_ptr<CreateMacroInfo> clone() {
-        Copy();
+        auto result = make_unique<CreateMacroInfo>();
+        result->function = function->Copy();
+        result->name = name;
+        CopyProperties(*result);
+        return move(result);
     }
 };
 

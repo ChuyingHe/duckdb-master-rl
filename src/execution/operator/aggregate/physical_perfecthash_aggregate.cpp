@@ -83,11 +83,18 @@ public:
 	PerfectHashAggregateGlobalState(PhysicalPerfectHashAggregate &op, ClientContext &context)
 	    : ht(op.CreateHT(context)) {
 	}
+    PerfectHashAggregateGlobalState(PerfectHashAggregateGlobalState const& phags) : GlobalOperatorState(phags) {
+        ht = phags.ht->clone();
+	}
 
 	//! The lock for updating the global aggregate state
 	mutex lock;
 	//! The global aggregate hash table
 	unique_ptr<PerfectAggregateHashTable> ht;
+
+    unique_ptr<GlobalOperatorState> clone() override {
+        return make_unique<PerfectHashAggregateGlobalState>(*this);
+    }
 };
 
 class PerfectHashAggregateLocalState : public LocalSinkState {

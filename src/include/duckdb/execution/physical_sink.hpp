@@ -19,10 +19,9 @@ public:
 	virtual ~GlobalOperatorState() {
 	}
 
-    //GlobalOperatorState(){};
-    //GlobalOperatorState(GlobalOperatorState const& gos) {};
-
-	virtual unique_ptr<GlobalOperatorState> clone() = 0;
+	virtual unique_ptr<GlobalOperatorState> clone() {
+        return make_unique<GlobalOperatorState>(*this);
+	};
 };
 
 class LocalSinkState {
@@ -36,9 +35,9 @@ public:
 	PhysicalSink(PhysicalOperatorType type, vector<LogicalType> types, idx_t estimated_cardinality)
 	    : PhysicalOperator(type, move(types), estimated_cardinality) {
 	}
-    /*PhysicalSink(PhysicalSink const& ps) : PhysicalOperator(ps.type, ps.types, ps.estimated_cardinality) {
-        // sink_state = ps.sink_state;
-	}*/
+    PhysicalSink(PhysicalSink const& ps) : PhysicalOperator(ps.type, ps.types, ps.estimated_cardinality) {
+        sink_state = ps.sink_state->clone();
+	}
 
 	unique_ptr<GlobalOperatorState> sink_state;
 

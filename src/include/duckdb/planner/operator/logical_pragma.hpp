@@ -30,7 +30,7 @@ public:
 	//! The context of the call
 	PragmaInfo info;
 
-    std::unique_ptr<LogicalOperator> clone() const override {
+    unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalPragma>(*this);
     }
 

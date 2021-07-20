@@ -77,7 +77,10 @@ public:
 public:
 	static FileSystem &GetFileSystem(ClientContext &context);
 	static FileSystem &GetFileSystem(DatabaseInstance &db);
-
+    FileSystem(){
+    }
+    FileSystem(FileSystem const& fs) {
+    }
 	virtual unique_ptr<FileHandle> OpenFile(const char *path, uint8_t flags, FileLockType lock = FileLockType::NO_LOCK);
 	unique_ptr<FileHandle> OpenFile(string &path, uint8_t flags, FileLockType lock = FileLockType::NO_LOCK) {
 		return OpenFile(path.c_str(), flags, lock);

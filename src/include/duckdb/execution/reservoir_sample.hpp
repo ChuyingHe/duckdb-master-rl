@@ -22,6 +22,16 @@ public:
 	explicit BaseReservoirSampling(int64_t seed);
 	BaseReservoirSampling();
 
+    BaseReservoirSampling(BaseReservoirSampling const& brs) {
+        //rng = brs.rng;
+        //uniform_dist = brs.uniform_dist;
+        reservoir_weights = brs.reservoir_weights;
+        next_index = brs.next_index;
+        min_threshold = brs.min_threshold;
+        min_entry = brs.min_entry;
+        current_count = brs.current_count;
+    }
+
 	void InitializeReservoir(idx_t cur_size, idx_t sample_size);
 
 	void SetNextEntry();
@@ -51,6 +61,11 @@ public:
 	virtual ~BlockingSample() {
 	}
 
+    BlockingSample(BlockingSample const& bs): random(bs.random), reservoirSampling(bs.reservoirSampling) {
+	}
+
+    virtual unique_ptr<BlockingSample> clone() = 0;
+
 	//! Add a chunk of data to the sample
 	virtual void AddToReservoir(DataChunk &input) = 0;
 
@@ -74,7 +89,20 @@ public:
 	//! Add a chunk of data to the sample
 	void AddToReservoir(DataChunk &input) override;
 
-	//! Fetches a chunk from the sample. Note that this method is destructive and should only be used after the
+    ReservoirSample(ReservoirSample const& rs) : BlockingSample(rs) {
+        sample_count = rs.sample_count;
+        reservoir = rs.reservoir;
+    }
+
+    unique_ptr<BlockingSample> clone() override {
+        return make_unique<ReservoirSample>(*this);
+    }
+
+    unique_ptr<ReservoirSample> duplicate() {
+        return make_unique<ReservoirSample>(*this);
+    }
+
+    //! Fetches a chunk from the sample. Note that this method is destructive and should only be used after the
 	//! sample is completely built.
 	unique_ptr<DataChunk> GetChunk() override;
 
@@ -99,12 +127,30 @@ class ReservoirSamplePercentage : public BlockingSample {
 public:
 	ReservoirSamplePercentage(double percentage, int64_t seed);
 
+    ReservoirSamplePercentage(ReservoirSamplePercentage const& rsp) : BlockingSample(rsp) {
+        sample_percentage = rsp.sample_percentage;
+        reservoir_sample_size = rsp.reservoir_sample_size;
+        current_sample = rsp.current_sample->duplicate();
+
+        finished_samples.reserve(rsp.finished_samples.size());
+        for (auto const& elem: rsp.finished_samples) {
+            finished_samples.push_back(elem->duplicate());
+        }
+
+        current_count = rsp.current_count;
+        is_finalized = rsp.is_finalized;
+    }
+
 	//! Add a chunk of data to the sample
 	void AddToReservoir(DataChunk &input) override;
 
 	//! Fetches a chunk from the sample. Note that this method is destructive and should only be used after the
 	//! sample is completely built.
 	unique_ptr<DataChunk> GetChunk() override;
+
+    unique_ptr<BlockingSample> clone() override {
+        return make_unique<ReservoirSamplePercentage>(*this);
+    }
 
 private:
 	void Finalize();

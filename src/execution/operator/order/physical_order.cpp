@@ -32,6 +32,30 @@ struct SortingState {
 	const vector<bool> has_null;
 	const vector<bool> constant_size;
 	const vector<idx_t> col_size;
+
+    SortingState(const idx_t num_cols, const idx_t entry_size, const idx_t comp_size, const bool all_constant,
+                 const vector<OrderType> order_types, const vector<OrderByNullType> order_by_null_types,
+                 const vector<LogicalType> types, const vector<BaseStatistics *> stats, const vector<bool> has_null,
+                 const vector<bool> constant_size, const vector<idx_t> col_size) :
+            num_cols(num_cols), entry_size(entry_size), comp_size(comp_size), all_constant(all_constant),
+            order_types(order_types), order_by_null_types(order_by_null_types), types(types), stats(stats),
+            has_null(has_null), constant_size(constant_size), col_size(col_size){
+    }
+
+    SortingState(SortingState const& ss): num_cols(ss.num_cols), entry_size(ss.entry_size),
+    comp_size(ss.comp_size), all_constant(ss.all_constant) {
+        /*order_types = ss.order_types;
+        order_by_null_types = ss.order_by_null_types;
+        types = ss.types;
+        stats = ss.stats;
+        has_null = ss.has_null;
+        constant_size = ss.constant_size;
+        col_size = ss.col_size;*/
+    }
+
+    unique_ptr<SortingState> clone() {
+        return make_unique<SortingState>(*this);
+    }
 };
 
 struct PayloadState {
@@ -40,6 +64,17 @@ struct PayloadState {
 	const idx_t entry_size;
 
 	const idx_t rowdata_init_size;
+
+    PayloadState(const bool all_constant, const idx_t validitymask_size, const idx_t entry_size, const idx_t rowdata_init_size) :
+    all_constant(all_constant), validitymask_size(validitymask_size), entry_size(entry_size), rowdata_init_size(rowdata_init_size) {
+    }
+
+    PayloadState(PayloadState const& ps) : all_constant(ps.all_constant), validitymask_size(ps.validitymask_size), entry_size(ps.entry_size), rowdata_init_size(ps.rowdata_init_size) {
+    }
+
+    unique_ptr<PayloadState> clone() {
+        return make_unique<PayloadState>(*this);
+    }
 };
 
 class OrderGlobalState : public GlobalOperatorState {
@@ -49,11 +84,27 @@ public:
 	}
 
     OrderGlobalState(OrderGlobalState const& ogs) : GlobalOperatorState(ogs), buffer_manager(ogs.buffer_manager) {
+        /*sorted_blocks.reserve(ogs.sorted_blocks.size());
+        for (auto const& elem: ogs.sorted_blocks) {
+            sorted_blocks.push_back();
+        }
+        sorted_blocks_temp.reserve(ogs.sorted_blocks_temp.size());
+        for (auto const& elem:ogs.sorted_blocks_temp) {
+            SortedBlock elem_content = *elem;
+            sorted_blocks_temp.push_back();
+        }*/
+
+        sorting_state = ogs.sorting_state->clone();
+        payload_state = ogs.payload_state->clone();
+
         total_count = ogs.total_count;
+
         sorting_block_capacity = ogs.sorting_block_capacity;
+        var_sorting_data_block_dims = ogs.var_sorting_data_block_dims;
+        var_sorting_offset_block_capacity = ogs.var_sorting_offset_block_capacity;
         payload_data_block_dims = ogs.payload_data_block_dims;
         payload_offset_block_capacity = ogs.payload_offset_block_capacity;
-	}
+    }
 
 	~OrderGlobalState() override;
 
@@ -80,11 +131,12 @@ public:
 	std::pair<idx_t, idx_t> payload_data_block_dims;
 	idx_t payload_offset_block_capacity;
 
-    unique_ptr<GlobalOperatorState> clone() {
+    unique_ptr<GlobalOperatorState> clone() override {
         return make_unique<OrderGlobalState>(*this);
     }
 
 };
+
 
 class OrderLocalState : public LocalSinkState {
 public:
@@ -378,6 +430,25 @@ public:
 	      entry_idx(0) {
 	}
 
+    SortedData(SortedData const& sd) : buffer_manager(sd.buffer_manager), constant_size(sd.constant_size), entry_size(sd.entry_size) {
+        data_dims = sd.data_dims;
+        offset_capacity = sd.offset_capacity;
+        data_handle = sd.data_handle->clone();
+        offset_handle = sd.offset_handle->clone();
+        dataptr = sd.dataptr;
+        idx_t offsets_content = *sd.offsets;
+        offsets = &offsets_content;
+        block_idx = sd.block_idx;
+        entry_idx = sd.entry_idx;
+        data_blocks = sd.data_blocks;
+        offset_blocks = sd.offset_blocks;
+	}
+
+    unique_ptr<SortedData> clone() {
+	    return make_unique<SortedData>(*this);
+	}
+
+
 	idx_t Count() {
 		idx_t count = std::accumulate(data_blocks.begin(), data_blocks.end(), 0,
 		                              [](idx_t a, const RowDataBlock &b) { return a + b.count; });
@@ -481,6 +552,22 @@ public:
 			}
 		}
 		payload_data = make_unique<SortedData>(buffer_manager, payload_state.all_constant, payload_state.entry_size);
+	}
+
+    SortedBlock(SortedBlock const& sb) : buffer_manager(buffer_manager), sorting_state(sorting_state), payload_state(payload_state) {
+        block_idx = sb.block_idx;
+        entry_idx = sb.entry_idx;
+        capacity = sb.capacity;
+        sorting_blocks = sb.sorting_blocks;
+        var_sorting_cols.reserve(sb.var_sorting_cols.size());
+        for (auto const& elem: sb.var_sorting_cols) {
+            var_sorting_cols.push_back(elem->clone());
+        }
+        payload_data = sb.payload_data->clone();
+	}
+
+    unique_ptr<SortedBlock> clone() {
+        return make_unique<SortedBlock>(*this);
 	}
 
 	idx_t Count() {

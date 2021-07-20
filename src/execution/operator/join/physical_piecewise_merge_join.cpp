@@ -54,7 +54,7 @@ public:
         right_conditions = mjgs.right_conditions;
         right_orders = mjgs.right_orders;
         has_null = mjgs.has_null;
-        right_found_match = mjgs.right_found_match;
+        //FIXME: right_found_match = mjgs.right_found_match;
         right_outer_position = mjgs.right_outer_position;
 	}
 
@@ -71,7 +71,7 @@ public:
 	//! The position in the RHS in the final scan of the FULL OUTER JOIN
 	idx_t right_outer_position;
 
-    unique_ptr<GlobalOperatorState> clone() {
+    unique_ptr<GlobalOperatorState> clone() override {
         return make_unique<MergeJoinGlobalState>(*this);
     }
 

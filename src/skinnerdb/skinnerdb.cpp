@@ -91,7 +91,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         //unique_ptr<LogicalOperator> copy_of_plan = *plan;
 
         // unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(plan_share);
-        auto rl_plan = rl_optimizer.Optimize(move(copy));    // CHECK HERE, erst kopieren dann
+        auto rl_plan = rl_optimizer.Optimize(move(plan));    // CHECK HERE, erst kopieren dann
 
         profiler.EndPhase();
 

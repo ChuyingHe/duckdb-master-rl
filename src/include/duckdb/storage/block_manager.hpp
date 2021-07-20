@@ -22,6 +22,10 @@ class BlockManager {
 public:
 	virtual ~BlockManager() = default;
 
+    BlockManager(BlockManager const& bm) {
+    }
+    virtual unique_ptr<BlockManager> clone() const = 0;
+
 	virtual void StartCheckpoint() = 0;
 	//! Creates a new block inside the block manager
 	virtual unique_ptr<Block> CreateBlock() = 0;

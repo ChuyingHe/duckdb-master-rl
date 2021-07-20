@@ -10,6 +10,7 @@
 
 #include "duckdb/common/types/chunk_collection.hpp"
 #include "duckdb/storage/table/scan_state.hpp"
+#include "duckdb/storage/index.hpp"
 
 namespace duckdb {
 class DataTable;
@@ -20,6 +21,24 @@ class LocalTableStorage {
 public:
 	explicit LocalTableStorage(DataTable &table);
 	~LocalTableStorage();
+
+    LocalTableStorage(LocalTableStorage const& lts):table(lts.table) {
+        collection = lts.collection;
+
+        indexes.reserve(lts.indexes.size());
+        for (auto const& elem: lts.indexes) {
+            indexes.push_back(elem->clone());
+        }
+
+        //FIXME: unordered_map<idx_t, unique_ptr<bool[]>> deleted_entries;
+
+        deleted_rows = lts.deleted_rows;
+        active_scans = lts.active_scans;
+    }
+
+    unique_ptr<LocalTableStorage> clone() {
+        return make_unique<LocalTableStorage>(*this);
+    }
 
 	DataTable &table;
 	//! The main chunk collection holding the data
@@ -49,6 +68,13 @@ public:
 
 public:
 	explicit LocalStorage(Transaction &transaction) : transaction(transaction) {
+	}
+
+    LocalStorage(LocalStorage const& ls): transaction(ls.transaction) {
+        //	unordered_map<DataTable *, unique_ptr<LocalTableStorage>> table_storage;
+        for (auto const& elem:ls.table_storage) {
+            table_storage[elem.first] = elem.second->clone();
+        }
 	}
 
 	//! Initialize a scan of the local storage

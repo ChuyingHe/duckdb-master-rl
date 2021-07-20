@@ -120,9 +120,12 @@ typedef duckdb_moodycamel::ConcurrentQueue<unique_ptr<BufferEvictionNode>> evict
 
 struct EvictionQueue {
 	eviction_queue_t q;
+    EvictionQueue() {}
+    EvictionQueue(EvictionQueue const& eq) {}
 
-	std::unique_ptr<EvictionQueue> Copy() {
-		return make_unique<EvictionQueue>(q);
+	unique_ptr<EvictionQueue> Copy() {
+        EvictionQueue copy;
+		return make_unique<EvictionQueue>(copy);
 	}
 };
 
@@ -133,6 +136,18 @@ BufferManager::BufferManager(DatabaseInstance &db, string tmp, idx_t maximum_mem
 	if (!temp_directory.empty()) {
 		fs.CreateDirectory(temp_directory);
 	}
+}
+
+BufferManager::BufferManager(BufferManager const& bm): db(bm.db) {
+    current_memory = bm.current_memory.load();
+    maximum_memory = bm.maximum_memory.load();
+    temp_directory = bm.temp_directory;
+    //	unordered_map<block_id_t, weak_ptr<BlockHandle>> blocks;
+    for (auto const& elem:bm.blocks) {
+        blocks[elem.first] = elem.second;
+    }
+    queue = bm.queue->Copy();
+    temporary_id = bm.temporary_id.load();
 }
 
 BufferManager::~BufferManager() {

@@ -23,6 +23,16 @@ public:
 	mutex append_lock;
 	TableCatalogEntry *table;
 	int64_t inserted_count;
+
+    CreateTableAsGlobalState(CreateTableAsGlobalState const& ctags) : GlobalOperatorState(ctags) {
+        TableCatalogEntry table_content = *table;
+        table = &table_content;
+        inserted_count = ctags.inserted_count;
+    }
+
+    unique_ptr<GlobalOperatorState> clone() override {
+        return make_unique<CreateTableAsGlobalState>(*this);
+    }
 };
 
 unique_ptr<GlobalOperatorState> PhysicalCreateTableAs::GetGlobalState(ClientContext &context) {

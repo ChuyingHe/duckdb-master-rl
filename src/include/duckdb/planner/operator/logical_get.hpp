@@ -47,7 +47,7 @@ public:
 
 	string GetName() const override;
 	string ParamsToString() const override;
-    std::unique_ptr<LogicalOperator> clone() const override;
+    unique_ptr<LogicalOperator> clone() const override;
 
 public:
 	vector<ColumnBinding> GetColumnBindings() override;

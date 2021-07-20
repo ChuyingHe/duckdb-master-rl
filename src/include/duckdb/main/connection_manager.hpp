@@ -22,6 +22,14 @@ public:
 	ConnectionManager() {
 	}
 
+    ConnectionManager(ConnectionManager const& cm) {
+        connections = cm.connections;
+	}
+
+    unique_ptr<ConnectionManager> clone() {
+        return make_unique<ConnectionManager>(*this);
+	}
+
 	void AddConnection(ClientContext &context) {
 		lock_guard<mutex> lock(connections_lock);
 		connections.push_back(weak_ptr<ClientContext>(context.shared_from_this()));

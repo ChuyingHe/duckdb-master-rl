@@ -27,10 +27,11 @@ public:
         expressions.reserve(leg.expressions.size());
         for(const auto& row: leg.expressions) {
             vector<unique_ptr<Expression>> tmp;
+            tmp.reserve(row.size());
             for(const auto& exp: row) {
                 tmp.push_back(exp->Copy());    // elem: unique_ptr<Expression> Copy()
             }
-            expressions.push_back(tmp); // temp: vector<unique_ptr<Expression>>
+            expressions.push_back(move(tmp));
         }
 	}
 
@@ -46,7 +47,7 @@ public:
 		return GenerateColumnBindings(table_index, expr_types.size());
 	}
 
-    std::unique_ptr<LogicalOperator> clone() const override {
+    unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalExpressionGet>(*this);
     }
 

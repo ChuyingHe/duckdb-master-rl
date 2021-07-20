@@ -36,7 +36,7 @@ public:
 		return GenerateColumnBindings(table_index, column_count);
 	}
 
-    std::unique_ptr<LogicalOperator> clone() const override {
+    unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalSetOperation>(*this);
     }
 

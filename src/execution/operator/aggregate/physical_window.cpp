@@ -23,6 +23,18 @@ public:
 	WindowGlobalState(PhysicalWindow &op_p, ClientContext &context) : op(op_p) {
 	}
 
+    WindowGlobalState(WindowGlobalState const& wgs) : GlobalOperatorState(wgs), op(wgs.op) {
+        chunks = wgs.chunks;
+        over_collection = wgs.over_collection;
+        hash_collection = wgs.hash_collection;
+        window_results = wgs.window_results;
+        counts = wgs.counts;
+	}
+
+    unique_ptr<GlobalOperatorState> clone() override {
+	    return make_unique<WindowGlobalState>(*this);
+	}
+
 	PhysicalWindow &op;
 	mutex lock;
 	ChunkCollection chunks;

@@ -26,7 +26,7 @@ public:
 	ChunkCollection rhs_materialized;
 	mutex rhs_lock;
 
-    unique_ptr <GlobalOperatorState> clone() {
+    unique_ptr<GlobalOperatorState> clone() override {
         return make_unique<CrossProductGlobalState>(*this);
     }
 };

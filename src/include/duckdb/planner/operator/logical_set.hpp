@@ -26,7 +26,7 @@ public:
     name(ls.name), value(ls.value) {
     }
 
-    std::unique_ptr<LogicalOperator> clone() const override {
+    unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalSet>(*this);
     }
 

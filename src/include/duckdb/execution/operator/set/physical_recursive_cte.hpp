@@ -20,11 +20,8 @@ public:
 	                     unique_ptr<PhysicalOperator> bottom, idx_t estimated_cardinality);
 	~PhysicalRecursiveCTE() override;
     PhysicalRecursiveCTE(PhysicalRecursiveCTE const& prcte) : PhysicalOperator(PhysicalOperatorType::RECURSIVE_CTE, prcte.types, prcte.estimated_cardinality),
-    union_all(prcte.union_all)  {
-        working_table = prcte.working_table->duplicate();
-        intermediate_table = prcte.intermediate_table;
+    union_all(prcte.union_all), working_table(prcte.working_table->duplicate()), intermediate_table(prcte.intermediate_table)  {
         //FIXME: pipelines
-
     }
 
 	bool union_all;

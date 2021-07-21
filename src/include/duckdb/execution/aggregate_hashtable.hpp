@@ -107,6 +107,12 @@ public:
 	constexpr static float LOAD_FACTOR = 1.5;
 	constexpr static uint8_t HASH_WIDTH = sizeof(hash_t);
 
+    GroupedAggregateHashTable(GroupedAggregateHashTable const& gaht);
+
+    unique_ptr<GroupedAggregateHashTable> clone() const {
+        return make_unique<GroupedAggregateHashTable>(*this);
+    }
+
 private:
 	HtEntryType entry_type;
 
@@ -149,7 +155,7 @@ private:
 	SelectionVector empty_vector;
 
 private:
-	GroupedAggregateHashTable(const GroupedAggregateHashTable &) = delete;
+	//GroupedAggregateHashTable(const GroupedAggregateHashTable &) = delete;
 
 	//! Resize the HT to the specified size. Must be larger than the current
 	//! size.

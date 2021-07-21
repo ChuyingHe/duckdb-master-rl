@@ -59,13 +59,13 @@ public:
 	*/
 	Vector(const LogicalType &type, bool create_data, bool zero_data);
 	// implicit copying of Vectors is not allowed
-	Vector(const Vector &) = delete; // from duckdb
-    /*Vector(Vector const& vector) {
+	//Vector(const Vector &) = delete; // from duckdb
+    Vector(Vector const& vector) {
         data = vector.data;
         validity = vector.validity;
         buffer = vector.buffer->clone();
         auxiliary = vector.auxiliary->clone();
-    }*/
+    }
 
     // but moving of vectors is allowed
 	Vector(Vector &&other) noexcept;

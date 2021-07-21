@@ -29,10 +29,11 @@ public:
 	    prefix_length = node.prefix_length;
 	    count = node.count;
 	    type = node.type;
-	    /*prefix = make_unique<uint8_t[]>(&node.prefix);
-        for (auto pre:node.prefix) {
+
+        prefix = make_unique<uint8_t[]>(node.prefix_length);
+        for (int i = 0 ;i<node.prefix_length; i++) {
+            prefix[i] = node.prefix[i];
         }
-        node.prefix;*/
 	}
 
     unique_ptr<Node> clone() {

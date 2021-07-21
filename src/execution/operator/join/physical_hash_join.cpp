@@ -59,7 +59,7 @@ public:
 	//! Only used for FULL OUTER JOIN: scan state of the final scan to find unmatched tuples in the build-side
 	JoinHTScanState ht_scan_state;
 
-    unique_ptr<GlobalOperatorState> clone() override {
+    unique_ptr<GlobalOperatorState> clone() const {
         return make_unique<HashJoinGlobalState>(*this);
     }
 };

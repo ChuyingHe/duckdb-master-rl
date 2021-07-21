@@ -38,6 +38,7 @@ public:
         group_subset = pht.group_subset;
         payload_subset = pht.payload_subset;
         //FIXME: hashes = std::move(pht.hashes);
+        // hashes = pht.hashes.
         //FIXME: hashes_subset = pht.hashes_subset;
         unpartitioned_hts = pht.unpartitioned_hts;
         radix_partitioned_hts = pht.radix_partitioned_hts;

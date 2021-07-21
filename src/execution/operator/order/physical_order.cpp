@@ -131,7 +131,7 @@ public:
 	std::pair<idx_t, idx_t> payload_data_block_dims;
 	idx_t payload_offset_block_capacity;
 
-    unique_ptr<GlobalOperatorState> clone() override {
+    unique_ptr<GlobalOperatorState> clone() const {
         return make_unique<OrderGlobalState>(*this);
     }
 

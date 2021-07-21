@@ -23,7 +23,7 @@ public:
 	mutex lock;
 	idx_t insert_count;
 
-    unique_ptr<GlobalOperatorState> clone() override {
+    unique_ptr<GlobalOperatorState> clone() const {
         return make_unique<InsertGlobalState>(*this);
     }
 };

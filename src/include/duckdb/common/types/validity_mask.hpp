@@ -28,13 +28,17 @@ public:
 
     ValidityData(ValidityData const& vd) {
         //FIXME: how to copy unique_ptr<validity_t[]> owned_data;
-
+        /*unique_ptr<validity_t[]> copy_ptr = make_unique<validity_t[]>(vd.owned_data_count);
+        for (int i = 0 ;i<vd.owned_data_count; i++) {
+            copy_ptr[i] = vd.owned_data[i];
+        }*/
     }
     buffer_ptr<ValidityData> clone() {
         return make_shared<ValidityData>(*this);
     }
 
     unique_ptr<validity_t[]> owned_data;
+    int owned_data_count;
 
 public:
 	static inline idx_t EntryCount(idx_t count) {

@@ -24,6 +24,11 @@ public:
 		chunk = nullptr;
 	}
 
+    StringHeap(StringHeap const& sh) {
+        tail = sh.tail;
+        chunk = sh.chunk->clone();
+	}
+
 	void Move(StringHeap &other) {
 		D_ASSERT(!other.chunk);
 		other.tail = tail;
@@ -51,6 +56,21 @@ private:
 		explicit StringChunk(idx_t size) : current_position(0), maximum_size(size) {
 			data = unique_ptr<char[]>(new char[maximum_size]);
 		}
+
+        StringChunk(StringChunk const& sc) {
+            data = make_unique<char[]>(sc.maximum_size);
+            for (idx_t i = 0; i<sc.maximum_size; i++) {
+                data[i] = sc.data[i];
+            }
+            current_position = sc.current_position;
+            maximum_size = sc.maximum_size;
+            prev = sc.prev->clone();
+        }
+
+        unique_ptr<StringChunk> clone() {
+            return make_unique<StringChunk>(*this);
+		}
+
 		~StringChunk() {
 			if (prev) {
 				auto current_prev = move(prev);

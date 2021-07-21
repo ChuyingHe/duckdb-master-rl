@@ -58,7 +58,7 @@ public:
 	ChunkCollection delim_data;
 	unique_ptr<GlobalOperatorState> distinct_state;
 
-    unique_ptr<GlobalOperatorState> clone() override {
+    unique_ptr<GlobalOperatorState> clone() const {
         return make_unique<DelimJoinGlobalState>(*this);
     }
 };

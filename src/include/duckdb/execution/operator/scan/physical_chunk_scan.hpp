@@ -19,7 +19,7 @@ public:
 	PhysicalChunkScan(vector<LogicalType> types, PhysicalOperatorType op_type, idx_t estimated_cardinality)
 	    : PhysicalOperator(op_type, move(types), estimated_cardinality), collection(nullptr) {
 	}
-    PhysicalChunkScan(PhysicalChunkScan const& pcs) : PhysicalOperator(pcs.type, pcs.types, pcs.estimated_cardinality),
+    PhysicalChunkScan(PhysicalChunkScan const& pcs) : PhysicalOperator(pcs),
                                                       collection(pcs.collection), owned_collection(pcs.owned_collection->Copy()) {
 	}
 

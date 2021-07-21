@@ -19,9 +19,9 @@ public:
 	virtual ~GlobalOperatorState() {
 	}
 
-	virtual unique_ptr<GlobalOperatorState> clone() {
+	virtual unique_ptr<GlobalOperatorState> clone() const {
         return make_unique<GlobalOperatorState>(*this);
-	};
+	}
 };
 
 class LocalSinkState {

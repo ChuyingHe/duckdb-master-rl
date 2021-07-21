@@ -32,7 +32,7 @@ public:
 	//! The reservoir sample
 	unique_ptr<BlockingSample> sample;
 
-    unique_ptr<GlobalOperatorState> clone() override {
+    unique_ptr<GlobalOperatorState> clone() const {
         return make_unique<SampleGlobalOperatorState>(*this);
     }
 };

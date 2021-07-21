@@ -103,7 +103,10 @@ public:
         for(auto const& elem: hags.intermediate_hts) {
             intermediate_hts.push_back(elem->clone());
         }
-        // finalized_hts = hags.finalized_hts;  //deleted copy constructor
+        finalized_hts.reserve(hags.finalized_hts.size());
+        for (auto const& elem:hags.finalized_hts) {
+            finalized_hts.push_back(elem->clone());
+        }
 
         is_empty = hags.is_empty;
         total_groups = hags.total_groups.load();
@@ -122,7 +125,7 @@ public:
 
 	RadixPartitionInfo partition_info;
 
-    unique_ptr<GlobalOperatorState> clone() override {
+    unique_ptr<GlobalOperatorState> clone() const {
         return make_unique<HashAggregateGlobalState>(*this);
     }
 };

@@ -71,7 +71,7 @@ public:
 	//! The position in the RHS in the final scan of the FULL OUTER JOIN
 	idx_t right_outer_position;
 
-    unique_ptr<GlobalOperatorState> clone() override {
+    unique_ptr<GlobalOperatorState> clone() const {
         return make_unique<MergeJoinGlobalState>(*this);
     }
 

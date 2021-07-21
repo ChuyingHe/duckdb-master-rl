@@ -138,7 +138,7 @@ public:
 	mutex lock;
 	TopNHeap heap;
 
-    unique_ptr<GlobalOperatorState> clone() override {
+    unique_ptr<GlobalOperatorState> clone() const {
         return make_unique<TopNGlobalState> (*this);
     }
 };

@@ -92,7 +92,7 @@ public:
 	//! The global aggregate hash table
 	unique_ptr<PerfectAggregateHashTable> ht;
 
-    unique_ptr<GlobalOperatorState> clone() override {
+    unique_ptr<GlobalOperatorState> clone() const {
         return make_unique<PerfectHashAggregateGlobalState>(*this);
     }
 };

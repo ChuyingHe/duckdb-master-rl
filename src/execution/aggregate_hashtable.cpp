@@ -28,6 +28,34 @@ GroupedAggregateHashTable::GroupedAggregateHashTable(BufferManager &buffer_manag
 GroupedAggregateHashTable::GroupedAggregateHashTable(BufferManager &buffer_manager, vector<LogicalType> group_types)
     : GroupedAggregateHashTable(buffer_manager, move(group_types), {}, vector<AggregateObject>()) {
 }
+GroupedAggregateHashTable::GroupedAggregateHashTable(GroupedAggregateHashTable const& gaht) : BaseAggregateHashTable(gaht), string_heap(gaht.string_heap),
+																							  addresses(gaht.addresses), ht_offsets(gaht.ht_offsets), hash_salts(gaht.hash_salts) {
+	entry_type = gaht.entry_type;
+	tuple_size = gaht.tuple_size;
+	capacity = gaht.capacity;
+	entries = gaht.entries;
+
+	payload_hds.reserve(gaht.payload_hds.size());
+	for (auto const& elem: gaht.payload_hds) {
+		payload_hds.push_back(elem->clone());
+	}
+	payload_hds_ptrs = gaht.payload_hds_ptrs;
+	hashes_hdl = gaht.hashes_hdl->clone();
+	hashes_hdl_ptr = gaht.hashes_hdl_ptr;
+	hashes_end_ptr = gaht.hashes_end_ptr;
+	hash_prefix_shift = gaht.hash_prefix_shift;
+	payload_page_offset = gaht.payload_page_offset;
+	bitmask = gaht.bitmask;
+
+	distinct_hashes.reserve(gaht.distinct_hashes.size());
+	for (auto const& elem:gaht.distinct_hashes) {
+		distinct_hashes.push_back(elem->clone());
+	}
+	is_finalized = gaht.is_finalized;
+	group_compare_vector = gaht.group_compare_vector;
+	no_match_vector = gaht.no_match_vector;
+	empty_vector = gaht.empty_vector;
+}
 
 GroupedAggregateHashTable::GroupedAggregateHashTable(BufferManager &buffer_manager, vector<LogicalType> group_types_p,
                                                      vector<LogicalType> payload_types_p,

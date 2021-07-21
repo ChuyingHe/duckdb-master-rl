@@ -65,8 +65,8 @@ public:
 	//! The global aggregate state
 	AggregateState state;
 
-    unique_ptr<GlobalOperatorState> clone() override {
-
+    unique_ptr<GlobalOperatorState> clone() const {
+        return make_unique<SimpleAggregateGlobalState>(*this);
     }
 };
 

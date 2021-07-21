@@ -35,27 +35,27 @@ public:
         swap(types, other.types);
     }
 
-	ChunkCollection(ChunkCollection const &cc) {
+    /*ChunkCollection& operator=(ChunkCollection& other) {
+        count = other.count;
+        types = other.types;
+        return *this;
+    }*/
+
+	ChunkCollection(ChunkCollection const& cc) {
 	    count = cc.count;
-
-	    /*//! The set of data chunks in the collection
-	vector<unique_ptr<DataChunk>> chunks;
-	//! The types of the ChunkCollection
-	vector<LogicalType> types;*/
-
-	    /*chunks.reserve(cc.chunks.size());
+	    chunks.reserve(cc.chunks.size());
         for (auto const &elem:cc.chunks) {
             chunks.push_back(elem->clone());
-        }*/
-
+        }
         types = cc.types;
 	}
 
-	unique_ptr<ChunkCollection> Copy() {
+
+	unique_ptr<ChunkCollection> Copy() const {
         return make_unique<ChunkCollection>(*this);
 	}
 
-    shared_ptr<ChunkCollection> duplicate() {
+    shared_ptr<ChunkCollection> duplicate() const {
         return make_shared<ChunkCollection>(*this);
     }
 

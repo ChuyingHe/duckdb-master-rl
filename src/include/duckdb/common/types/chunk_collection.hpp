@@ -38,10 +38,15 @@ public:
 	ChunkCollection(ChunkCollection const &cc) {
 	    count = cc.count;
 
-	    chunks.reserve(cc.chunks.size());
-        for (const auto &elem:cc.chunks) {
+	    /*//! The set of data chunks in the collection
+	vector<unique_ptr<DataChunk>> chunks;
+	//! The types of the ChunkCollection
+	vector<LogicalType> types;*/
+
+	    /*chunks.reserve(cc.chunks.size());
+        for (auto const &elem:cc.chunks) {
             chunks.push_back(elem->clone());
-        }
+        }*/
 
         types = cc.types;
 	}

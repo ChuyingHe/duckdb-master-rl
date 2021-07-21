@@ -34,7 +34,7 @@ struct MappingValue {
         copy->timestamp = timestamp;
         copy->deleted = deleted;
         copy->parent = parent;
-        copy->child = child->Copy();
+        //copy->child = child->Copy();
         return copy;
 	}
 

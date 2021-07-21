@@ -26,7 +26,7 @@ public:
 		result->function = function->Copy();
 		result->name = name;
 		CopyProperties(*result);
-		return move(result);
+		return result;
 	}
     std::unique_ptr<ParseInfo> clone() const override {
         return Copy();
@@ -37,7 +37,7 @@ public:
         result->function = function->Copy();
         result->name = name;
         CopyProperties(*result);
-        return move(result);
+        return result;
     }
 };
 

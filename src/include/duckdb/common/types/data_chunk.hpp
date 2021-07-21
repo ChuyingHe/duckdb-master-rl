@@ -39,11 +39,11 @@ public:
 	//! Creates an empty DataChunk
 	DataChunk();
 
-    DataChunk(DataChunk &dc) {
-        data = std::move(dc.data);  //FIXME: Vector doesnt have copy constructor, because it has a move constructor
+    DataChunk(DataChunk const &dc) {
+        // data = std::move(dc.data);  //FIXME: Vector doesnt have copy constructor, because it has a move constructor
         count = dc.count;
     }
-    unique_ptr<DataChunk> clone() {
+    unique_ptr<DataChunk> clone() const {
         return make_unique<DataChunk>(*this);
     }
 	//! The vectors owned by the DataChunk.
@@ -117,7 +117,7 @@ public:
 	DUCKDB_API string ToString() const;
 	DUCKDB_API void Print();
 
-	DataChunk(const DataChunk &) = delete;
+	// DataChunk(const DataChunk &) = delete;
 
 	//! Verify that the DataChunk is in a consistent, not corrupt state. DEBUG
 	//! FUNCTION ONLY!

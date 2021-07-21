@@ -26,7 +26,7 @@ public:
 	LogicalChunkGet(LogicalChunkGet const &lcg) : LogicalOperator(lcg) {
         table_index = lcg.table_index;
         chunk_types = lcg.chunk_types;
-        collection = lcg.collection->Copy();    //
+        collection = lcg.collection->Copy();
 	}
 
 	//! The table index in the current bind context

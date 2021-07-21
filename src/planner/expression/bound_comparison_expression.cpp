@@ -29,7 +29,7 @@ BoundComparisonExpression::BoundComparisonExpression(BoundComparisonExpression c
     right = bce.right->Copy();
 }
 unique_ptr<Expression> BoundComparisonExpression::Copy() {
-	auto copy = make_unique<BoundComparisonExpression>(*this);
+    return make_unique<BoundComparisonExpression>(*this);
 }
 
 } // namespace duckdb

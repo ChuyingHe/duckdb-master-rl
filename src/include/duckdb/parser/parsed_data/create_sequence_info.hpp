@@ -45,7 +45,7 @@ public:
         result->max_value = max_value;
         result->start_value = start_value;
         result->cycle = cycle;
-        return move(result);
+        return result;
 	}
 
     unique_ptr<ParseInfo> clone() const override {
@@ -62,7 +62,7 @@ public:
         result->max_value = max_value;
         result->start_value = start_value;
         result->cycle = cycle;
-        return move(result);
+        return result;
 	}
 };
 

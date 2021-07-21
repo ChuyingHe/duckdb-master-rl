@@ -26,6 +26,12 @@ public:
 	//! The offset from the start to begin emitting elements
 	int64_t offset;
 
+    // FOR DEBUG
+    LogicalTopN() : LogicalOperator(LogicalOperatorType::LOGICAL_TOP_N) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalTopN>();
+    }
+
 public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return children[0]->GetColumnBindings();

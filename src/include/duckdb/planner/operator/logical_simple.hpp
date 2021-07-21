@@ -22,6 +22,12 @@ public:
 
 	unique_ptr<ParseInfo> info;
 
+    // FOR DEBUG
+    LogicalSimple() : LogicalOperator(LogicalOperatorType::LOGICAL_SHOW) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalSimple>();
+    }
+
 protected:
 	void ResolveTypes() override {
 		types.push_back(LogicalType::BOOLEAN);

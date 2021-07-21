@@ -33,6 +33,12 @@ public:
 		return result;
 	}
 
+    // FOR DEBUG
+    LogicalOrder() : LogicalOperator(LogicalOperatorType::LOGICAL_ORDER_BY) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalOrder>();
+    }
+
 public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return children[0]->GetColumnBindings();

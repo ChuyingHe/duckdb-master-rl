@@ -26,6 +26,12 @@ public:
 	idx_t table_index;
 	idx_t column_count;
 
+    // FOR DEBUG
+    LogicalSetOperation() : LogicalOperator(LogicalOperatorType::LOGICAL_UNION) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalSetOperation>();
+    }
+
 public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return GenerateColumnBindings(table_index, column_count);

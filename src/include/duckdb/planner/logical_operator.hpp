@@ -32,6 +32,24 @@ public:
 	virtual ~LogicalOperator() {
 	}
 
+    LogicalOperator(LogicalOperator const& lo) {
+        printf("\n LogicalOperator Constructor \n");
+        types = lo.types;
+        type = lo.type;
+        children.reserve(lo.children.size());
+        for (const auto& child:lo.children) {
+            children.push_back(child->clone());
+        }
+
+        expressions.reserve(lo.expressions.size());
+        for (const auto& exp:expressions) {
+            expressions.push_back(exp->Copy());
+        }
+        estimated_cardinality = lo.estimated_cardinality;
+    }
+
+    virtual unique_ptr<LogicalOperator> clone() const = 0;
+
 	//! The type of the logical operator
 	LogicalOperatorType type;
 	//! The set of children of the operator

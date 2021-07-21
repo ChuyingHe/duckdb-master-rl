@@ -22,6 +22,12 @@ public:
 
 	idx_t window_index;
 
+    // FOR DEBUG
+    LogicalWindow() : LogicalOperator(LogicalOperatorType::LOGICAL_WINDOW) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalWindow>();
+    }
+
 public:
 	vector<ColumnBinding> GetColumnBindings() override;
 

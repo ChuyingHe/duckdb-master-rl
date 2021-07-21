@@ -23,6 +23,11 @@ public:
 	//! The set of distinct targets (optional).
 	vector<unique_ptr<Expression>> distinct_targets;
 
+    // FOR DEBUG
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalDistinct>();
+    }
+
 public:
 	string ParamsToString() const override;
 

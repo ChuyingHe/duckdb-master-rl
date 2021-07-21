@@ -30,6 +30,12 @@ public:
 	//! The chunk collection to scan
 	unique_ptr<ChunkCollection> collection;
 
+	// FOR DEBUG
+    LogicalChunkGet() : LogicalOperator(LogicalOperatorType::LOGICAL_CHUNK_GET) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalChunkGet>();
+    }
+
 public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return GenerateColumnBindings(table_index, chunk_types.size());

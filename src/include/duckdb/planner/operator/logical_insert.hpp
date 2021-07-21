@@ -29,6 +29,12 @@ public:
 	//! The default statements used by the table
 	vector<unique_ptr<Expression>> bound_defaults;
 
+    // FOR DEBUG
+    LogicalInsert() : LogicalOperator(LogicalOperatorType::LOGICAL_INSERT) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalInsert>();
+    }
+
 protected:
 	void ResolveTypes() override {
 		types.push_back(LogicalType::BIGINT);

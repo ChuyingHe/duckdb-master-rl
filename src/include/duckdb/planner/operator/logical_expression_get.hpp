@@ -28,6 +28,12 @@ public:
 	//! The set of expressions
 	vector<vector<unique_ptr<Expression>>> expressions;
 
+    // FOR DEBUG
+    LogicalExpressionGet() : LogicalOperator(LogicalOperatorType::LOGICAL_EXPRESSION_GET) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalExpressionGet>();
+    }
+
 public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return GenerateColumnBindings(table_index, expr_types.size());

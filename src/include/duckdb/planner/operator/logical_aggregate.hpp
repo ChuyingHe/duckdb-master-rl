@@ -28,6 +28,12 @@ public:
 	//! Group statistics (optional)
 	vector<unique_ptr<BaseStatistics>> group_stats;
 
+    // FOR DEBUG
+    LogicalAggregate() : LogicalOperator(LogicalOperatorType::LOGICAL_AGGREGATE_AND_GROUP_BY) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalAggregate>();
+    }
+
 public:
 	string ParamsToString() const override;
 

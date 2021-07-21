@@ -23,6 +23,12 @@ public:
 	SchemaCatalogEntry *schema;
 	unique_ptr<CreateInfo> info;
 
+    // FOR DEBUG
+    LogicalCreate() : LogicalOperator(type) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalCreate>();
+    }
+
 protected:
 	void ResolveTypes() override {
 		types.push_back(LogicalType::BIGINT);

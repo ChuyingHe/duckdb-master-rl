@@ -21,6 +21,12 @@ public:
 
 	idx_t table_index;
 
+    // FOR DEBUG
+    LogicalDummyScan() : LogicalOperator(LogicalOperatorType::LOGICAL_DUMMY_SCAN) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalDummyScan>();
+    }
+
 public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return {ColumnBinding(table_index, 0)};

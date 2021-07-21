@@ -32,6 +32,12 @@ public:
 	//! The columns of the RHS that are output by the join
 	vector<idx_t> right_projection_map;
 
+    // FOR DEBUG
+    LogicalJoin() : LogicalOperator(LogicalOperatorType::LOGICAL_JOIN) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalJoin>();
+    }
+
 public:
 	vector<ColumnBinding> GetColumnBindings() override;
 

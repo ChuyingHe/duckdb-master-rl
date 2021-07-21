@@ -22,6 +22,12 @@ public:
 	string logical_plan_unopt;
 	string logical_plan_opt;
 
+    // FOR DEBUG
+    LogicalExplain() : LogicalOperator(LogicalOperatorType::LOGICAL_EXPLAIN) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalExplain>();
+    }
+
 protected:
 	void ResolveTypes() override {
 		types = {LogicalType::VARCHAR, LogicalType::VARCHAR};

@@ -19,6 +19,12 @@ public:
 
 	idx_t table_index;
 
+    // FOR DEBUG
+    LogicalProjection() : LogicalOperator(LogicalOperatorType::LOGICAL_PROJECTION) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalProjection>();
+    }
+
 public:
 	vector<ColumnBinding> GetColumnBindings() override;
 

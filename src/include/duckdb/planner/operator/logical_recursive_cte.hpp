@@ -26,6 +26,12 @@ public:
 	idx_t table_index;
 	idx_t column_count;
 
+    // FOR DEBUG
+    LogicalRecursiveCTE() : LogicalOperator(LogicalOperatorType::LOGICAL_RECURSIVE_CTE) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalRecursiveCTE>();
+    }
+
 public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return GenerateColumnBindings(table_index, column_count);

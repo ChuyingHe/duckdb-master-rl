@@ -34,6 +34,12 @@ public:
 	//! Unbound expressions to be used in the optimizer
 	vector<unique_ptr<Expression>> unbound_expressions;
 
+    // FOR DEBUG
+    LogicalCreateIndex() : LogicalOperator(LogicalOperatorType::LOGICAL_CREATE_INDEX), table(table) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalCreateIndex>();
+    }
+
 protected:
 	void ResolveTypes() override {
 		types.push_back(LogicalType::BIGINT);

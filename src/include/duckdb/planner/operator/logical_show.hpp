@@ -21,6 +21,12 @@ public:
 	vector<LogicalType> types_select;
 	vector<string> aliases;
 
+    // FOR DEBUG
+    LogicalShow() : LogicalOperator(LogicalOperatorType::LOGICAL_SHOW) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalShow>();
+    }
+
 protected:
 	void ResolveTypes() override {
 		types = {LogicalType::VARCHAR, LogicalType::VARCHAR, LogicalType::VARCHAR,

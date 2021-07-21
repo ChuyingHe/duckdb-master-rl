@@ -23,6 +23,12 @@ public:
 	//! The columns that would be bound at this location (if the subtree was not optimized away)
 	vector<ColumnBinding> bindings;
 
+    // FOR DEBUG
+    LogicalEmptyResult() : LogicalOperator(LogicalOperatorType::LOGICAL_EMPTY_RESULT) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalEmptyResult>();
+    }
+
 public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return bindings;

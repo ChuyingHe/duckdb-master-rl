@@ -24,6 +24,12 @@ public:
 	//! The sample options
 	unique_ptr<SampleOptions> sample_options;
 
+    // FOR DEBUG
+    LogicalSample() : LogicalOperator(LogicalOperatorType::LOGICAL_SAMPLE) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalSample>();
+    }
+
 public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return children[0]->GetColumnBindings();

@@ -64,7 +64,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
     int loop_count = 0;
     // FIXME: fixme
-    while (loop_count < 100) {
+    while (loop_count < 10) {
     //while (!context.query_finished) {
         std::cout<<" 🦄️ loop_count = " << loop_count <<"\n";
         loop_count += 1;
@@ -74,8 +74,11 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
         // DEEP COPY
         auto copy = plan->clone();
-        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(plan));    // CHECK HERE, erst kopieren dann
+        std::cout<<"copy:" << copy<< std::endl;
+        std::cout<<"plan:" << copy<< std::endl;
 
+        /*
+        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(plan));    // CHECK HERE, erst kopieren dann
         profiler.EndPhase();
 
         profiler.StartPhase("physical_planner");
@@ -95,7 +98,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
         double reward = timer.check();
 
-        rl_optimizer.RewardUpdate(reward);
+        rl_optimizer.RewardUpdate(reward);*/
 
     }
 

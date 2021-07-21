@@ -38,6 +38,12 @@ public:
 	string GetName() const override;
 	string ParamsToString() const override;
 
+    // FOR DEBUG
+    LogicalGet() : LogicalOperator(LogicalOperatorType::LOGICAL_GET) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalGet>();
+    }
+
 public:
 	vector<ColumnBinding> GetColumnBindings() override;
 

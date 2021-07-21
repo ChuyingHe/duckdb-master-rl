@@ -27,6 +27,12 @@ public:
 	string name;
 	shared_ptr<PreparedStatementData> prepared;
 
+    // FOR DEBUG
+    LogicalPrepare() : LogicalOperator(LogicalOperatorType::LOGICAL_PREPARE) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalPrepare>();
+    }
+
 protected:
 	void ResolveTypes() override {
 		types.push_back(LogicalType::BOOLEAN);

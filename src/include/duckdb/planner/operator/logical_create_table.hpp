@@ -24,6 +24,12 @@ public:
 	//! Create Table information
 	unique_ptr<BoundCreateTableInfo> info;
 
+    // FOR DEBUG
+    LogicalCreateTable() : LogicalOperator(LogicalOperatorType::LOGICAL_CREATE_TABLE) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalCreateTable>();
+    }
+
 protected:
 	void ResolveTypes() override {
 		types.push_back(LogicalType::BIGINT);

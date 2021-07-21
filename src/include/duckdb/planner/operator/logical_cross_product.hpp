@@ -17,6 +17,11 @@ class LogicalCrossProduct : public LogicalOperator {
 public:
 	LogicalCrossProduct();
 
+    // FOR DEBUG
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalCrossProduct>();
+    }
+
 public:
 	vector<ColumnBinding> GetColumnBindings() override;
 

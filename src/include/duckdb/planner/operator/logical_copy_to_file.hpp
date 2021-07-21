@@ -21,6 +21,12 @@ public:
 	CopyFunction function;
 	unique_ptr<FunctionData> bind_data;
 
+    // FOR DEBUG
+    LogicalCopyToFile() : LogicalOperator(LogicalOperatorType::LOGICAL_COPY_TO_FILE), function(function) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalCopyToFile>();
+    }
+
 protected:
 	void ResolveTypes() override {
 		types.push_back(LogicalType::BIGINT);

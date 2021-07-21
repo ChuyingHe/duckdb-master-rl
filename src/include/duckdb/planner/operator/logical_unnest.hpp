@@ -22,6 +22,12 @@ public:
 
 	idx_t unnest_index;
 
+    // FOR DEBUG
+    LogicalUnnest() : LogicalOperator(LogicalOperatorType::LOGICAL_UNNEST) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalUnnest>();
+    }
+
 public:
 	vector<ColumnBinding> GetColumnBindings() override;
 

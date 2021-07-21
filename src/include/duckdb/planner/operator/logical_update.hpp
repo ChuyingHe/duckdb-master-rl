@@ -23,6 +23,12 @@ public:
 	vector<unique_ptr<Expression>> bound_defaults;
 	bool is_index_update;
 
+    // FOR DEBUG
+    LogicalUpdate() : LogicalOperator(LogicalOperatorType::LOGICAL_UPDATE) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalUpdate>();
+    }
+
 protected:
 	void ResolveTypes() override {
 		types.push_back(LogicalType::BIGINT);

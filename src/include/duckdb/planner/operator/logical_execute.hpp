@@ -23,6 +23,12 @@ public:
 
 	shared_ptr<PreparedStatementData> prepared;
 
+    // FOR DEBUG
+    LogicalExecute() : LogicalOperator(LogicalOperatorType::LOGICAL_EXECUTE) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalExecute>();
+    }
+
 protected:
 	void ResolveTypes() override {
 		// already resolved

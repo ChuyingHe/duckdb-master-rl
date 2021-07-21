@@ -31,6 +31,12 @@ public:
 	//! The types of the chunk
 	vector<LogicalType> chunk_types;
 
+    // FOR DEBUG
+    LogicalCTERef() : LogicalOperator(LogicalOperatorType::LOGICAL_CTE_REF) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalCTERef>();
+    }
+
 public:
 	vector<ColumnBinding> GetColumnBindings() override {
 		return GenerateColumnBindings(table_index, chunk_types.size());

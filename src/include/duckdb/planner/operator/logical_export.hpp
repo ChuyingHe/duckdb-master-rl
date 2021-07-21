@@ -22,6 +22,12 @@ public:
 	CopyFunction function;
 	unique_ptr<CopyInfo> copy_info;
 
+    // FOR DEBUG
+    LogicalExport() : LogicalOperator(LogicalOperatorType::LOGICAL_EXPORT), function(function) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalExport>();
+    }
+
 protected:
 	void ResolveTypes() override {
 		types.push_back(LogicalType::BOOLEAN);

@@ -20,6 +20,12 @@ public:
 
 	TableCatalogEntry *table;
 
+    // FOR DEBUG
+    LogicalDelete() : LogicalOperator(LogicalOperatorType::LOGICAL_DELETE) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalDelete>();
+    }
+
 protected:
 	void ResolveTypes() override {
 		types.push_back(LogicalType::BIGINT);

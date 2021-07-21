@@ -26,6 +26,12 @@ public:
 	//! The context of the call
 	PragmaInfo info;
 
+    // FOR DEBUG
+    LogicalPragma() : LogicalOperator(LogicalOperatorType::LOGICAL_PRAGMA), function(function) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalPragma>();
+    }
+
 protected:
 	void ResolveTypes() override {
 		types.push_back(LogicalType::BOOLEAN);

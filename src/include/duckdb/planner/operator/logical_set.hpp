@@ -22,6 +22,12 @@ public:
 	std::string name;
 	Value value;
 
+    // FOR DEBUG
+    LogicalSet() : LogicalOperator(LogicalOperatorType::LOGICAL_SET) {}
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalSet>();
+    }
+
 protected:
 	void ResolveTypes() override {
 		types.push_back(LogicalType::BOOLEAN);

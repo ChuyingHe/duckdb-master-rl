@@ -18,8 +18,14 @@ public:
 	LogicalCrossProduct();
 
     // FOR DEBUG
-    unique_ptr<LogicalOperator> clone() const override {
+    /*unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalCrossProduct>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalCrossProduct(LogicalCrossProduct const &lcp) : LogicalOperator(lcp) {
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalCrossProduct>(*this);
     }
 
 public:

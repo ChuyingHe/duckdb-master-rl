@@ -23,9 +23,16 @@ public:
 	idx_t window_index;
 
     // FOR DEBUG
-    LogicalWindow() : LogicalOperator(LogicalOperatorType::LOGICAL_WINDOW) {}
+    /*LogicalWindow() : LogicalOperator(LogicalOperatorType::LOGICAL_WINDOW) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalWindow>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalWindow(LogicalWindow const& lw) : LogicalOperator(lw) {
+        window_index = lw.window_index;
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalWindow>(*this);
     }
 
 public:

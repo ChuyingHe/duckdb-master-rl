@@ -23,9 +23,20 @@ public:
 	string logical_plan_opt;
 
     // FOR DEBUG
-    LogicalExplain() : LogicalOperator(LogicalOperatorType::LOGICAL_EXPLAIN) {}
+    /*LogicalExplain() : LogicalOperator(LogicalOperatorType::LOGICAL_EXPLAIN) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalExplain>();
+    }*/
+
+    // FOR IMPLEMENTATION
+    LogicalExplain(LogicalExplain const &le) : LogicalOperator(le){
+        physical_plan = le.physical_plan;
+        logical_plan_unopt = le.logical_plan_unopt;
+        logical_plan_opt = le.logical_plan_opt;
+    }
+    
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalExplain>(*this);
     }
 
 protected:

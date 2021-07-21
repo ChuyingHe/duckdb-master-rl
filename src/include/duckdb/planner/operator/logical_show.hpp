@@ -22,9 +22,17 @@ public:
 	vector<string> aliases;
 
     // FOR DEBUG
-    LogicalShow() : LogicalOperator(LogicalOperatorType::LOGICAL_SHOW) {}
+    /*LogicalShow() : LogicalOperator(LogicalOperatorType::LOGICAL_SHOW) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalShow>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalShow(LogicalShow const &ls) : LogicalOperator(ls) {
+        types_select = ls.types_select;
+        aliases = ls.aliases;
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalShow>(*this);
     }
 
 protected:

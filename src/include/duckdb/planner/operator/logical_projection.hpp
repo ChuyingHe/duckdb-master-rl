@@ -20,9 +20,17 @@ public:
 	idx_t table_index;
 
     // FOR DEBUG
-    LogicalProjection() : LogicalOperator(LogicalOperatorType::LOGICAL_PROJECTION) {}
+    /*LogicalProjection() : LogicalOperator(LogicalOperatorType::LOGICAL_PROJECTION) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalProjection>();
+    }*/
+
+    // FOR IMPLEMENTATION
+    LogicalProjection(LogicalProjection const &lp) : LogicalOperator(lp) {
+        table_index = lp.table_index;
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalProjection>(*this);
     }
 
 public:

@@ -27,10 +27,21 @@ public:
 	idx_t column_count;
 
     // FOR DEBUG
-    LogicalRecursiveCTE() : LogicalOperator(LogicalOperatorType::LOGICAL_RECURSIVE_CTE) {}
+    /*LogicalRecursiveCTE() : LogicalOperator(LogicalOperatorType::LOGICAL_RECURSIVE_CTE) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalRecursiveCTE>();
+    }*/
+
+    // FOR IMPLEMENTATION
+    LogicalRecursiveCTE(LogicalRecursiveCTE const& lrcte) : LogicalOperator(lrcte) {
+        union_all = lrcte.union_all;
+        table_index = lrcte.table_index;
+        column_count = lrcte.column_count;
     }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalRecursiveCTE>(*this);
+    }
+
 
 public:
 	vector<ColumnBinding> GetColumnBindings() override {

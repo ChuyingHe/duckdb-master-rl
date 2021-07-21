@@ -27,9 +27,18 @@ public:
 	idx_t column_count;
 
     // FOR DEBUG
-    LogicalSetOperation() : LogicalOperator(LogicalOperatorType::LOGICAL_UNION) {}
+    /*LogicalSetOperation() : LogicalOperator(LogicalOperatorType::LOGICAL_UNION) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalSetOperation>();
+    }*/
+
+    // FOR IMPLEMENTATION
+    LogicalSetOperation(LogicalSetOperation const &lso) : LogicalOperator(lso) {
+        table_index = lso.table_index;
+        column_count = lso.column_count;
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalSetOperation>(*this);
     }
 
 public:

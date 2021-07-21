@@ -22,9 +22,16 @@ public:
 	idx_t table_index;
 
     // FOR DEBUG
-    LogicalDummyScan() : LogicalOperator(LogicalOperatorType::LOGICAL_DUMMY_SCAN) {}
+    /*LogicalDummyScan() : LogicalOperator(LogicalOperatorType::LOGICAL_DUMMY_SCAN) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalDummyScan>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalDummyScan(LogicalDummyScan const &lds) : LogicalOperator(lds) {
+        table_index = lds.table_index;
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalDummyScan>(*this);
     }
 
 public:

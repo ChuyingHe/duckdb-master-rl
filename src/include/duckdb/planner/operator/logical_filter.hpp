@@ -21,9 +21,18 @@ public:
 	vector<idx_t> projection_map;
 
     // FOR DEBUG
+    /*unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalFilter>();
+    }*/
+
+    // FOR IMPLEMENTATION
+    LogicalFilter(LogicalFilter const& lf) : LogicalOperator(lf) {
+        projection_map = lf.projection_map;
+    }
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalFilter>();
     }
+
 
 public:
 	vector<ColumnBinding> GetColumnBindings() override;

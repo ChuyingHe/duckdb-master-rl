@@ -32,9 +32,19 @@ public:
 	vector<LogicalType> chunk_types;
 
     // FOR DEBUG
-    LogicalCTERef() : LogicalOperator(LogicalOperatorType::LOGICAL_CTE_REF) {}
+    /*LogicalCTERef() : LogicalOperator(LogicalOperatorType::LOGICAL_CTE_REF) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalCTERef>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalCTERef(LogicalCTERef const &lcter) : LogicalOperator(lcter) {
+        bound_columns = lcter.bound_columns;
+        table_index = lcter.table_index;
+        cte_index = lcter.cte_index;
+        chunk_types = lcter.chunk_types;
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalCTERef>(*this);
     }
 
 public:

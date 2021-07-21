@@ -24,9 +24,17 @@ public:
 	vector<ColumnBinding> bindings;
 
     // FOR DEBUG
-    LogicalEmptyResult() : LogicalOperator(LogicalOperatorType::LOGICAL_EMPTY_RESULT) {}
+    /*LogicalEmptyResult() : LogicalOperator(LogicalOperatorType::LOGICAL_EMPTY_RESULT) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalEmptyResult>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalEmptyResult(LogicalEmptyResult const &ler) : LogicalOperator(ler) {
+        return_types = ler.return_types;
+        bindings = ler.bindings;
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalEmptyResult>(*this);
     }
 
 public:

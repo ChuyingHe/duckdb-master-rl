@@ -27,9 +27,17 @@ public:
 	vector<LogicalType> chunk_types;
 
     // FOR DEBUG
-    LogicalDelimGet() : LogicalOperator(LogicalOperatorType::LOGICAL_DELIM_GET) {}
+    /*LogicalDelimGet() : LogicalOperator(LogicalOperatorType::LOGICAL_DELIM_GET) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalDelimGet>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalDelimGet(LogicalDelimGet const &ldg) : LogicalOperator(ldg) {
+        table_index = ldg.table_index;
+        chunk_types = ldg.chunk_types;
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalDelimGet>(*this);
     }
 
 public:

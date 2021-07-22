@@ -33,9 +33,20 @@ public:
 	vector<idx_t> right_projection_map;
 
     // FOR DEBUG
-    LogicalJoin() : LogicalOperator(LogicalOperatorType::LOGICAL_JOIN) {}
+    /*LogicalJoin() : LogicalOperator(LogicalOperatorType::LOGICAL_JOIN) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalJoin>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalJoin(LogicalJoin const &lj) : LogicalOperator(lj) {
+        join_type = lj.join_type;
+        mark_index = lj.mark_index;
+        left_projection_map = lj.left_projection_map;
+        right_projection_map = lj.left_projection_map;
+    }
+
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalJoin>(*this);
     }
 
 public:

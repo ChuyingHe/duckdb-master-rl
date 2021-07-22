@@ -27,9 +27,18 @@ public:
 	int64_t offset;
 
     // FOR DEBUG
-    LogicalTopN() : LogicalOperator(LogicalOperatorType::LOGICAL_TOP_N) {}
+    /*LogicalTopN() : LogicalOperator(LogicalOperatorType::LOGICAL_TOP_N) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalTopN>();
+    }*/
+
+    // FOR IMPLEMENTATION
+    LogicalTopN(LogicalTopN const& ltopn) : LogicalOperator(ltopn), orders(ltopn.orders) {
+        limit = ltopn.limit;
+        offset = ltopn.offset;
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalTopN>(*this);
     }
 
 public:

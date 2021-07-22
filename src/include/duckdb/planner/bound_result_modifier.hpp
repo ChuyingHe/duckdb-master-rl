@@ -31,6 +31,12 @@ struct BoundOrderByNode {
 	    : type(type), null_order(null_order), expression(move(expression)) {
 	}
 
+    BoundOrderByNode(BoundOrderByNode const &bobn) {
+        type = bobn.type;
+        null_order = bobn.null_order;
+        expression = bobn.expression->Copy();
+    }
+
 	OrderType type;
 	OrderByNullType null_order;
 	unique_ptr<Expression> expression;

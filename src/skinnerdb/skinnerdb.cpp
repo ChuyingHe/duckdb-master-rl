@@ -28,6 +28,10 @@ void SkinnerDB::runStatement(shared_ptr<PreparedStatementData> plan){
 }
 //shared_ptr<PreparedStatementData>
 
+void move_copy(unique_ptr<LogicalOperator> copy_of_plan){
+    std::cout<<" -> moved copy of plan -> \n";
+}
+
 unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &lock, const string &query,
                                                           unique_ptr<SQLStatement> statement, bool allow_stream_result){
 
@@ -74,6 +78,9 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
         // DEEP COPY
         auto copy = plan->clone();
+        std::cout<<"address of copy:" << copy << std::endl;
+        std::cout<<"address of plan:" << plan<< std::endl;
+        move_copy(move(copy));
         std::cout<<"address of copy:" << copy << std::endl;
         std::cout<<"address of plan:" << plan<< std::endl;
 

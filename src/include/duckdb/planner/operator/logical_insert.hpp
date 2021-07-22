@@ -30,9 +30,33 @@ public:
 	vector<unique_ptr<Expression>> bound_defaults;
 
     // FOR DEBUG
-    LogicalInsert() : LogicalOperator(LogicalOperatorType::LOGICAL_INSERT) {}
+    /*LogicalInsert() : LogicalOperator(LogicalOperatorType::LOGICAL_INSERT) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalInsert>();
+    }*/
+
+    // FOR IMPLEMENTATION
+    LogicalInsert(LogicalInsert const &li) : LogicalOperator(li) {
+        insert_values.reserve(li.insert_values.size());
+        for(const auto& row: li.insert_values) {
+            vector<unique_ptr<Expression>> tmp;
+            tmp.reserve(row.size());
+            for(const auto& exp: row) {
+                tmp.push_back(exp->Copy());    // elem: unique_ptr<Expression> Copy()
+            }
+            insert_values.push_back(move(tmp)); // temp: vector<unique_ptr<Expression>>
+        }
+
+        column_index_map = li.column_index_map;
+        expected_types = li.expected_types;
+        table = li.table;
+        bound_defaults.reserve(li.bound_defaults.size());
+        for (auto const& elem:li.bound_defaults) {
+            bound_defaults.push_back(elem->Copy());
+        }
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalInsert>(*this);
     }
 
 protected:

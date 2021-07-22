@@ -34,9 +34,15 @@ public:
 	}
 
     // FOR DEBUG
-    LogicalOrder() : LogicalOperator(LogicalOperatorType::LOGICAL_ORDER_BY) {}
+    /*LogicalOrder() : LogicalOperator(LogicalOperatorType::LOGICAL_ORDER_BY) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalOrder>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalOrder(LogicalOrder const &lo) : LogicalOperator(lo), orders(lo.orders) {
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalOrder>(*this);
     }
 
 public:

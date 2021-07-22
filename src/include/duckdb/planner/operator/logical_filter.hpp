@@ -30,7 +30,7 @@ public:
         projection_map = lf.projection_map;
     }
     unique_ptr<LogicalOperator> clone() const override {
-        return make_unique<LogicalFilter>();
+        return make_unique<LogicalFilter>(*this);
     }
 
 

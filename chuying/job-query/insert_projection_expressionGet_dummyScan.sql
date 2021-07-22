@@ -1,0 +1,2 @@
+INSERT INTO movie_companies
+VALUES (6914,19641,222,1,'2021 China TV');

@@ -65,7 +65,7 @@ void runJOBQuerys(Connection con) {
 
             con.Query("PRAGMA enable_rl_join_order_optimizer");
             std::string job_query = readFileIntoString(entry.path());
-            std::cout <<"entry_path" <<entry.path() <<"\n JOB query = " << job_query;
+            std::cout <<"entry_path" <<entry.path() <<"\n 🎄 JOB query = " << job_query <<"\n\n";
             auto result = con.Query(job_query);
             result->Print();
         }

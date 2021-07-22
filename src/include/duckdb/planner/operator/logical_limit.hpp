@@ -29,9 +29,19 @@ public:
 	unique_ptr<Expression> offset;
 
     // FOR DEBUG
-    LogicalLimit() : LogicalOperator(LogicalOperatorType::LOGICAL_LIMIT) {}
+    /*LogicalLimit() : LogicalOperator(LogicalOperatorType::LOGICAL_LIMIT) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalLimit>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalLimit(LogicalLimit const &ll) : LogicalOperator(ll) {
+        limit_val = ll.limit_val;
+        offset_val = ll.offset_val;
+        limit = ll.limit->Copy();
+        offset = ll.offset->Copy();
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalLimit>(*this);
     }
 
 public:

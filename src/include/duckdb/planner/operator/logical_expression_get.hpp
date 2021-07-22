@@ -29,10 +29,30 @@ public:
 	vector<vector<unique_ptr<Expression>>> expressions;
 
     // FOR DEBUG
-    LogicalExpressionGet() : LogicalOperator(LogicalOperatorType::LOGICAL_EXPRESSION_GET) {}
+    /*LogicalExpressionGet() : LogicalOperator(LogicalOperatorType::LOGICAL_EXPRESSION_GET) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalExpressionGet>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalExpressionGet(LogicalExpressionGet const &leg) : LogicalOperator(leg) {
+        table_index = leg.table_index;
+        expr_types = leg.expr_types;
+
+        for(const auto& row: leg.expressions) {
+            vector<unique_ptr<Expression>> tmp;
+            tmp.reserve(row.size());
+            for(const auto& exp: row) {
+                tmp.push_back(exp->Copy());    // elem: unique_ptr<Expression> Copy()
+            }
+            expressions.push_back(move(tmp));
+        }
+
     }
+
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalExpressionGet>(*this);
+    }
+
 
 public:
 	vector<ColumnBinding> GetColumnBindings() override {

@@ -31,7 +31,6 @@ public:
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalRecursiveCTE>();
     }*/
-
     // FOR IMPLEMENTATION
     LogicalRecursiveCTE(LogicalRecursiveCTE const& lrcte) : LogicalOperator(lrcte) {
         union_all = lrcte.union_all;

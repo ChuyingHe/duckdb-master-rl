@@ -23,9 +23,18 @@ public:
 	Value value;
 
     // FOR DEBUG
-    LogicalSet() : LogicalOperator(LogicalOperatorType::LOGICAL_SET) {}
+    /*LogicalSet() : LogicalOperator(LogicalOperatorType::LOGICAL_SET) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalSet>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalSet(LogicalSet const &ls) : LogicalOperator(ls) {
+        name = ls.name;
+        value = ls.value.Copy();
+    }
+
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalSet>(*this);
     }
 
 protected:

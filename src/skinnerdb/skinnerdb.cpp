@@ -78,7 +78,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         std::cout<<"address of plan:" << plan<< std::endl;
 
         /*
-        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(plan));    // CHECK HERE, erst kopieren dann
+        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(copy));    // CHECK HERE, erst kopieren dann
         profiler.EndPhase();
 
         profiler.StartPhase("physical_planner");

@@ -25,9 +25,17 @@ public:
 	unique_ptr<SampleOptions> sample_options;
 
     // FOR DEBUG
-    LogicalSample() : LogicalOperator(LogicalOperatorType::LOGICAL_SAMPLE) {}
+    /*LogicalSample() : LogicalOperator(LogicalOperatorType::LOGICAL_SAMPLE) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalSample>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalSample(LogicalSample const &ls) : LogicalOperator(ls) {
+        sample_options = ls.sample_options->Copy();
+    }
+
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalSample>(*this);
     }
 
 public:

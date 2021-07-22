@@ -23,9 +23,17 @@ public:
 	unique_ptr<CopyInfo> copy_info;
 
     // FOR DEBUG
-    LogicalExport() : LogicalOperator(LogicalOperatorType::LOGICAL_EXPORT), function(function) {}
+    /*LogicalExport() : LogicalOperator(LogicalOperatorType::LOGICAL_EXPORT), function(function) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalExport>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalExport(LogicalExport const &le) : LogicalOperator(le), function(le.function) {
+            copy_info = le.copy_info->Copy();
+    }
+
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalExport>(*this);
     }
 
 protected:

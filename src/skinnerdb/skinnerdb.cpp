@@ -74,8 +74,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
         // DEEP COPY
         auto copy = plan->clone();
-        std::cout<<"copy:" << copy<< std::endl;
-        std::cout<<"plan:" << copy<< std::endl;
+        std::cout<<"address of copy:" << copy << std::endl;
+        std::cout<<"address of plan:" << plan<< std::endl;
 
         /*
         unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(plan));    // CHECK HERE, erst kopieren dann

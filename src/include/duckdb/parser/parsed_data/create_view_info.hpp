@@ -29,6 +29,11 @@ struct CreateViewInfo : public CreateInfo {
 	//! The SelectStatement of the view
 	unique_ptr<SelectStatement> query;
 
+    // FOR IMPLEMENTATION
+    unique_ptr<ParseInfo> clone() const override {
+        return Copy();
+    }
+
 public:
 	unique_ptr<CreateInfo> Copy() const override {
 		auto result = make_unique<CreateViewInfo>(schema, view_name);

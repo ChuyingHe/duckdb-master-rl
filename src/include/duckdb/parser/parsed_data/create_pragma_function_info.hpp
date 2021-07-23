@@ -29,6 +29,11 @@ struct CreatePragmaFunctionInfo : public CreateFunctionInfo {
 
 	vector<PragmaFunction> functions;
 
+    // FOR IMPLEMENTATION
+    unique_ptr<ParseInfo> clone() const override {
+        return Copy();
+    }
+
 public:
 	unique_ptr<CreateInfo> Copy() const override {
 		auto result = make_unique<CreatePragmaFunctionInfo>(functions[0].name, functions);

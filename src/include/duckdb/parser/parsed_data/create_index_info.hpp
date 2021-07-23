@@ -31,6 +31,11 @@ struct CreateIndexInfo : public CreateInfo {
 	//! Set of expressions to index by
 	vector<unique_ptr<ParsedExpression>> expressions;
 
+    // FOR IMPLEMENTATION
+    unique_ptr<ParseInfo> clone() const override {
+        return Copy();
+    }
+
 public:
 	unique_ptr<CreateInfo> Copy() const override {
 		auto result = make_unique<CreateIndexInfo>();

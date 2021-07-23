@@ -22,6 +22,11 @@ public:
 		CopyProperties(*result);
 		return move(result);
 	}
+
+    // FOR IMPLEMENTATION
+    unique_ptr<ParseInfo> clone() const override {
+        return Copy();
+    }
 };
 
 } // namespace duckdb

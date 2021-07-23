@@ -28,6 +28,9 @@ struct AlterInfo : public ParseInfo {
 	//! Entry name to alter
 	string name;
 
+	// FOR IMPLEMENTATION
+    unique_ptr<ParseInfo> clone() const override = 0;
+
 public:
 	virtual CatalogType GetCatalogType() = 0;
 	virtual unique_ptr<AlterInfo> Copy() const = 0;
@@ -57,6 +60,9 @@ struct AlterTableInfo : public AlterInfo {
 
 	AlterTableType alter_table_type;
 
+    // FOR IMPLEMENTATION
+    unique_ptr<ParseInfo> clone() const override = 0;
+
 public:
 	CatalogType GetCatalogType() override {
 		return CatalogType::TABLE_ENTRY;
@@ -81,6 +87,15 @@ struct RenameColumnInfo : public AlterTableInfo {
 	//! Column new name
 	string new_name;
 
+    // FOR IMPLEMENTATION
+    RenameColumnInfo(RenameColumnInfo const& rci) : AlterTableInfo(rci) {
+        old_name = rci.old_name;
+        new_name = rci.new_name;
+    }
+    unique_ptr<ParseInfo> clone() const override {
+        return make_unique<RenameColumnInfo>(*this);
+    }
+
 public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
@@ -100,6 +115,13 @@ struct RenameTableInfo : public AlterTableInfo {
 	//! Relation new name
 	string new_table_name;
 
+    // FOR IMPLEMENTATION
+    RenameTableInfo(RenameTableInfo const& rti) : AlterTableInfo(rti) {
+        new_table_name = rti.new_table_name;
+    }
+    unique_ptr<ParseInfo> clone() const override {
+        return make_unique<RenameTableInfo>(*this);
+    }
 public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
@@ -118,6 +140,13 @@ struct AddColumnInfo : public AlterTableInfo {
 
 	//! New column
 	ColumnDefinition new_column;
+
+    // FOR IMPLEMENTATION
+    AddColumnInfo(AddColumnInfo const& aci) : AlterTableInfo(aci), new_column(aci.new_column) {
+    }
+    unique_ptr<ParseInfo> clone() const override {
+        return make_unique<AddColumnInfo>(*this);
+    }
 
 public:
 	unique_ptr<AlterInfo> Copy() const override;
@@ -140,6 +169,15 @@ struct RemoveColumnInfo : public AlterTableInfo {
 	string removed_column;
 	//! Whether or not an error should be thrown if the column does not exist
 	bool if_exists;
+
+    // FOR IMPLEMENTATION
+    RemoveColumnInfo(RemoveColumnInfo const& rci) : AlterTableInfo(rci) {
+        removed_column = rci.removed_column;
+        if_exists = rci.if_exists;
+    }
+    unique_ptr<ParseInfo> clone() const override {
+        return make_unique<RemoveColumnInfo>(*this);
+    }
 
 public:
 	unique_ptr<AlterInfo> Copy() const override;
@@ -166,6 +204,17 @@ struct ChangeColumnTypeInfo : public AlterTableInfo {
 	//! The expression used for data conversion
 	unique_ptr<ParsedExpression> expression;
 
+    // FOR IMPLEMENTATION
+    ChangeColumnTypeInfo(ChangeColumnTypeInfo const& ccti) : AlterTableInfo(ccti) {
+        column_name = ccti.column_name;
+        target_type = ccti.target_type;
+        // expression = std::move(ccti.expression->Copy());
+        expression = ccti.expression ? ccti.expression->Copy() : nullptr;
+    }
+    unique_ptr<ParseInfo> clone() const override {
+        return make_unique<ChangeColumnTypeInfo>(*this);
+    }
+
 public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
@@ -188,6 +237,16 @@ struct SetDefaultInfo : public AlterTableInfo {
 	//! The expression used for data conversion
 	unique_ptr<ParsedExpression> expression;
 
+    // FOR IMPLEMENTATION
+    SetDefaultInfo(SetDefaultInfo const& sdi) : AlterTableInfo(sdi) {
+        column_name = sdi.column_name;
+        // expression = std::move(sdi.expression->Copy());
+        expression = sdi.expression ? sdi.expression->Copy() : nullptr;
+    }
+    unique_ptr<ParseInfo> clone() const override {
+        return make_unique<SetDefaultInfo>(*this);
+    }
+
 public:
 	unique_ptr<AlterInfo> Copy() const override;
 	void Serialize(Serializer &serializer) override;
@@ -207,6 +266,9 @@ struct AlterViewInfo : public AlterInfo {
 	}
 
 	AlterViewType alter_view_type;
+
+    // FOR IMPLEMENTATION
+    unique_ptr<ParseInfo> clone() const override = 0;
 
 public:
 	CatalogType GetCatalogType() override {
@@ -228,6 +290,15 @@ struct RenameViewInfo : public AlterViewInfo {
 
 	//! Relation new name
 	string new_view_name;
+
+    // FOR IMPLEMENTATION
+    RenameViewInfo(RenameViewInfo const& rvi) : AlterViewInfo(rvi) {
+        new_view_name = rvi.new_view_name;
+    }
+    unique_ptr<ParseInfo> clone() const override {
+        return make_unique<RenameViewInfo>(*this);
+    }
+
 
 public:
 	unique_ptr<AlterInfo> Copy() const override;

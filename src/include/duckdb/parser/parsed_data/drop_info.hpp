@@ -29,6 +29,11 @@ struct DropInfo : public ParseInfo {
 	//! are any)
 	bool cascade = false;
 
+    // FOR IMPLEMENTATION
+    unique_ptr<ParseInfo> clone() const override {
+        return Copy();
+    }
+
 public:
 	unique_ptr<DropInfo> Copy() const {
 		auto result = make_unique<DropInfo>();

@@ -34,6 +34,11 @@ struct CreateSequenceInfo : public CreateInfo {
 	//! Whether or not the sequence cycles
 	bool cycle;
 
+    // FOR IMPLEMENTATION
+    unique_ptr<ParseInfo> clone() const override {
+        return Copy();
+    }
+
 public:
 	unique_ptr<CreateInfo> Copy() const override {
 		auto result = make_unique<CreateSequenceInfo>();

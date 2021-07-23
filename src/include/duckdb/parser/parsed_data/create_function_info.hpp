@@ -22,6 +22,9 @@ struct CreateFunctionInfo : public CreateInfo {
 
 	//! Function name
 	string name;
+
+    // FOR IMPLEMENTATION
+    unique_ptr<ParseInfo> clone() const override = 0;
 };
 
 } // namespace duckdb

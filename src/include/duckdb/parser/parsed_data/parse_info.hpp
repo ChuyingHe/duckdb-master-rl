@@ -15,6 +15,8 @@ namespace duckdb {
 struct ParseInfo {
 	virtual ~ParseInfo() {
 	}
+    // FOR IMPLEMENTATION
+    virtual unique_ptr<ParseInfo> clone() const = 0;
 };
 
 } // namespace duckdb

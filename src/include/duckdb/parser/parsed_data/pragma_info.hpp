@@ -33,6 +33,11 @@ public:
 		result->named_parameters = named_parameters;
 		return result;
 	}
+
+    // FOR IMPLEMENTATION
+    unique_ptr<ParseInfo> clone() const override {
+        return Copy();
+    }
 };
 
 } // namespace duckdb

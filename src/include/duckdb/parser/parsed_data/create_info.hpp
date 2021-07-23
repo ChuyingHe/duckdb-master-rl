@@ -43,6 +43,17 @@ struct CreateInfo : public ParseInfo {
 	//! The SQL string of the CREATE statement
 	string sql;
 
+    // FOR IMPLEMENTATION
+    CreateInfo(CreateInfo const& ci) {
+        type = ci.type;
+        schema = ci.schema;
+        on_conflict = ci.on_conflict;
+        temporary = ci.temporary;
+        internal = ci.internal;
+        sql = ci.sql;
+    }
+    unique_ptr<ParseInfo> clone() const override = 0;
+
 public:
 	virtual unique_ptr<CreateInfo> Copy() const = 0;
 	void CopyProperties(CreateInfo &other) const {

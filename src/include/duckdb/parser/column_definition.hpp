@@ -32,6 +32,14 @@ public:
 	//! The default value of the column (if any)
 	unique_ptr<ParsedExpression> default_value;
 
+    // FOR IMPLEMENTATION
+    ColumnDefinition(ColumnDefinition const& cd) {
+        name = cd.name;
+        oid = cd.oid;
+        type = cd.type;
+        default_value = cd.default_value ? cd.default_value->Copy() : nullptr;
+    }
+
 public:
 	ColumnDefinition Copy() const;
 

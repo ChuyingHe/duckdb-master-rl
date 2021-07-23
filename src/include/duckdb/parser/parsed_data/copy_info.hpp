@@ -34,6 +34,13 @@ struct CopyInfo : public ParseInfo {
 	//! Set of (key, value) options
 	unordered_map<string, vector<Value>> options;
 
+    // FOR IMPLEMENTATION
+    /*CopyInfo(CopyInfo const& ci) : ParseInfo(ci) {
+    }*/
+    unique_ptr<ParseInfo> clone() const override {
+        return Copy();
+    }
+
 public:
 	unique_ptr<CopyInfo> Copy() const {
 		auto result = make_unique<CopyInfo>();

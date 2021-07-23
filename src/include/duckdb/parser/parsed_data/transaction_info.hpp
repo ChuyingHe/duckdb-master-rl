@@ -20,6 +20,14 @@ struct TransactionInfo : public ParseInfo {
 
 	//! The type of transaction statement
 	TransactionType type;
+
+    // FOR IMPLEMENTATION
+    TransactionInfo(TransactionInfo const& ti) {
+        type = ti.type;
+    }
+    unique_ptr<ParseInfo> clone() const override {
+        return make_unique<TransactionInfo>(*this);
+    }
 };
 
 } // namespace duckdb

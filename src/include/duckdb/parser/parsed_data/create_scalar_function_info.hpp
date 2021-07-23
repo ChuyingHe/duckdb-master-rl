@@ -30,6 +30,11 @@ struct CreateScalarFunctionInfo : public CreateFunctionInfo {
 
 	vector<ScalarFunction> functions;
 
+    // FOR IMPLEMENTATION
+    unique_ptr<ParseInfo> clone() const override {
+        return Copy();
+    }
+
 public:
 	unique_ptr<CreateInfo> Copy() const override {
 		ScalarFunctionSet set(name);

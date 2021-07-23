@@ -21,13 +21,19 @@ struct ShowSelectInfo : public ParseInfo {
 	//! Aliases of projected columns
 	vector<string> aliases;
 
-	unique_ptr<ShowSelectInfo> Copy() {
+	unique_ptr<ShowSelectInfo> Copy() const {
 		auto result = make_unique<ShowSelectInfo>();
 		result->types = types;
 		result->query = query->Copy();
 		result->aliases = aliases;
 		return result;
 	}
+
+public:
+    // FOR IMPLEMENTATION
+    unique_ptr<ParseInfo> clone() const override {
+        return Copy();
+    }
 };
 
 } // namespace duckdb

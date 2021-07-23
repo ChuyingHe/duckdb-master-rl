@@ -1,0 +1,1 @@
+SELECT UNNEST(string_split('üüüüü', '◌'));

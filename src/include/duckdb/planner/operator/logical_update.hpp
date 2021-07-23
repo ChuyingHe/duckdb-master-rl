@@ -24,9 +24,24 @@ public:
 	bool is_index_update;
 
     // FOR DEBUG
-    LogicalUpdate() : LogicalOperator(LogicalOperatorType::LOGICAL_UPDATE) {}
+    /*LogicalUpdate() : LogicalOperator(LogicalOperatorType::LOGICAL_UPDATE) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalUpdate>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalUpdate(LogicalUpdate const& lu) : LogicalOperator(lu) {
+        table = lu.table;
+        columns = lu.columns;
+
+        bound_defaults.reserve(lu.bound_defaults.size());
+        for (auto const& bd: lu.bound_defaults) {
+            bound_defaults.push_back(std::move(bd->Copy()));
+        }
+        is_index_update = lu.is_index_update;
+    }
+
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalUpdate>(*this);
     }
 
 protected:

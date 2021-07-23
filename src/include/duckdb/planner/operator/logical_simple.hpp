@@ -23,9 +23,16 @@ public:
 	unique_ptr<ParseInfo> info;
 
     // FOR DEBUG
-    LogicalSimple() : LogicalOperator(LogicalOperatorType::LOGICAL_SHOW) {}
+    /*LogicalSimple() : LogicalOperator(LogicalOperatorType::LOGICAL_SHOW) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalSimple>();
+    }*/
+
+    // FOR IMPLEMENTATION
+    LogicalSimple(LogicalSimple const &ls) : LogicalOperator(ls.type), info(ls.info->clone()) {
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalSimple>(*this);
     }
 
 protected:

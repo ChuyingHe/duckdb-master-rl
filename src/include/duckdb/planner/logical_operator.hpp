@@ -38,12 +38,12 @@ public:
         type = lo.type;
         children.reserve(lo.children.size());
         for (const auto& child:lo.children) {
-            children.push_back(child->clone());
+            children.push_back(std::move(child->clone()));
         }
 
         expressions.reserve(lo.expressions.size());
-        for (const auto& exp:expressions) {
-            expressions.push_back(exp->Copy());
+        for (const auto& exp:lo.expressions) {
+            expressions.push_back(std::move(exp->Copy()));
         }
         estimated_cardinality = lo.estimated_cardinality;
     }

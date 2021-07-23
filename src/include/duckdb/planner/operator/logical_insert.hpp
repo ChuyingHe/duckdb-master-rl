@@ -42,9 +42,9 @@ public:
             vector<unique_ptr<Expression>> tmp;
             tmp.reserve(row.size());
             for(const auto& exp: row) {
-                tmp.push_back(exp->Copy());    // elem: unique_ptr<Expression> Copy()
+                tmp.push_back(std::move(exp->Copy()));    // elem: unique_ptr<Expression> Copy()
             }
-            insert_values.push_back(move(tmp)); // temp: vector<unique_ptr<Expression>>
+            insert_values.push_back(std::move(tmp)); // temp: vector<unique_ptr<Expression>>
         }
 
         column_index_map = li.column_index_map;
@@ -52,7 +52,7 @@ public:
         table = li.table;
         bound_defaults.reserve(li.bound_defaults.size());
         for (auto const& elem:li.bound_defaults) {
-            bound_defaults.push_back(elem->Copy());
+            bound_defaults.push_back(std::move(elem->Copy()));
         }
     }
     unique_ptr<LogicalOperator> clone() const override {

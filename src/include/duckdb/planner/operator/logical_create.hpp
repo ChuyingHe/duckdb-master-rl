@@ -24,9 +24,18 @@ public:
 	unique_ptr<CreateInfo> info;
 
     // FOR DEBUG
-    LogicalCreate() : LogicalOperator(type) {}
+    /*LogicalCreate() : LogicalOperator(type) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalCreate>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalCreate(LogicalCreate const &lc) : LogicalOperator(lc) {
+        schema = lc.schema;
+        info = lc.info->Copy();
+    }
+
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalCreate>(*this);
     }
 
 protected:

@@ -1,0 +1,1 @@
+SELECT DISTINCT info FROM info_type;

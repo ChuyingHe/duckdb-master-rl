@@ -24,8 +24,19 @@ public:
 	vector<unique_ptr<Expression>> distinct_targets;
 
     // FOR DEBUG
-    unique_ptr<LogicalOperator> clone() const override {
+    /*unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalDistinct>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalDistinct(LogicalDistinct const &ld) : LogicalOperator(ld) {
+        distinct_targets.reserve(ld.distinct_targets.size());
+        for (auto const& elem : ld.distinct_targets) {
+            distinct_targets.push_back(std::move(elem->Copy()));
+        }
+    }
+
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalDistinct>(*this);
     }
 
 public:

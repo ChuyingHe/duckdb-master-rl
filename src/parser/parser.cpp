@@ -35,7 +35,7 @@ void Parser::ParseQuery(const string &query) {
 
 		// if it succeeded, we transform the Postgres parse tree into a list of SQLStatements
 		// put the result in this->statements
-		transformer.TransformParseTree(parser.parse_tree, statements);
+		transformer.TransformParseTree(parser.parse_tree, statements);  //para: generated tree, empty statements as container
 	}
 	if (!statements.empty()) {
 		auto &last_statement = statements.back();   // choose the last statement in statements

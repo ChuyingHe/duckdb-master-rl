@@ -29,9 +29,25 @@ public:
 	vector<unique_ptr<BaseStatistics>> group_stats;
 
     // FOR DEBUG
-    LogicalAggregate() : LogicalOperator(LogicalOperatorType::LOGICAL_AGGREGATE_AND_GROUP_BY) {}
+    /*LogicalAggregate() : LogicalOperator(LogicalOperatorType::LOGICAL_AGGREGATE_AND_GROUP_BY) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalAggregate>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalAggregate(LogicalAggregate const &la) : LogicalOperator(la) {
+        group_index = la.group_index;
+        aggregate_index = la.aggregate_index;
+        groups.reserve(la.groups.size());
+        for (auto const& group : la.groups) {
+            groups.push_back(group->Copy());
+        }
+        group_stats.reserve(la.group_stats.size());
+        for (auto const& gs : la.group_stats) {
+            group_stats.push_back(gs->Copy());
+        }
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalAggregate>(*this);
     }
 
 public:

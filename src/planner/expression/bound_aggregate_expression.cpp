@@ -69,8 +69,8 @@ unique_ptr<Expression> BoundAggregateExpression::Copy() {
 	for (auto &child : children) {
 		new_children.push_back(child->Copy());
 	}
-	auto new_bind_info = bind_info->Copy();
-	auto new_filter = filter->Copy();
+	auto new_bind_info = bind_info? bind_info->Copy(): nullptr;
+	auto new_filter = filter?filter->Copy(): nullptr;
 	auto copy = make_unique<BoundAggregateExpression>(function, move(new_children), move(new_filter),
 	                                                  move(new_bind_info), distinct);
 	copy->CopyProperties(*this);

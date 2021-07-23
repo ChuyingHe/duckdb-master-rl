@@ -28,9 +28,11 @@ void SkinnerDB::runStatement(shared_ptr<PreparedStatementData> plan){
 }
 //shared_ptr<PreparedStatementData>
 
+/*
 void move_copy(unique_ptr<LogicalOperator> copy_of_plan){
     std::cout<<" -> moved copy of plan -> \n";
 }
+*/
 
 unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &lock, const string &query,
                                                           unique_ptr<SQLStatement> statement, bool allow_stream_result){
@@ -80,14 +82,14 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         auto copy = plan->clone();
         std::cout<<"address of copy:" << copy << std::endl;
         std::cout<<"address of plan:" << plan<< std::endl;
-        move_copy(move(copy));
+        //move_copy(move(copy));
+        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(copy));
         std::cout<<"address of copy:" << copy << std::endl;
         std::cout<<"address of plan:" << plan<< std::endl;
 
-        /*
-        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(copy));    // CHECK HERE, erst kopieren dann
-        profiler.EndPhase();
 
+
+        /*profiler.EndPhase();
         profiler.StartPhase("physical_planner");
         // now convert logical query plan into a physical query plan
         PhysicalPlanGenerator physical_planner(context);

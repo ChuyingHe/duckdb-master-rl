@@ -39,9 +39,23 @@ public:
 	string ParamsToString() const override;
 
     // FOR DEBUG
-    LogicalGet() : LogicalOperator(LogicalOperatorType::LOGICAL_GET) {}
+    /*LogicalGet() : LogicalOperator(LogicalOperatorType::LOGICAL_GET) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalGet>();
+    }*/
+
+    // FOR IMPLEMENTATION
+    LogicalGet(LogicalGet const& lg) : LogicalOperator(lg) {
+        table_index = lg.table_index;
+        function = lg.function;
+        bind_data = lg.bind_data->Copy();
+        returned_types = lg.returned_types;
+        names = lg.names;
+        column_ids = lg.column_ids;
+        table_filters = lg.table_filters;
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalGet>(*this);
     }
 
 public:

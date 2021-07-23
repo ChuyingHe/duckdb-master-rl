@@ -1,0 +1,1 @@
+SELECT person_id FROM cast_info ORDER BY movie_id LIMIT 1 OFFSET 1;

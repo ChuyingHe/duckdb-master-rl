@@ -37,8 +37,8 @@ public:
     LogicalLimit(LogicalLimit const &ll) : LogicalOperator(ll) {
         limit_val = ll.limit_val;
         offset_val = ll.offset_val;
-        limit = std::move(ll.limit->Copy());
-        offset = std::move(ll.offset->Copy());
+        limit = ll.limit? ll.limit->Copy() : nullptr;
+        offset = ll.offset? ll.offset->Copy() : nullptr;
     }
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalLimit>(*this);

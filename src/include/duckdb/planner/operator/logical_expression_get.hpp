@@ -44,7 +44,7 @@ public:
             for(const auto& exp: row) {
                 tmp.push_back(exp->Copy());    // elem: unique_ptr<Expression> Copy()
             }
-            expressions.push_back(tmp);
+            expressions.push_back(std::move(tmp));
         }
 
     }

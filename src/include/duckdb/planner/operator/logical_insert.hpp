@@ -44,7 +44,7 @@ public:
             for(const auto& exp: row) {
                 tmp.push_back(exp->Copy());    // elem: unique_ptr<Expression> Copy()
             }
-            insert_values.push_back(tmp); // temp: vector<unique_ptr<Expression>>
+            insert_values.push_back(std::move(tmp)); // temp: vector<unique_ptr<Expression>>
         }
 
         column_index_map = li.column_index_map;

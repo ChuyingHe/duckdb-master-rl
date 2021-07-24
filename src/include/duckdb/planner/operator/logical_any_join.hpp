@@ -21,6 +21,14 @@ public:
 	//! The JoinCondition on which this join is performed
 	unique_ptr<Expression> condition;
 
+    // FOR IMPLEMENTATION
+    LogicalAnyJoin(LogicalAnyJoin const &lj) : LogicalJoin(lj) {
+        condition = lj.condition->Copy();
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalAnyJoin>(*this);
+    }
+
 public:
 	string ParamsToString() const override;
 };

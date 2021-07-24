@@ -23,6 +23,20 @@ public:
 	//! the left/right expressions
 	static unique_ptr<Expression> CreateExpression(JoinCondition cond);
 
+    JoinCondition(JoinCondition const& joinCondition) {  // for previously uninitialized object
+        left = joinCondition.left->Copy();
+        right = joinCondition.right->Copy();
+        comparison = joinCondition.comparison;
+        null_values_are_equal = joinCondition.null_values_are_equal;
+    }
+    JoinCondition& operator=(const JoinCondition& joinCondition) {  // for previously initialized object
+        left = joinCondition.left->Copy();
+        right = joinCondition.right->Copy();
+        comparison = joinCondition.comparison;
+        null_values_are_equal = joinCondition.null_values_are_equal;
+        return *this;
+    }
+
 public:
 	unique_ptr<Expression> left;
 	unique_ptr<Expression> right;

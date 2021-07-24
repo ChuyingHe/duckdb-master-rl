@@ -26,6 +26,21 @@ public:
 	//! Used for duplicate-eliminated joins
 	vector<LogicalType> delim_types;
 
+    // FOR IMPLEMENTATION
+    LogicalComparisonJoin(LogicalComparisonJoin const &lcj) : LogicalJoin(lcj) {
+        //conditions = lcj.conditions;
+        /*conditions.reserve(lcj.conditions.size());
+        for (auto const& elem : lcj.conditions) {
+            JoinCondition copy_elem;
+            conditions.push_back(copy_elem);
+        }*/
+        conditions = lcj.conditions;
+        delim_types = lcj.delim_types;
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalComparisonJoin>(*this);
+    }
+
 public:
 	string ParamsToString() const override;
 

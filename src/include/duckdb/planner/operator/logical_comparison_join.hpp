@@ -28,12 +28,6 @@ public:
 
     // FOR IMPLEMENTATION
     LogicalComparisonJoin(LogicalComparisonJoin const &lcj) : LogicalJoin(lcj) {
-        //conditions = lcj.conditions;
-        /*conditions.reserve(lcj.conditions.size());
-        for (auto const& elem : lcj.conditions) {
-            JoinCondition copy_elem;
-            conditions.push_back(copy_elem);
-        }*/
         conditions = lcj.conditions;
         delim_types = lcj.delim_types;
     }

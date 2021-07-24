@@ -31,7 +31,7 @@ public:
     LogicalDistinct(LogicalDistinct const &ld) : LogicalOperator(ld) {
         distinct_targets.reserve(ld.distinct_targets.size());
         for (auto const& elem : ld.distinct_targets) {
-            distinct_targets.push_back(std::move(elem->Copy()));
+            distinct_targets.push_back(elem->Copy());
         }
     }
 

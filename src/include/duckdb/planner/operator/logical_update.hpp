@@ -35,7 +35,7 @@ public:
 
         bound_defaults.reserve(lu.bound_defaults.size());
         for (auto const& bd: lu.bound_defaults) {
-            bound_defaults.push_back(std::move(bd->Copy()));
+            bound_defaults.push_back(bd->Copy());
         }
         is_index_update = lu.is_index_update;
     }

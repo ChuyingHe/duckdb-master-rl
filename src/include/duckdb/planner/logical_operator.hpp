@@ -33,7 +33,7 @@ public:
 	}
 
     LogicalOperator(LogicalOperator const& lo) {
-        printf("\n LogicalOperator Constructor \n");
+        printf("LogicalOperator Constructor \n");
         types = lo.types;
         type = lo.type;
         children.reserve(lo.children.size());

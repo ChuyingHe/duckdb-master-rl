@@ -26,89 +26,79 @@ void SkinnerDB::runStatement(shared_ptr<PreparedStatementData> plan){
     //2. update
 
 }
-//shared_ptr<PreparedStatementData>
-
-/*
-void move_copy(unique_ptr<LogicalOperator> copy_of_plan){
-    std::cout<<" -> moved copy of plan -> \n";
-}
-*/
 
 unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &lock, const string &query,
                                                           unique_ptr<SQLStatement> statement, bool allow_stream_result){
-
+    // 1. Preparation
     auto query_result = unique_ptr<QueryResult>();
-
-    printf("SkinnerDB::CreatePreparedStatement\n");
     StatementType statement_type = statement->type;
-    shared_ptr<PreparedStatementData> result = make_shared<PreparedStatementData>(statement_type);
 
+    // 2. Create plan
     profiler.StartPhase("planner");
     Planner planner(context);
     planner.CreatePlan(move(statement));    // turn STATEMENT to PLAN: update this->planner: plan, names, types
     D_ASSERT(planner.plan);
     profiler.EndPhase();
 
+    // 3. Optimize plan in pre-optimizer
     auto plan = move(planner.plan);
-    // extract the result column names from the plan
-    result->read_only = planner.read_only;
-    result->requires_valid_transaction = planner.requires_valid_transaction;
-    result->allow_stream_result = planner.allow_stream_result;
-    result->names = planner.names;
-    result->types = planner.types;
-    result->value_map = move(planner.value_map);
-    result->catalog_version = Transaction::GetTransaction(context).catalog_version;
-
-    // pre-optimizer
     profiler.StartPhase("pre_optimizer");
     Optimizer optimizer(*planner.binder, context);
     plan = optimizer.OptimizeBeforeRLOptimizer(move(plan));
     D_ASSERT(plan);
     profiler.EndPhase();
 
+    // 4. Define node for reward update
     root_node_for_uct = new NodeForUCT{nullptr, nullptr, 0, 0.0, nullptr};
 
+    // 5. Execute query with different Join-order
     int loop_count = 0;
-    // FIXME: fixme
     while (loop_count < 10) {
     //while (!context.query_finished) {
-        std::cout<<" 🦄️ loop_count = " << loop_count <<"\n";
-        loop_count += 1;
+        // 5.1 Create PreparedStatementData: extract the result column names from the plan
+        shared_ptr<PreparedStatementData> result = make_shared<PreparedStatementData>(statement_type);
+        result->read_only = planner.read_only;
+        result->requires_valid_transaction = planner.requires_valid_transaction;
+        result->allow_stream_result = planner.allow_stream_result;
+        result->names = planner.names;
+        result->types = planner.types;
+        result->value_map = move(planner.value_map);
+        result->catalog_version = Transaction::GetTransaction(context).catalog_version;
 
+
+        // 5.2 Optimize plan in RL-Optimizer
         profiler.StartPhase("rl_optimizer");
         RLJoinOrderOptimizer rl_optimizer(context);
-
-        // DEEP COPY
-        auto copy = plan->clone();
+        auto copy = plan->clone();  // Clone plan for next iteration
+        //TODO: delete this: Checkpoint for DEEP COPY
+        std::cout<<"\n 🦄️ loop_count = " << loop_count <<"\n";
+        loop_count += 1;
         std::cout<<"address of copy:" << copy << std::endl;
         std::cout<<"address of plan:" << plan<< std::endl;
-        //move_copy(move(copy));
+        //TODO: delete above
         unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(copy));
-        std::cout<<"address of copy:" << copy << std::endl;
-        std::cout<<"address of plan:" << plan<< std::endl;
+        profiler.EndPhase();
 
-
-
-        /*profiler.EndPhase();
+        // 5.3 Create physical plan
         profiler.StartPhase("physical_planner");
         // now convert logical query plan into a physical query plan
         PhysicalPlanGenerator physical_planner(context);
-        auto physical_plan = physical_planner.CreatePlan(move(rl_plan));    // CHECK HERE, erst kopieren dann
+        auto physical_plan = physical_planner.CreatePlan(move(rl_plan));
         // auto physical_plan = physical_planner.CreatePlanRL(plan.get());
         profiler.EndPhase();
 
+        // 5.4 Execute optimized plan + Update reward
         result->plan = move(physical_plan);
-        //auto prepared = result;
-
         vector<Value> bound_values;
         Timer timer;
-        // query_result = context.ExecutePreparedStatementWithRLOptimizer(lock, query, result.get(), move(bound_values), allow_stream_result);
         query_result = context.ExecutePreparedStatementWithRLOptimizer(lock, query, move(result), move(bound_values), allow_stream_result);
-
         double reward = timer.check();
+        rl_optimizer.RewardUpdate(reward);
 
-        rl_optimizer.RewardUpdate(reward);*/
-
+        //TODO: delete this: Checkpoint for DEEP COPY
+        std::cout<<"address of copy:" << copy << std::endl;
+        std::cout<<"address of plan:" << plan<< std::endl;
+        //TODO: delete above
     }
 
     //TODO: add up all query_result

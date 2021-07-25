@@ -383,11 +383,9 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
             if (entry == plans.end()) {
                 plans[new_set] = move(new_plan);    //include all plans(intermediate & final)
 
-                //UCT-Tree: created all node with "parent"
                 current_node_for_uct = new NodeForUCT{new_set, plans[new_set].get(), 0, 0.0, parent_node_for_uct};
-                // tree.push_back(current_node_for_uct);
+                current_node_for_uct->order_of_relations.append(order_of_rel);
 
-                //UCT-Tree: added "children" attribute
                 parent_node_for_uct->children.push_back(current_node_for_uct);
             }
 
@@ -400,11 +398,6 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
 
             order_of_rel = order_of_rel.substr(0, order_of_rel.size()-1);
         }
-
-    } else {
-        // if all the relations are in the plan, a.k.a. we reached a leaf node
-        //FIXME: order_of_rel is for testing
-        std::cout <<"add plan which join-order = " << order_of_rel <<std::endl;
     }
 }
 /* this function generate all possible plans and add it to this->plans
@@ -426,7 +419,7 @@ void RLJoinOrderOptimizer::GeneratePlans() {
 
         //🚩 create-node-for-UCT-Tree
         NodeForUCT* node_for_uct = new NodeForUCT{node, plans[node].get(), 0, 0.0, root_node_for_uct};
-        //tree.push_back(node_for_uct);
+        node_for_uct->order_of_relations.append(std::to_string(i));
 
         //🚩 create-node-for-UCT-Tree: level0.children =  level1 nodes
         root_node_for_uct->children.push_back(node_for_uct);
@@ -484,6 +477,7 @@ void RLJoinOrderOptimizer::RewardUpdate(double reward) {
         printf("RewardUpdate");
         chosen_node->reward += reward;
 
+        std::cout << "chosen_node = " <<chosen_node->order_of_relations << " that has the reward = " <<chosen_node->reward << "\n";
         // update node's parent - until the root note
         NodeForUCT* parent_ptr = chosen_node->parent;
         while (parent_ptr) {

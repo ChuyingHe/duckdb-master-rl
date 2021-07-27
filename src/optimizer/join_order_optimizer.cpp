@@ -696,18 +696,18 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 	// now that we know we are going to perform join ordering we actually extract the filters, eliminating duplicate
 	// filters in the process
 	expression_set_t filter_set;    /*unordered_set<BaseExpression *, ExpressionHashFunction, ExpressionEquality>;*/
-	for (auto &op : filter_operators) { /*filter_operators is updated in function ExtractJoinRelations()*/
+	for (auto &op : filter_operators) {     // filter_operators is updated in function ExtractJoinRelations()
 		if (op->type == LogicalOperatorType::LOGICAL_COMPARISON_JOIN) {
             /* (1) if operator == LOGICAL_COMPARISON_JOIN*/
 			auto &join = (LogicalComparisonJoin &)*op;
 			D_ASSERT(join.join_type == JoinType::INNER);
 			D_ASSERT(join.expressions.empty());
-			for (auto &cond : join.conditions) {
+			for (auto &cond : join.conditions) {    // "WHERE ct.id = mc.company_type_id;"
 				auto comparison =
 				    make_unique<BoundComparisonExpression>(cond.comparison, move(cond.left), move(cond.right));
 				if (filter_set.find(comparison.get()) == filter_set.end()) { /*if this comparison doesn't exist in the filter_set, then put it in. find() returns .end() if not found*/
-					filter_set.insert(comparison.get());
-					filters.push_back(move(comparison));
+					filter_set.insert(comparison.get());    // add it to an unordered_set [local in current function]
+					filters.push_back(move(comparison));    // add it to a vector [member variable]
 				}
 			}
 			join.conditions.clear();
@@ -723,14 +723,14 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 		}
 	}
 	// create potential edges from the comparisons
-	for (idx_t i = 0; i < filters.size(); i++) {
+	for (idx_t i = 0; i < filters.size(); i++) {    // member variable 'filters' is updated in previous for-loop
 		auto &filter = filters[i];
 		auto info = make_unique<FilterInfo>();
 		auto filter_info = info.get();  /*raw pointer of info*/
-		filter_infos.push_back(move(info));
+		filter_infos.push_back(move(info)); // add empty unique_ptr<FilterInfo> to member variable 'filter_infos'
 		// first extract the relation set for the entire filter
 		unordered_set<idx_t> bindings;
-		ExtractBindings(*filter, bindings); /*update bindings*/
+		ExtractBindings(*filter, bindings); // update bindings: a.k.a. used table/relations
 		filter_info->set = set_manager.GetJoinRelation(bindings);
 		filter_info->filter_index = i;
 		// now check if it can be used as a join predicate

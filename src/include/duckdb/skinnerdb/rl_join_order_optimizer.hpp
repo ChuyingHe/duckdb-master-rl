@@ -21,7 +21,7 @@
 namespace duckdb {
     struct NodeForUCT {
         JoinRelationSet* relations;                             // from this->plans
-        JoinOrderOptimizer::JoinNode* join_node;   // from this->plans
+        JoinOrderOptimizer::JoinNode* join_node;                // from this->plans
         int num_of_visits;
         double reward;
         NodeForUCT* parent;
@@ -57,7 +57,7 @@ namespace duckdb {
         unordered_map <idx_t, idx_t> relation_mapping;
         JoinRelationSetManager set_manager;
         QueryGraph query_graph;
-        unordered_map<JoinRelationSet *, unique_ptr <JoinOrderOptimizer::JoinNode>> plans;   // includes all the relations, to return
+        unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>> plans;   // includes all the relations, to return
 
         //FIXME: delete this, only for debugging
         std::string order_of_rel = "";

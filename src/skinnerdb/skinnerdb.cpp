@@ -52,10 +52,13 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
     root_node_for_uct = new NodeForUCT{nullptr, nullptr, 0, 0.0, nullptr};
 
     // 5. Execute query with different Join-order
+
     int loop_count = 0;
     while (loop_count < 10) {
     //while (!context.query_finished) {
         // 5.1 Create PreparedStatementData: extract the result column names from the plan
+        std::cout<<"\n 🦄️ loop_count = " << loop_count <<"\n";
+
         shared_ptr<PreparedStatementData> result = make_shared<PreparedStatementData>(statement_type);
         result->read_only = planner.read_only;
         result->requires_valid_transaction = planner.requires_valid_transaction;
@@ -65,19 +68,11 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         result->value_map = move(planner.value_map);
         result->catalog_version = Transaction::GetTransaction(context).catalog_version;
 
-
         // 5.2 Optimize plan in RL-Optimizer
-        profiler.StartPhase("rl_optimizer");
-        RLJoinOrderOptimizer rl_optimizer(context);
         auto copy = plan->clone();  // Clone plan for next iteration
-        //TODO: delete this: Checkpoint for DEEP COPY
-        std::cout<<"\n 🦄️ loop_count = " << loop_count <<"\n";
-        loop_count += 1;
-        std::cout<<"address of copy:" << copy << std::endl;
-        std::cout<<"address of plan:" << plan<< std::endl;
-        //TODO: delete above
+
+        RLJoinOrderOptimizer rl_optimizer(context);
         unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(copy));
-        profiler.EndPhase();
 
         // 5.3 Create physical plan
         profiler.StartPhase("physical_planner");
@@ -95,10 +90,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         double reward = timer.check();
         rl_optimizer.RewardUpdate(reward);
 
-        //TODO: delete this: Checkpoint for DEEP COPY
-        std::cout<<"address of copy:" << copy << std::endl;
-        std::cout<<"address of plan:" << plan<< std::endl;
-        //TODO: delete above
+        loop_count += 1;
     }
 
     //TODO: add up all query_result
@@ -112,12 +104,6 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 /*
 unique_ptr<QueryResult> SkinnerDB::Execute(ClientContextLock &lock, const string &query, unique_ptr<SQLStatement> statement, bool allow_stream_result) {
     printf("SkinnerDB::Preprocessing");
-
-
-
-
-
-
 
 }*/
 

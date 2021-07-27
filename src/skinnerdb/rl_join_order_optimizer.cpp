@@ -382,7 +382,6 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
             NodeForUCT* current_node_for_uct;
             if (entry == plans.end()) {
                 plans[new_set] = move(new_plan);    //include all plans(intermediate & final)
-
                 current_node_for_uct = new NodeForUCT{new_set, plans[new_set].get(), 0, 0.0, parent_node_for_uct};
                 current_node_for_uct->order_of_relations.append(order_of_rel);
 
@@ -414,14 +413,11 @@ void RLJoinOrderOptimizer::GeneratePlans() {
         auto &rel = *relations[i];
         auto node = set_manager.GetJoinRelation(i);
 
-        //create plans
         plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(node, rel.op->EstimateCardinality(context));
 
-        //🚩 create-node-for-UCT-Tree
         NodeForUCT* node_for_uct = new NodeForUCT{node, plans[node].get(), 0, 0.0, root_node_for_uct};
         node_for_uct->order_of_relations.append(std::to_string(i));
 
-        //🚩 create-node-for-UCT-Tree: level0.children =  level1 nodes
         root_node_for_uct->children.push_back(node_for_uct);
     }
 
@@ -435,6 +431,8 @@ void RLJoinOrderOptimizer::GeneratePlans() {
         order_of_rel.append(std::to_string(i));
         IterateTree(start_node, exclusion_set, root_node_for_uct->children.at(i));
     }
+
+    std::cout<< "\n 🐶 amount of plans = "<<plans.size()<<"\n";
 }
 /*use elems in this->plans for struct
 void RLJoinOrderOptimizer::InitNodes() {
@@ -519,19 +517,17 @@ double RLJoinOrderOptimizer::CalculateUCB(double avg, int v_p, int v_c) {
  * UCB1(NODE[c]) = A + weight-factor * sqrt( (log(visit-of-c's-parent))/(visits-of-c) )
  * A = average-reward-for-c, aka. =  reward-of-c/visit-of-c
  */
-JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
-    printf("\nUCTChoice\n");
-    //choose a plan using UCT algorithm and return it
-    // all possible plans are save in this->rl_plans
-    // Case 1: current Node is NOT a leaf - calculate UCB, choose the biggest one
-    while (!root_node_for_uct->children.empty()) {   //TODO: therefore no EXPANSION needed? ❓
+/*JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
+    printf("\nUCTChoice");
+
+    while (!root_node_for_uct->children.empty()) {
+        printf("- ");
         auto max = 0;
         NodeForUCT* chosen_child;
         for (auto& child:root_node_for_uct->children){   // loop through all the possible node - from current node
             double avg = (child->num_of_visits==0)? 1000000: (child->reward/child->num_of_visits);   // unvisited node has an infinite avg
 
             auto ucb = CalculateUCB(avg, child->parent->num_of_visits, child->num_of_visits);
-
             // if this child has ucb>max , then chosen_child = this child
             if (ucb > max) {
                 max = ucb;
@@ -543,6 +539,31 @@ JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
     }
     // Case 2: current Node is a leaf, return leaf
     chosen_node = root_node_for_uct;    // for RewardUpdate
+    return chosen_node->join_node;
+}*/
+
+JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
+    printf("\nUCTChoice\n");
+    auto next = root_node_for_uct;
+
+    // determine the second-last node
+    while (!next->children.empty()) {
+        next->num_of_visits += 1;
+        auto max = 0;
+        NodeForUCT* chosen_next;
+        for (auto const& n : next->children) {
+            double avg = (n->num_of_visits==0)? 1000000: (n->reward/n->num_of_visits);
+            auto ucb = CalculateUCB(avg, n->parent->num_of_visits, n->num_of_visits);
+            if (ucb > max) {
+                max = ucb;
+                chosen_next = n;
+            }
+        }
+        next = chosen_next;      // for next iteration in this while loop
+    }
+    // determine the last node
+    next->num_of_visits += 1;
+    chosen_node = next; //the first and the only child
     return chosen_node->join_node;
 }
 
@@ -620,8 +641,6 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     LogicalOperator *op = plan.get();
     vector<LogicalOperator *> filter_operators;
 
-    /*Cases that doesnt need Join Order Optimizer:*/
-    //
     if (!ExtractJoinRelations(*op, filter_operators)) {
         return plan;
     }
@@ -709,18 +728,17 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
         }
     }
 
-    // plans generation: 2) generate all the possible plans
-    GeneratePlans();
-    std::cout<< "\n 🐶 amount of plans = "<<plans.size()<<"\n";
+    if (!chosen_node) {
+        GeneratePlans();
+    }
 
-    unordered_set<idx_t> bindings;
+    //FIXME: this is for debugging
+    /*unordered_set<idx_t> bindings;
     for (idx_t i = 0; i < relations.size(); i++) {
         bindings.insert(i);
     }
 
-
-    //FIXME: this is for debugging
-    /*auto total_relation = set_manager.GetJoinRelation(bindings);
+    auto total_relation = set_manager.GetJoinRelation(bindings);
     auto final_plan = plans.find(total_relation);
     for (auto& item: plans) {
         if (item.first->count == 5) {

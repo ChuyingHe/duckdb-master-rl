@@ -20,7 +20,7 @@
 
 namespace duckdb {
     struct NodeForUCT {
-        JoinRelationSet* relations;                             // from this->plans
+        // JoinRelationSet* relations;                             // from this->plans
         JoinOrderOptimizer::JoinNode* join_node;                // from this->plans
         int num_of_visits;
         double reward;
@@ -40,13 +40,8 @@ namespace duckdb {
                 context) { /*constructor, explicit prevent other type of parameter*/
         }
 
-        unique_ptr <LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan); /*only public function -  THE ENTRANCE*/
-        // shared_ptr<LogicalOperator> Optimize(shared_ptr<LogicalOperator> plan);
-        // LogicalOperator* Optimize(LogicalOperator* plan);
-
+        unique_ptr <LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan);
         void RewardUpdate(double reward);
-
-
 
     private:
         ClientContext &context;
@@ -58,13 +53,7 @@ namespace duckdb {
         JoinRelationSetManager set_manager;
         QueryGraph query_graph;
         unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>> plans;   // includes all the relations, to return
-
-        //FIXME: delete this, only for debugging
         std::string order_of_rel = "";
-        // unordered_map<JoinRelationSet *, unique_ptr <JoinOrderOptimizer::JoinNode>> rl_plans; // only include plans which includes all the relations
-        // unordered_map<JoinRelationSet *, unique_ptr <JoinOrderOptimizer::JoinNode>> all_plans; //include intermediate
-
-
         vector <unique_ptr<Expression>> filters;
         vector <unique_ptr<FilterInfo>> filter_infos;
         expression_map_t <vector<FilterInfo *>> equivalence_sets;
@@ -95,8 +84,6 @@ namespace duckdb {
 
         void SolveJoinOrderApproximately();
 
-
-
         double CalculateUCB(double avg, int v_p, int v_c);
 
         void pseudoCode();
@@ -104,9 +91,6 @@ namespace duckdb {
         JoinOrderOptimizer::JoinNode* UCTChoice();
 
         void GeneratePlans();
-
-        // void InitNodes();
-
 
         bool ContinueJoin(JoinOrderOptimizer::JoinNode *node, std::chrono::seconds duration);
 

@@ -49,10 +49,9 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
     profiler.EndPhase();
 
     // 4. Define node for reward update
-    root_node_for_uct = new NodeForUCT{nullptr, nullptr, 0, 0.0, nullptr};
+    root_node_for_uct = new NodeForUCT{nullptr, 0, 0.0, nullptr};
 
     // 5. Execute query with different Join-order
-
     int loop_count = 0;
     while (loop_count < 10) {
     //while (!context.query_finished) {

@@ -27,6 +27,11 @@ void SkinnerDB::runStatement(shared_ptr<PreparedStatementData> plan){
 
 }
 
+void testfunc(unique_ptr<LogicalOperator> plan) {
+    printf("test func to remove one of the copy");
+    std::cout<< plan->GetName();
+}
+
 unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &lock, const string &query,
                                                           unique_ptr<SQLStatement> statement, bool allow_stream_result){
     // 1. Preparation
@@ -70,6 +75,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         // 5.2 Optimize plan in RL-Optimizer
         auto copy = plan->clone();  // Clone plan for next iteration
 
+        // testfunc(move(copy));
         RLJoinOrderOptimizer rl_optimizer(context);
         unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(copy));
 

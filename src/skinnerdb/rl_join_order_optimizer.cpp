@@ -384,6 +384,7 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
             NodeForUCT* current_node_for_uct;
             if (entry == plans.end()) {
                 plans[new_set] = move(new_plan);    //include all plans(intermediate & final)
+                // plans.insert(std::make_pair(move(new_set), move(new_plan)));
                 current_node_for_uct = new NodeForUCT{plans[new_set].get(), 0, 0.0, parent_node_for_uct};
                 current_node_for_uct->order_of_relations.append(order_of_rel);
 

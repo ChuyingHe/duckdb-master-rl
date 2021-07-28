@@ -40,6 +40,24 @@ public:
 		         idx_t cost)
 		    : set(set), info(info), cardinality(cardinality), cost(cost), left(left), right(right) {
 		}
+        JoinNode(JoinNode const& jn) {
+		    printf("copy constructor for JoinNode");
+		    /*
+            JoinRelationSet set_value = *jn.set;
+            set = &set_value;
+            NeighborInfo info_value = *jn.info;
+            info = &info_value;*/
+		    set = jn.set;
+		    info = jn.info;
+            cardinality = jn.cardinality;
+            cost = jn.cost;
+            left = jn.left;
+            right = jn.right;
+		}
+
+		unique_ptr<JoinNode> clone() {
+            return make_unique<JoinNode>(*this);
+		}
 	};
 
 public:

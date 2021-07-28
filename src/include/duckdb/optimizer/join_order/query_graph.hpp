@@ -25,6 +25,18 @@ struct FilterInfo {
 	JoinRelationSet *left_set = nullptr;
 	JoinRelationSet *right_set = nullptr;
 	JoinRelationSet *set = nullptr;
+
+    FilterInfo(){}
+
+    FilterInfo(FilterInfo const& fi) {
+        filter_index = fi.filter_index;
+        JoinRelationSet left_set_content = *fi.left_set;
+        left_set = &left_set_content;
+        JoinRelationSet right_set_content = *fi.right_set;
+        right_set = &right_set_content;
+        JoinRelationSet set_content = *fi.set;
+        set = &set_content;
+    }
 };
 
 struct FilterNode {
@@ -35,6 +47,20 @@ struct FilterNode {
 struct NeighborInfo {
 	JoinRelationSet *neighbor;
 	vector<FilterInfo *> filters;
+
+    NeighborInfo() {}
+
+    NeighborInfo(NeighborInfo const& ni) {
+        JoinRelationSet neighbor_content = *ni.neighbor;
+        neighbor = &neighbor_content;
+
+        filters.reserve(ni.filters.size());
+        for (auto const& elem: ni.filters) {
+            FilterInfo filter_content = *elem;
+            FilterInfo *filter = &filter_content;
+            filters.push_back(filter);
+        }
+    }
 };
 
 //! The QueryGraph contains edges between relations and allows edges to be created/queried

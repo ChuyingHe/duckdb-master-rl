@@ -20,7 +20,6 @@
 
 namespace duckdb {
     struct NodeForUCT {
-        // JoinRelationSet* relations;                             // from this->plans
         JoinOrderOptimizer::JoinNode* join_node;                // from this->plans
         int num_of_visits;
         double reward;
@@ -29,6 +28,23 @@ namespace duckdb {
         std::string order_of_relations;
         // vector<JoinRelationSet*> validChildren; do we need this?
         // NodeForUCT(): num_of_visits(0), reward(0.0) {}
+
+        NodeForUCT(JoinOrderOptimizer::JoinNode* join_node, int num_of_visits, double reward, NodeForUCT* parent) :
+        join_node(join_node), num_of_visits(num_of_visits), reward(reward), parent(parent) {
+        }
+
+        NodeForUCT(NodeForUCT const& nfuct) {
+            printf("copy constructor of NodeForUCT\n");
+            join_node = nfuct.join_node;
+            num_of_visits = nfuct.num_of_visits;
+            reward = nfuct.reward;
+            parent = nfuct.parent;
+            children.reserve(nfuct.children.size());
+            for (auto const& elem : nfuct.children) {
+                children.push_back(elem);
+            }
+            order_of_relations = nfuct.order_of_relations;
+        }
     };
 
     extern NodeForUCT* root_node_for_uct;
@@ -52,7 +68,7 @@ namespace duckdb {
         unordered_map <idx_t, idx_t> relation_mapping;
         JoinRelationSetManager set_manager;
         QueryGraph query_graph;
-        unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>> plans;   // includes all the relations, to return
+        static unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>> plans;   // includes all the relations, to return
         std::string order_of_rel = "";
         vector <unique_ptr<Expression>> filters;
         vector <unique_ptr<FilterInfo>> filter_infos;

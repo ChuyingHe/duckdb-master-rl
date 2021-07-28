@@ -31,6 +31,26 @@ struct JoinRelationSet {
 	JoinRelationSet(unique_ptr<idx_t[]> relations, idx_t count) : relations(move(relations)), count(count) {
 	}
 
+    JoinRelationSet(JoinRelationSet const& jrs) {
+	    printf("copy constructor of JoinRelationSet \n");
+        for (idx_t i = 0; i<jrs.count; i++) {
+            relations[i] = jrs.relations[i];
+        }
+	    count = jrs.count;
+	}
+
+    JoinRelationSet Copy() {
+	    idx_t copy_count = count;
+
+        auto copy_relations = unique_ptr<idx_t[]>(new idx_t[copy_count]);
+        for (idx_t i = 0; i < copy_count; i++) {
+            copy_relations[i] = relations[i];
+        }
+
+        JoinRelationSet jrs(move(copy_relations), count);
+        return jrs;
+	}
+
 	string ToString() const;
 
 	unique_ptr<idx_t[]> relations;

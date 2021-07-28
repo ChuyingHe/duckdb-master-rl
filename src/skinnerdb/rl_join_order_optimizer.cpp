@@ -12,8 +12,9 @@
 
 namespace duckdb {
 
+unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>> RLJoinOrderOptimizer::plans;   // includes all the relations, to return
 
-//! Returns true if A and B are disjoint, false otherwise
+    //! Returns true if A and B are disjoint, false otherwise
 template <class T>
 static bool RL_Disjoint(unordered_set<T> &a, unordered_set<T> &b) {
     for (auto &entry : a) {
@@ -119,7 +120,7 @@ bool RLJoinOrderOptimizer::ExtractJoinRelations(LogicalOperator &input_op, vecto
             op->type == LogicalOperatorType::LOGICAL_WINDOW) {
             // don't push filters through projection or aggregate and group by
             RLJoinOrderOptimizer optimizer(context);
-            op->children[0] = optimizer.Optimize(move(op->children[0]));
+            op->children[0] = optimizer.Optimize(move(op->children[0]));        // 🐈
             return false;
         }
         op = op->children[0].get();
@@ -223,7 +224,7 @@ bool RLJoinOrderOptimizer::ExtractJoinRelations(LogicalOperator &input_op, vecto
         return true;
     }
     return false;
-}
+}   // 🐈 所有的JoinRelationSet*都消失了，为什么？
 
 pair<JoinRelationSet *, unique_ptr<LogicalOperator>>
 RLJoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extracted_relations, JoinOrderOptimizer::JoinNode *node) {
@@ -365,6 +366,7 @@ RLJoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extract
 }
 
 void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set<idx_t> exclusion_set, NodeForUCT* parent_node_for_uct) {
+    printf("IterateTree\n");
     auto neighbors = query_graph.GetNeighbors(union_set, exclusion_set);        // Get neighbor of current plan: returns vector<idx_t>
 
     // Depth-First Traversal 无向图的深度优先搜索
@@ -403,17 +405,19 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
  * the number of possible plan depends on the Join-Graph (ONLY use cross-product if there is no other choice)*/
 void RLJoinOrderOptimizer::GeneratePlans() {
     printf("\nGeneratePlans\n");
-    // 🚩 create-node-for-UCT-Tree:  level0 node, a.k.a. root node
-
-    // NodeForUCT* root_node_for_uct = new NodeForUCT{nullptr, nullptr, 0, 0.0, nullptr};
-    //tree.push_back(root_node_for_uct);
-
     // 1) initialize each of the single-table plans
     for (idx_t i = 0; i < relations.size(); i++) {
         auto &rel = *relations[i];
         auto node = set_manager.GetJoinRelation(i);
 
+        /*JoinRelationSet copy_node = node->Copy();
+        JoinRelationSet* copy_node_ptr = &copy_node;*/
+        //TODO: scope of raw pointer VS scope of unique_ptr
         plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(node, rel.op->EstimateCardinality(context));
+
+        /*auto join_node = JoinOrderOptimizer::JoinNode(node, rel.op->EstimateCardinality(context));
+        JoinOrderOptimizer::JoinNode* join_node_ptr = &join_node;
+        NodeForUCT* node_for_uct = new NodeForUCT{join_node_ptr, 0, 0.0, root_node_for_uct};*/
         NodeForUCT* node_for_uct = new NodeForUCT{plans[node].get(), 0, 0.0, root_node_for_uct};
         node_for_uct->order_of_relations.append(std::to_string(i));
 
@@ -519,7 +523,8 @@ JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
         next->num_of_visits += 1;
         auto max = 0;
         NodeForUCT* chosen_next;
-        for (auto const& n : next->children) {
+        auto children = next->children; // should be vector of ptr
+        for (auto const& n : children) {
             double avg = (n->num_of_visits==0)? 1000000: (n->reward/n->num_of_visits);
             auto ucb = CalculateUCB(avg, n->parent->num_of_visits, n->num_of_visits);
             if (ucb > max) {
@@ -714,8 +719,10 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
             return RewritePlan(move(plan), item.second.get());
         }
     }*/
-
+//    auto test_validation =  root_node_for_uct->children.at(0)->join_node->set->count;
     auto final_plan = UCTChoice();      // returns JoinOrderOptimizer::JoinNode*
+
+//    test_validation =  root_node_for_uct->children.at(0)->join_node->set->count;
 
     // NOTE: we can just use pointers to JoinRelationSet* here because the GetJoinRelation
     // function ensures that a unique combination of relations will have a unique JoinRelationSet object.

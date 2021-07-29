@@ -47,7 +47,7 @@ public:
 	void MergeHeap(StringHeap &heap);
 
 private:
-	struct StringChunk {
+	struct  StringChunk {
 		explicit StringChunk(idx_t size) : current_position(0), maximum_size(size) {
 			data = unique_ptr<char[]>(new char[maximum_size]);
 		}

@@ -58,6 +58,7 @@ namespace duckdb {
 
         unique_ptr <LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan);
         void RewardUpdate(double reward);
+        void GeneratePlans();
 
     private:
         ClientContext &context;
@@ -69,6 +70,7 @@ namespace duckdb {
         JoinRelationSetManager set_manager;
         QueryGraph query_graph;
         static unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>> plans;   // includes all the relations, to return
+        //unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>> plans;
         std::string order_of_rel = "";
         vector <unique_ptr<Expression>> filters;
         vector <unique_ptr<FilterInfo>> filter_infos;
@@ -105,8 +107,6 @@ namespace duckdb {
         void pseudoCode();
 
         JoinOrderOptimizer::JoinNode* UCTChoice();
-
-        void GeneratePlans();
 
         bool ContinueJoin(JoinOrderOptimizer::JoinNode *node, std::chrono::seconds duration);
 

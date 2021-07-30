@@ -57,6 +57,9 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
     root_node_for_uct = new NodeForUCT{nullptr, 0, 0.0, nullptr};
 
     // 5. Execute query with different Join-order
+   /* RLJoinOrderOptimizer rl_optimizer(context);
+    rl_optimizer.GeneratePlans();*/
+
     int loop_count = 0;
     while (loop_count < 10) {
     //while (!context.query_finished) {

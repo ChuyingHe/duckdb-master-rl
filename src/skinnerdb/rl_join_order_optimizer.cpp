@@ -376,9 +376,13 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
             auto *neighbor_relation = set_manager.GetJoinRelation(neighbor);        //returns JoinRelationSet*
             auto info = query_graph.GetConnection(union_set, neighbor_relation);    //NeighborInfo
             auto &left = plans[union_set];
-            auto new_set = set_manager.RLUnion(union_set, neighbor_relation);
+            auto new_set = set_manager.RLUnion(union_set, neighbor_relation);       //returns JoinRelationSet *
             auto &right = plans[neighbor_relation];
-            auto new_plan = RL_CreateJoinTree(new_set, info, left.get(), right.get());// unique_ptr<JoinNode>
+            // make a copy for later use - didnt work
+            /*auto new_set_copy = new_set->Copy();
+            auto new_set_copy_ptr = &new_set_copy;
+            auto new_plan = RL_CreateJoinTree(move(new_set_copy_ptr), info, left.get(), right.get());// unique_ptr<JoinNode>*/
+            auto new_plan = RL_CreateJoinTree(new_set, info, left.get(), right.get());
 
             auto entry = plans.find(new_set);
             NodeForUCT* current_node_for_uct;
@@ -419,15 +423,12 @@ void RLJoinOrderOptimizer::GeneratePlans() {
         auto &rel = *relations[i];
         auto node = set_manager.GetJoinRelation(i);
 
+        plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(move(node), rel.op->EstimateCardinality(context));
+        // plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(move(node), rel.op->EstimateCardinality(context));
+        /*// this solved the problem of missing JoinRelationSet
         JoinRelationSet copy_node =  node->Copy();
         JoinRelationSet* copy_node_ptr = new JoinRelationSet(copy_node);
-        //TODO: scope of raw pointer VS scope of unique_ptr
-        //plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(move(node), rel.op->EstimateCardinality(context));
-        plans[move(node)] = make_unique<JoinOrderOptimizer::JoinNode>(move(copy_node_ptr), rel.op->EstimateCardinality(context));
-
-        /*auto join_node = JoinOrderOptimizer::JoinNode(node, rel.op->EstimateCardinality(context));
-        JoinOrderOptimizer::JoinNode* join_node_ptr = &join_node;
-        NodeForUCT* node_for_uct = new NodeForUCT{join_node_ptr, 0, 0.0, root_node_for_uct};*/
+        plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(move(copy_node_ptr), rel.op->EstimateCardinality(context));*/
 
         // heap
         NodeForUCT* node_for_uct = new NodeForUCT{plans[node].get(), 0, 0.0, root_node_for_uct};

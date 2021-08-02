@@ -425,7 +425,10 @@ void RLJoinOrderOptimizer::GeneratePlans() {
 
         plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(move(node), rel.op->EstimateCardinality(context));
         // plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(move(node), rel.op->EstimateCardinality(context));
-        /*// this solved the problem of missing JoinRelationSet
+        /*// SOLUTION: this solved the problem of missing JoinRelationSet
+        // ALTERNATIVE 1
+        JoinRelationSet* node = new JoinRelationSet(*set_manager.GetJoinRelation(i));
+         //ALTERNATIVE 2
         JoinRelationSet copy_node =  node->Copy();
         JoinRelationSet* copy_node_ptr = new JoinRelationSet(copy_node);
         plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(move(copy_node_ptr), rel.op->EstimateCardinality(context));*/

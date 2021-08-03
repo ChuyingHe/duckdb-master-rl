@@ -17,7 +17,7 @@ void ExpressionExecutor::Execute(BoundReferenceExpression &expr, ExpressionState
 	if (sel) {
 		result.Slice(chunk->data[expr.index], *sel, count);
 	} else {
-		result.Reference(chunk->data[expr.index]);
+		result.Reference(chunk->data[expr.index]);  //COPY chunk->data[expr.index] TO result
 	}
 }
 

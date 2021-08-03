@@ -39,7 +39,7 @@ void PhysicalOperator::GetChunk(ExecutionContext &context, DataChunk &chunk, Phy
 
 	// execute the operator
 	context.thread.profiler.StartOperator(this);
-	GetChunkInternal(context, chunk, state);    // function defined in src/execution/operator/aggregate/physical_simple_aggregate.cpp
+	GetChunkInternal(context, chunk, state);    // function defined in several sub-classes
 	context.thread.profiler.EndOperator(&chunk);
 
 	chunk.Verify();

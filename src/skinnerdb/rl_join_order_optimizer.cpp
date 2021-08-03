@@ -378,11 +378,11 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
             auto &left = plans[union_set];
             auto new_set = set_manager.RLUnion(union_set, neighbor_relation);       //returns JoinRelationSet *
             auto &right = plans[neighbor_relation];
-            // make a copy for later use - didnt work
-            /*auto new_set_copy = new_set->Copy();
-            auto new_set_copy_ptr = &new_set_copy;
-            auto new_plan = RL_CreateJoinTree(move(new_set_copy_ptr), info, left.get(), right.get());// unique_ptr<JoinNode>*/
-            auto new_plan = RL_CreateJoinTree(new_set, info, left.get(), right.get());
+
+            JoinRelationSet new_set_copy = new_set->Copy();
+            JoinRelationSet* new_set_copy_ptr = new JoinRelationSet(new_set_copy);
+            auto new_plan = RL_CreateJoinTree(new_set_copy_ptr, info, left.get(), right.get());
+            // auto new_plan = RL_CreateJoinTree(new_set, info, left.get(), right.get());
 
             auto entry = plans.find(new_set);
             NodeForUCT* current_node_for_uct;
@@ -396,6 +396,7 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
                 JoinRelationSet* ns = new JoinRelationSet(move(copy_relations), new_set->count);*/
 
                 plans[new_set] = move(new_plan);    //include all plans(intermediate & final)
+
                 // plans.insert(std::make_pair(move(new_set), move(new_plan)));
                 current_node_for_uct = new NodeForUCT{plans[new_set].get(), 0, 0.0, parent_node_for_uct};
                 current_node_for_uct->order_of_relations.append(order_of_rel);
@@ -421,20 +422,25 @@ void RLJoinOrderOptimizer::GeneratePlans() {
     // 1) initialize each of the single-table plans
     for (idx_t i = 0; i < relations.size(); i++) {
         auto &rel = *relations[i];
-        auto node = set_manager.GetJoinRelation(i);
 
-        plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(move(node), rel.op->EstimateCardinality(context));
-        // plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(move(node), rel.op->EstimateCardinality(context));
-        /*// SOLUTION: this solved the problem of missing JoinRelationSet
-        // ALTERNATIVE 1
-        JoinRelationSet* node = new JoinRelationSet(*set_manager.GetJoinRelation(i));
-         //ALTERNATIVE 2
+        auto node = set_manager.GetJoinRelation(i);
         JoinRelationSet copy_node =  node->Copy();
         JoinRelationSet* copy_node_ptr = new JoinRelationSet(copy_node);
-        plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(move(copy_node_ptr), rel.op->EstimateCardinality(context));*/
+        plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(move(copy_node_ptr), rel.op->EstimateCardinality(context));
+
+        /*// SOLUTION: this solved the problem of missing JoinRelationSet
+       // ALTERNATIVE 1
+       JoinRelationSet* node = new JoinRelationSet(*set_manager.GetJoinRelation(i));
+        //ALTERNATIVE 2
+       JoinRelationSet copy_node =  node->Copy();
+       JoinRelationSet* copy_node_ptr = new JoinRelationSet(copy_node);
+       plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(move(copy_node_ptr), rel.op->EstimateCardinality(context));*/
+
+        //plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(move(node), rel.op->EstimateCardinality(context));
+
 
         // heap
-        NodeForUCT* node_for_uct = new NodeForUCT{plans[node].get(), 0, 0.0, root_node_for_uct};
+        NodeForUCT* node_for_uct = new NodeForUCT{plans[copy_node_ptr].get(), 0, 0.0, root_node_for_uct};
         node_for_uct->order_of_relations.append(std::to_string(i));
         root_node_for_uct->children.push_back(node_for_uct);
 

@@ -69,8 +69,7 @@ namespace duckdb {
         unordered_map <idx_t, idx_t> relation_mapping;
         JoinRelationSetManager set_manager;
         QueryGraph query_graph;
-        static unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>> plans;   // includes all the relations, to return
-        //unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>> plans;
+        static unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>, Hasher, EqualFn> plans;   // includes all the relations, to return
         std::string order_of_rel = "";
         vector <unique_ptr<Expression>> filters;
         vector <unique_ptr<FilterInfo>> filter_infos;
@@ -80,6 +79,9 @@ namespace duckdb {
 
         bool ExtractJoinRelations(LogicalOperator &input_op, vector<LogicalOperator *> &filter_operators,
                                   LogicalOperator *parent = nullptr);
+
+        // for JoinRelationSet
+        unique_ptr<JoinOrderOptimizer::JoinNode> findInPlans(unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>> plans, JoinRelationSet* relation_set);
 
         JoinOrderOptimizer::JoinNode *EmitPair(JoinRelationSet *left, JoinRelationSet *right, NeighborInfo *info);
 

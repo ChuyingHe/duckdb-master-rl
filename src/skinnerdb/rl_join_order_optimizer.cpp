@@ -12,9 +12,9 @@
 
 namespace duckdb {
 
-unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>> RLJoinOrderOptimizer::plans;   // includes all the relations, to return
+unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>, Hasher, EqualFn> RLJoinOrderOptimizer::plans;
 
-    //! Returns true if A and B are disjoint, false otherwise
+//! Returns true if A and B are disjoint, false otherwise
 template <class T>
 static bool RL_Disjoint(unordered_set<T> &a, unordered_set<T> &b) {
     for (auto &entry : a) {
@@ -120,7 +120,7 @@ bool RLJoinOrderOptimizer::ExtractJoinRelations(LogicalOperator &input_op, vecto
             op->type == LogicalOperatorType::LOGICAL_WINDOW) {
             // don't push filters through projection or aggregate and group by
             RLJoinOrderOptimizer optimizer(context);
-            op->children[0] = optimizer.Optimize(move(op->children[0]));        // 🐈
+            op->children[0] = optimizer.Optimize(move(op->children[0]));
             return false;
         }
         op = op->children[0].get();
@@ -228,21 +228,33 @@ bool RLJoinOrderOptimizer::ExtractJoinRelations(LogicalOperator &input_op, vecto
 
 pair<JoinRelationSet *, unique_ptr<LogicalOperator>>
 RLJoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extracted_relations, JoinOrderOptimizer::JoinNode *node) {
+    std::cout <<"\n GenerateJoins: current node.cardinality = " << node->cardinality <<"\n";
+
     JoinRelationSet *left_node = nullptr, *right_node = nullptr;
     JoinRelationSet *result_relation;
     unique_ptr<LogicalOperator> result_operator;
+    std::cout <<"GenerateJoins [1], ";
     if (node->left && node->right) {    /*both left and right exist*/
+        std::cout <<"GenerateJoins [2], if... ";
         // generate the left and right children
         auto left = GenerateJoins(extracted_relations, node->left);
+        std::cout <<"GenerateJoins [2.0], after left, ";
         auto right = GenerateJoins(extracted_relations, node->right);
+        std::cout <<"GenerateJoins [2.0], after right, ";
+        //TODO: delete this
+        auto test = node->info->filters.empty();
+        std::cout<< " node->info->filters.empty(): "<< test<<"\n";
+
 
         if (node->info->filters.empty()) {
+            std::cout <<"GenerateJoins [2.1], filters.empty() ";
             // no filters, create a cross product
             auto join = make_unique<LogicalCrossProduct>();
             join->children.push_back(move(left.second));
             join->children.push_back(move(right.second));
             result_operator = move(join);
         } else {
+            std::cout <<"GenerateJoins [2.1], NOT filters.empty() ";
             // we have filters, create a join node
             auto join = make_unique<LogicalComparisonJoin>(JoinType::INNER);
             join->children.push_back(move(left.second));
@@ -283,6 +295,7 @@ RLJoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extract
         right_node = right.first;
         result_relation = set_manager.RLUnion(left_node, right_node);
     } else {
+        std::cout <<"GenerateJoins [3], else... ";
         // base node, get the entry from the list of extracted relations
         D_ASSERT(node->set->count == 1);
         D_ASSERT(extracted_relations[node->set->relations[0]]);
@@ -292,6 +305,7 @@ RLJoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extract
     // check if we should do a pushdown on this node
     // basically, any remaining filter that is a subset of the current relation will no longer be used in joins
     // hence we should push it here
+    std::cout <<"GenerateJoins [4], for filter... ";
     for (auto &filter_info : filter_infos) {
         // check if the filter has already been extracted
         auto info = filter_info.get();
@@ -362,6 +376,7 @@ RLJoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extract
             }
         }
     }
+    std::cout <<"GenerateJoins [5], return... ";
     return make_pair(result_relation, move(result_operator));
 }
 
@@ -374,31 +389,23 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
         for (auto neighbor:neighbors) {
             order_of_rel.append(std::to_string(neighbor));
             auto *neighbor_relation = set_manager.GetJoinRelation(neighbor);        //returns JoinRelationSet*
+
+            //fix filter problem
             auto info = query_graph.GetConnection(union_set, neighbor_relation);    //NeighborInfo
+            NeighborInfo* info_copy_ptr = new NeighborInfo(*info);
+
             auto &left = plans[union_set];
             auto new_set = set_manager.RLUnion(union_set, neighbor_relation);       //returns JoinRelationSet *
             auto &right = plans[neighbor_relation];
 
-            JoinRelationSet new_set_copy = new_set->Copy();
-            JoinRelationSet* new_set_copy_ptr = new JoinRelationSet(new_set_copy);
-            auto new_plan = RL_CreateJoinTree(new_set_copy_ptr, info, left.get(), right.get());
-            // auto new_plan = RL_CreateJoinTree(new_set, info, left.get(), right.get());
+            JoinRelationSet* new_set_copy_ptr = new JoinRelationSet(*new_set);
+            auto new_plan = RL_CreateJoinTree(new_set_copy_ptr, info_copy_ptr, left.get(), right.get());
 
             auto entry = plans.find(new_set);
             NodeForUCT* current_node_for_uct;
             if (entry == plans.end()) {
-
-                //new_set - dynamic
-                /*auto copy_relations = unique_ptr<idx_t[]>(new idx_t[new_set->count]);
-                for (idx_t i = 0; i < new_set->count; i++) {
-                    copy_relations[i] = new_set->relations[i];
-                }
-                JoinRelationSet* ns = new JoinRelationSet(move(copy_relations), new_set->count);*/
-
-                plans[new_set] = move(new_plan);    //include all plans(intermediate & final)
-
-                // plans.insert(std::make_pair(move(new_set), move(new_plan)));
-                current_node_for_uct = new NodeForUCT{plans[new_set].get(), 0, 0.0, parent_node_for_uct};
+                plans[new_set_copy_ptr] = move(new_plan);
+                current_node_for_uct = new NodeForUCT{plans[new_set_copy_ptr].get(), 0, 0.0, parent_node_for_uct};
                 current_node_for_uct->order_of_relations.append(order_of_rel);
 
                 parent_node_for_uct->children.push_back(current_node_for_uct);
@@ -424,30 +431,12 @@ void RLJoinOrderOptimizer::GeneratePlans() {
         auto &rel = *relations[i];
 
         auto node = set_manager.GetJoinRelation(i);
-        JoinRelationSet copy_node =  node->Copy();
-        JoinRelationSet* copy_node_ptr = new JoinRelationSet(copy_node);
-        plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(move(copy_node_ptr), rel.op->EstimateCardinality(context));
+        JoinRelationSet* copy_node_ptr = new JoinRelationSet(*node);
+        plans[copy_node_ptr] = make_unique<JoinOrderOptimizer::JoinNode>(move(copy_node_ptr), rel.op->EstimateCardinality(context));
 
-        /*// SOLUTION: this solved the problem of missing JoinRelationSet
-       // ALTERNATIVE 1
-       JoinRelationSet* node = new JoinRelationSet(*set_manager.GetJoinRelation(i));
-        //ALTERNATIVE 2
-       JoinRelationSet copy_node =  node->Copy();
-       JoinRelationSet* copy_node_ptr = new JoinRelationSet(copy_node);
-       plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(move(copy_node_ptr), rel.op->EstimateCardinality(context));*/
-
-        //plans[node] = make_unique<JoinOrderOptimizer::JoinNode>(move(node), rel.op->EstimateCardinality(context));
-
-
-        // heap
         NodeForUCT* node_for_uct = new NodeForUCT{plans[copy_node_ptr].get(), 0, 0.0, root_node_for_uct};
         node_for_uct->order_of_relations.append(std::to_string(i));
         root_node_for_uct->children.push_back(node_for_uct);
-
-        /*//stack
-        NodeForUCT node_for_uct(plans[node].get(), 0, 0.0, root_node_for_uct);
-        node_for_uct.order_of_relations.append(std::to_string(i));
-        root_node_for_uct->children.push_back(&node_for_uct);*/
     }
 
     // 2) plans include more than one table
@@ -592,7 +581,7 @@ void RLJoinOrderOptimizer::BackupState() {
 // node: final_plan chosen by UCTChoice()
 // (move(plan), final_plan);
 unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<LogicalOperator> plan, JoinOrderOptimizer::JoinNode *node) {
-    std::cout <<"\n RewritePlan \n";
+    std::cout <<"RewritePlan \n";
     // now we have to rewrite the plan
     bool root_is_join = plan->children.size() > 1;
     // first we will extract all relations from the main plan
@@ -600,6 +589,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<Logical
     for (auto &relation : relations) {
         extracted_relations.push_back(RL_ExtractJoinRelation(*relation));  // get unique_ptr<LogicalOperator> from each relation (SingleJoinRelation)
     }
+    std::cout <<"RewritePlan 1\n";
     // now we generate the actual joins, returns pair<JoinRelationSet *, unique_ptr<LogicalOperator>>
     auto join_tree = GenerateJoins(extracted_relations, node);  // node comes from final_plan->second.get()
     // perform the final pushdown of remaining filters
@@ -610,7 +600,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<Logical
             join_tree.second = RL_PushFilter(move(join_tree.second), move(filter));
         }
     }
-
+    std::cout <<"RewritePlan 2\n";
     // find the first join in the relation to know where to place this node
     if (root_is_join) {
         // first node is the join, return it immediately ---> WHY?
@@ -626,6 +616,8 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<Logical
         parent = op;
         op = op->children[0].get();
     }
+    std::cout <<"RewritePlan 3\n";
+
     // have to replace at this node
     parent->children[0] = move(join_tree.second);
     return plan;
@@ -638,6 +630,8 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     D_ASSERT(filters.empty() && relations.empty()); // assert that the RLJoinOrderOptimizer has not been used before
     LogicalOperator *op = plan.get();
     vector<LogicalOperator *> filter_operators;
+
+    std::cout<<op->GetName()<<"\n";
 
     if (!ExtractJoinRelations(*op, filter_operators)) {
         return plan;
@@ -756,13 +750,6 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
         final_plan = UCTChoice();
         D_ASSERT(final_plan != plans.end());
     }*/
-
-//    test_validation =  root_node_for_uct->children.at(0)->join_node->set->count;
-
-    // NOTE: we can just use pointers to JoinRelationSet* here because the GetJoinRelation
-    // function ensures that a unique combination of relations will have a unique JoinRelationSet object.
-    // TODO: execute plan instead of returning a plan
-
     return RewritePlan(move(plan), final_plan);   // returns EXECUTABLE of the chosen_plan unique_ptr<LogicalOperator>
 }
 

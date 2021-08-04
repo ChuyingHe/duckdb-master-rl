@@ -42,8 +42,7 @@ public:
 		}
         JoinNode(JoinNode const& jn) {
 		    printf("copy constructor for JoinNode");
-		    /*
-            JoinRelationSet set_value = *jn.set;
+            /*JoinRelationSet set_value = *jn.set;
             set = &set_value;
             NeighborInfo info_value = *jn.info;
             info = &info_value;*/
@@ -55,7 +54,8 @@ public:
             right = jn.right;
 		}
 
-		unique_ptr<JoinNode> clone() {
+		unique_ptr<JoinNode> clone() const {
+		    printf("clone");
             return make_unique<JoinNode>(*this);
 		}
 	};

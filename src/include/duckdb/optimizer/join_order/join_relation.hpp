@@ -11,6 +11,7 @@
 #include "duckdb/common/common.hpp"
 #include "duckdb/common/unordered_map.hpp"
 #include "duckdb/common/unordered_set.hpp"
+#include <iostream>
 
 namespace duckdb {
 class LogicalOperator;
@@ -26,6 +27,7 @@ struct SingleJoinRelation {
 	}
 };
 
+
 //! Set of relations, used in the join graph.
 struct JoinRelationSet {
 	JoinRelationSet(unique_ptr<idx_t[]> relations, idx_t count) : relations(move(relations)), count(count) {
@@ -39,24 +41,50 @@ struct JoinRelationSet {
 	static bool IsSubset(JoinRelationSet *super, JoinRelationSet *sub);
 
     JoinRelationSet(JoinRelationSet const& jrs) {
-        printf("copy constructor of JoinRelationSet \n");
+        //printf("copy constructor of JoinRelationSet \n");
         count = jrs.count;
         relations = unique_ptr<idx_t[]>(new idx_t[count]);
         for (idx_t i = 0; i < count; i++) {
             relations[i] = jrs.relations[i];
         }
     }
+};
 
-    JoinRelationSet Copy() {
-        idx_t copy_count = count;
-
-        auto copy_relations = unique_ptr<idx_t[]>(new idx_t[copy_count]);
-        for (idx_t i = 0; i < copy_count; i++) {
-            copy_relations[i] = relations[i];
+/*for unordered_map*/
+class Hasher {
+public:
+    size_t operator() (JoinRelationSet* joinRelationSet) const {
+        //printf("Hashing called\n");
+        size_t hash = 0;
+        for(idx_t i=0;i<joinRelationSet->count;i++){
+            hash += joinRelationSet->relations[i];
         }
 
-        JoinRelationSet jrs(move(copy_relations), count);
-        return jrs;
+        return hash;
+    }
+};
+
+class EqualFn {
+public:
+    bool operator() (JoinRelationSet* joinRelationSet1, JoinRelationSet* joinRelationSet2) const {
+        /*printf("Equal called\n");
+        std::cout <<"joinRelationSet1->count = "<<joinRelationSet1->count << "\n";
+        std::cout <<"joinRelationSet2->count = "<<joinRelationSet2->count << "\n";*/
+        if (joinRelationSet1->count != joinRelationSet2->count) {
+            return false;
+        }
+        for (idx_t i = 0; i<joinRelationSet1->count;i++) {
+            if (joinRelationSet1->relations[i] == joinRelationSet2->relations[i]){
+                /*std::cout <<"joinRelationSet1->relations[i] = "<<joinRelationSet1->relations[i] << "\n";
+                std::cout <<"joinRelationSet2->relations[i]"<<joinRelationSet2->relations[i] << "\n";*/
+                if (i == joinRelationSet1->count-1) {
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        }
+        return false;
     }
 };
 

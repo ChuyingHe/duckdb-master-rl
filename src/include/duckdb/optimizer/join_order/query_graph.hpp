@@ -29,14 +29,21 @@ struct FilterInfo {
     FilterInfo(){}
 
     FilterInfo(FilterInfo const& fi) {
+        printf("FilterInfo Copy Constructor\n");
         filter_index = fi.filter_index;
-        JoinRelationSet left_set_content = *fi.left_set;
-        left_set = &left_set_content;
-        JoinRelationSet right_set_content = *fi.right_set;
-        right_set = &right_set_content;
-        JoinRelationSet set_content = *fi.set;
-        set = &set_content;
+        left_set = new JoinRelationSet(*fi.left_set);
+        right_set = new JoinRelationSet(*fi.right_set);
+        set = new JoinRelationSet(*fi.set);
     }
+    /* FilterInfo Copy() {
+        FilterInfo fi;
+
+        fi.filter_index = filter_index;
+        fi.left_set = new JoinRelationSet(*left_set);
+        fi.right_set = new JoinRelationSet(*right_set);
+        fi.set = new JoinRelationSet(*set);
+        return fi;
+    }*/
 };
 
 struct FilterNode {
@@ -51,14 +58,13 @@ struct NeighborInfo {
     NeighborInfo() {}
 
     NeighborInfo(NeighborInfo const& ni) {
-        JoinRelationSet neighbor_content = *ni.neighbor;
-        neighbor = &neighbor_content;
+        printf("NeighborInfo copy constructor\n");
+        neighbor = new JoinRelationSet(*ni.neighbor);
 
         filters.reserve(ni.filters.size());
         for (auto const& elem: ni.filters) {
-            FilterInfo filter_content = *elem;
-            FilterInfo *filter = &filter_content;
-            filters.push_back(filter);
+            // FilterInfo filter_content = elem->Copy();
+            filters.push_back(new FilterInfo(*elem));
         }
     }
 };

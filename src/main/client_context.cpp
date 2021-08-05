@@ -276,8 +276,7 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 unique_ptr<QueryResult> ClientContext::ExecutePreparedStatementWithRLOptimizer(ClientContextLock &lock, const string &query,
                                                                 shared_ptr<PreparedStatementData> statement_p,
                                                                 vector<Value> bound_values, bool allow_stream_result) {
-    printf("ExecutePreparedStatementWithRLOptimizer \n");
-
+    //printf("ExecutePreparedStatementWithRLOptimizer \n");
     auto &statement = *statement_p;     // shared_ptr<PreparedStatementData>: includes optimized PLAN
     if (ActiveTransaction().IsInvalidated() && statement.requires_valid_transaction) {
         throw Exception("Current transaction is aborted (please ROLLBACK)");

@@ -87,7 +87,6 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         // now convert logical query plan into a physical query plan
         PhysicalPlanGenerator physical_planner(context);
         auto physical_plan = physical_planner.CreatePlan(move(rl_plan));
-        // auto physical_plan = physical_planner.CreatePlanRL(plan.get());
         profiler.EndPhase();
 
         // 5.4 Execute optimized plan + Update reward

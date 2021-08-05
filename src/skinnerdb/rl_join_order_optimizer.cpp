@@ -443,7 +443,7 @@ void RLJoinOrderOptimizer::GeneratePlans() {
 void RLJoinOrderOptimizer::RewardUpdate(double reward) {
     // update the current leaf-node
     if (chosen_node) {
-        printf("RewardUpdate\n");
+        //printf("RewardUpdate\n");
         chosen_node->reward += reward;
 
         std::cout << "chosen_node = " <<chosen_node->order_of_relations << " that has the reward = " <<chosen_node->reward << "\n";
@@ -483,9 +483,8 @@ double RLJoinOrderOptimizer::CalculateUCB(double avg, int v_p, int v_c) {
     }
 }*/
 JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
-    printf("\nUCTChoice\n");
+    //printf("\nUCTChoice\n");
     auto next = root_node_for_uct;
-
     // determine the second-last node
     while (!next->children.empty()) {
         next->num_of_visits += 1;
@@ -580,7 +579,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     LogicalOperator *op = plan.get();
     vector<LogicalOperator *> filter_operators;
 
-    std::cout<<op->GetName()<<"\n";
+    std::cout<<"current LogicalOperator = "<<op->GetName()<<"\n";
 
     if (!ExtractJoinRelations(*op, filter_operators)) {
         return plan;

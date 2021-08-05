@@ -1,6 +1,6 @@
-SELECT MIN(mc.note) AS production_note,
-       MIN(t.title) AS movie_title,
-       MIN(t.production_year) AS movie_year
+SELECT mc.note AS production_note,
+       t.title AS movie_title,
+       t.production_year AS movie_year
 FROM company_type AS ct,
      info_type AS it,
      movie_companies AS mc,

@@ -61,7 +61,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
     rl_optimizer.GeneratePlans();*/
 
     int loop_count = 0;
-    while (loop_count < 10) {
+    while (loop_count < 100) {
     //while (!context.query_finished) {
         // 5.1 Create PreparedStatementData: extract the result column names from the plan
         std::cout<<"\n 🦄️ loop_count = " << loop_count <<"\n";

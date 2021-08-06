@@ -25,9 +25,6 @@ namespace duckdb {
         double reward;
         NodeForUCT* parent;
         vector<NodeForUCT*> children;
-        std::string order_of_relations;
-        // vector<JoinRelationSet*> validChildren; do we need this?
-        // NodeForUCT(): num_of_visits(0), reward(0.0) {}
 
         NodeForUCT(JoinOrderOptimizer::JoinNode* join_node, int num_of_visits, double reward, NodeForUCT* parent) :
         join_node(join_node), num_of_visits(num_of_visits), reward(reward), parent(parent) {
@@ -43,7 +40,6 @@ namespace duckdb {
             for (auto const& elem : nfuct.children) {
                 children.push_back(elem);
             }
-            order_of_relations = nfuct.order_of_relations;
         }
     };
 

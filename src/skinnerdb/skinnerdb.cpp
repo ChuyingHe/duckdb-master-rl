@@ -97,9 +97,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         double reward = timer.check();
         rl_optimizer.RewardUpdate((-1)*reward);
 
-
-        std::cout <<"loop = "<< loop_count << ", chosen_node = " <<chosen_node->order_of_relations << ", reward = " << chosen_node->reward <<", current_reward = " <<reward<< ".\n";
-
+        std::cout <<"optimizer = RL Optimizer, loop = "<< loop_count << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
 
         loop_count += 1;
     }

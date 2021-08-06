@@ -30,6 +30,7 @@ public:
 		idx_t cost;
 		JoinNode *left;
 		JoinNode *right;
+        std::string order_of_relations;
 
 		//! Create a leaf node in the join tree
 		JoinNode(JoinRelationSet *set, idx_t cardinality)
@@ -48,6 +49,7 @@ public:
             cost = jn.cost;
             left = jn.left;
             right = jn.right;
+            order_of_relations = jn.order_of_relations;
 		}
 
 		unique_ptr<JoinNode> clone() const {

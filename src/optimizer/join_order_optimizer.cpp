@@ -231,6 +231,8 @@ JoinNode *JoinOrderOptimizer::EmitPair(JoinRelationSet *left, JoinRelationSet *r
 		// the plan is the optimal plan, move it into the dynamic programming tree
 		auto result = new_plan.get();
 		plans[new_set] = move(new_plan);
+        plans[new_set]->order_of_relations.append(plans[right]->order_of_relations);
+        plans[new_set]->order_of_relations.append(plans[left]->order_of_relations);
 		return result;
 	}
 	return entry->second.get();
@@ -778,6 +780,7 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 		auto &rel = *relations[i];
 		auto node = set_manager.GetJoinRelation(i); /*returns a JoinRelationSet*/
 		plans[node] = make_unique<JoinNode>(node, rel.op->EstimateCardinality(context));    /*add nodes to the plan*/
+        plans[node]->order_of_relations.append(std::to_string(i));
 	}
 	// now we perform the actual dynamic programming to compute the final result
 	SolveJoinOrder();    /*increase the size of this->plans from 5 to 19*/
@@ -789,6 +792,7 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 	}
 	auto total_relation = set_manager.GetJoinRelation(bindings);
 	auto final_plan = plans.find(total_relation);
+	std::cout<< "optimizer = Dynamic Programming, loop = NULL, join_order = " << final_plan->second->order_of_relations<<", reward = NULL, ";
 	if (final_plan == plans.end()) {
 		// could not find the final plan
 		// this should only happen in case the sets are actually disjunct

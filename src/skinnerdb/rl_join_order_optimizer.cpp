@@ -389,9 +389,8 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
             NodeForUCT* current_node_for_uct;
             if (entry == plans.end()) {
                 plans[new_set_copy_ptr] = move(new_plan);
+                plans[new_set_copy_ptr]->order_of_relations.append(order_of_rel);
                 current_node_for_uct = new NodeForUCT{plans[new_set_copy_ptr].get(), 0, 0.0, parent_node_for_uct};
-                current_node_for_uct->order_of_relations.append(order_of_rel);
-
                 parent_node_for_uct->children.push_back(current_node_for_uct);
             }
 
@@ -417,9 +416,8 @@ void RLJoinOrderOptimizer::GeneratePlans() {
         auto node = set_manager.GetJoinRelation(i);
         JoinRelationSet* copy_node_ptr = new JoinRelationSet(*node);
         plans[copy_node_ptr] = make_unique<JoinOrderOptimizer::JoinNode>(move(copy_node_ptr), rel.op->EstimateCardinality(context));
-
+        plans[copy_node_ptr]->order_of_relations.append(std::to_string(i));
         NodeForUCT* node_for_uct = new NodeForUCT{plans[copy_node_ptr].get(), 0, 0.0, root_node_for_uct};
-        node_for_uct->order_of_relations.append(std::to_string(i));
         root_node_for_uct->children.push_back(node_for_uct);
     }
 

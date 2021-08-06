@@ -68,11 +68,11 @@ void runJOBQuerys(Connection con) {
             std::string job_query = readFileIntoString(entry.path());
             //std::cout <<"entry_path" <<entry.path() <<"\n 🎄 JOB query = " << job_query <<"\n\n";
             Timer timer;
-            std::cout <<"SQL = " <<job_file <<", ";
+            std::cout <<"SQL = " <<job_file <<": \n";
             auto result = con.Query(job_query);
             result->Print();
             double duration = timer.check();
-            std::cout <<".consumed " <<duration <<"ms. \n";
+            std::cout <<"duration(ms) = " <<duration <<"\n";
         }
     }
 }

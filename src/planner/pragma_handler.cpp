@@ -44,7 +44,7 @@ void PragmaHandler::HandlePragmaStatementsInternal(vector<unique_ptr<SQLStatemen
 }
 
 void PragmaHandler::HandlePragmaStatements(ClientContextLock &lock, vector<unique_ptr<SQLStatement>> &statements) {
-	printf("void PragmaHandler::HandlePragmaStatements(ClientContextLock &lock, vector<unique_ptr<SQLStatement>> &statements) {");
+	//printf("void PragmaHandler::HandlePragmaStatements(ClientContextLock &lock, vector<unique_ptr<SQLStatement>> &statements) {");
 	// first check if there are any pragma statements
 	bool found_pragma = false;
 	for (idx_t i = 0; i < statements.size(); i++) {

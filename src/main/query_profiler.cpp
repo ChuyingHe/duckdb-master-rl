@@ -147,7 +147,7 @@ void QueryProfiler::Initialize(PhysicalOperator *root_op) {
 	this->query_requires_profiling = false;
 	this->root = CreateTree(root_op);
 	if (root) {
-		std::cout<<"root exists, name = " << root->name;
+		// std::cout<<"root exists, name = " << root->name;
 	}
 	if (!query_requires_profiling) {
 		// query does not require profiling: disable profiling for this query

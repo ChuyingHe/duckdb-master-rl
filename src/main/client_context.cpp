@@ -59,7 +59,7 @@ ClientContext::~ClientContext() {
 }
 
 unique_ptr<ClientContextLock> ClientContext::LockContext() {
-	printf("unique_ptr<ClientContextLock> ClientContext::LockContext() {\n");
+	//printf("unique_ptr<ClientContextLock> ClientContext::LockContext() {\n");
 	return make_unique<ClientContextLock>(context_lock);
 }
 
@@ -156,7 +156,7 @@ unique_ptr<DataChunk> ClientContext::FetchInternal(ClientContextLock &) {
 
 shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement(ClientContextLock &lock, const string &query,
                                                                          unique_ptr<SQLStatement> statement) {
-	printf("shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement(ClientContextLock &lock, const string &query,\n");
+	//printf("shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement(ClientContextLock &lock, const string &query,\n");
 	StatementType statement_type = statement->type;
 	auto result = make_shared<PreparedStatementData>(statement_type);
 
@@ -210,7 +210,7 @@ int ClientContext::GetProgress() {
 unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLock &lock, const string &query,
                                                                 shared_ptr<PreparedStatementData> statement_p,
                                                                 vector<Value> bound_values, bool allow_stream_result) {
-	printf("unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLock &lock, const string &query,\n");
+	//f("unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLock &lock, const string &query,\n");
 
 	auto &statement = *statement_p;     // shared_ptr<PreparedStatementData>: includes optimized PLAN
 	if (ActiveTransaction().IsInvalidated() && statement.requires_valid_transaction) {
@@ -331,7 +331,7 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatementWithRLOptimizer(C
 }
 
 void ClientContext::InitialCleanup(ClientContextLock &lock) {
-	printf("void ClientContext::InitialCleanup(ClientContextLock &lock) {\n");
+	//printf("void ClientContext::InitialCleanup(ClientContextLock &lock) {\n");
 	//! Cleanup any open results and reset the interrupted flag
 	CleanupInternal(lock);
 	interrupted = false;
@@ -343,7 +343,7 @@ vector<unique_ptr<SQLStatement>> ClientContext::ParseStatements(const string &qu
 }
 
 vector<unique_ptr<SQLStatement>> ClientContext::ParseStatementsInternal(ClientContextLock &lock, const string &query) {
-	printf("vector<unique_ptr<SQLStatement>> ClientContext::ParseStatementsInternal(ClientContextLock &lock, const string &query) {\n");
+	//printf("vector<unique_ptr<SQLStatement>> ClientContext::ParseStatementsInternal(ClientContextLock &lock, const string &query) {\n");
 	Parser parser;
 	parser.ParseQuery(query);
 
@@ -432,9 +432,8 @@ unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &l
                                                             bool allow_stream_result) {
 
     if (enable_rl_join_order_optimizer) {	//this should mix the process of selection and execution, and return a result in the end
-        printf("🌈 RunStatementInternal: use rl-optimizer\n");
         SkinnerDB skinnerDb(profiler, *this);
-        printf("after created skinnerdb");
+        //printf("after created skinnerdb");
 
         //FIXME: return unique_ptr<QueryResult> instead of void
         // auto result = skinnerDb.Execute(lock, query, move(statement), allow_stream_result);
@@ -442,7 +441,6 @@ unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &l
         return result;
 
     } else {
-        printf("RunStatementInternal: use duckdb-optimizer\n");
         // prepare the query for execution
         auto prepared = CreatePreparedStatement(lock, query, move(statement));  									//return optimized plan
         // by default, no values are bound
@@ -458,7 +456,7 @@ unique_ptr<QueryResult> ClientContext::RunStatementOrPreparedStatement(ClientCon
                                                                        shared_ptr<PreparedStatementData> &prepared,
                                                                        vector<Value> *values,
                                                                        bool allow_stream_result) {
-	printf("unique_ptr<QueryResult> ClientContext::RunStatementOrPreparedStatement(ClientContextLock &lock, const string &query,\n");
+	//printf("unique_ptr<QueryResult> ClientContext::RunStatementOrPreparedStatement(ClientContextLock &lock, const string &query,\n");
 	this->query = query;
 
 	unique_ptr<QueryResult> result;
@@ -488,7 +486,7 @@ unique_ptr<QueryResult> ClientContext::RunStatementOrPreparedStatement(ClientCon
 	profiler.StartQuery(query);
 	try {
 		if (statement) {
-			printf("statement is not null");
+			//printf("statement is not null");
 			result = RunStatementInternal(lock, query, move(statement), allow_stream_result);
 		} else {
 			auto &catalog = Catalog::GetCatalog(*this);
@@ -538,7 +536,7 @@ unique_ptr<QueryResult> ClientContext::RunStatementOrPreparedStatement(ClientCon
 
 unique_ptr<QueryResult> ClientContext::RunStatement(ClientContextLock &lock, const string &query,
                                                     unique_ptr<SQLStatement> statement, bool allow_stream_result) {
-	printf("-unique_ptr<QueryResult> ClientContext::RunStatement(ClientContextLock &lock, const string &query,\n");
+	//printf("-unique_ptr<QueryResult> ClientContext::RunStatement(ClientContextLock &lock, const string &query,\n");
 	shared_ptr<PreparedStatementData> prepared;
 	return RunStatementOrPreparedStatement(lock, query, move(statement), prepared, nullptr, allow_stream_result);
 }
@@ -546,7 +544,7 @@ unique_ptr<QueryResult> ClientContext::RunStatement(ClientContextLock &lock, con
 unique_ptr<QueryResult> ClientContext::RunStatements(ClientContextLock &lock, const string &query,
                                                      vector<unique_ptr<SQLStatement>> &statements,
                                                      bool allow_stream_result) {
-	printf("unique_ptr<QueryResult> ClientContext::RunStatements(ClientContextLock &lock, const string &query,\n");
+	//printf("unique_ptr<QueryResult> ClientContext::RunStatements(ClientContextLock &lock, const string &query,\n");
 	// now we have a list of statements
 	// iterate over them and execute them one by one
 	unique_ptr<QueryResult> result;
@@ -570,7 +568,7 @@ unique_ptr<QueryResult> ClientContext::RunStatements(ClientContextLock &lock, co
 }
 
 void ClientContext::LogQueryInternal(ClientContextLock &, const string &query) {
-	printf("void ClientContext::LogQueryInternal(ClientContextLock &, const string &query) {\n");
+	//printf("void ClientContext::LogQueryInternal(ClientContextLock &, const string &query) {\n");
 	if (!log_query_writer) {    // can be modified using PragmaLogQueryPath
 		return;
 	}
@@ -591,7 +589,7 @@ unique_ptr<QueryResult> ClientContext::Query(unique_ptr<SQLStatement> statement,
 }
 
 unique_ptr<QueryResult> ClientContext::Query(const string &query, bool allow_stream_result) {
-	printf("unique_ptr<QueryResult> ClientContext::Query(const string &query, bool allow_stream_result) {\n");
+	//printf("unique_ptr<QueryResult> ClientContext::Query(const string &query, bool allow_stream_result) {\n");
 	auto lock = LockContext();          // create lock
 	LogQueryInternal(*lock, query); // write log file if its enabled. Put query inside also
 
@@ -628,7 +626,7 @@ void ClientContext::DisableProfiling() {
 }
 
 string ClientContext::VerifyQuery(ClientContextLock &lock, const string &query, unique_ptr<SQLStatement> statement) {
-	printf("string ClientContext::VerifyQuery(ClientContextLock &lock, const string &query, unique_ptr<SQLStatement> statement) {\n");
+	//printf("string ClientContext::VerifyQuery(ClientContextLock &lock, const string &query, unique_ptr<SQLStatement> statement) {\n");
 	D_ASSERT(statement->type == StatementType::SELECT_STATEMENT);
 	// aggressive query verification
 

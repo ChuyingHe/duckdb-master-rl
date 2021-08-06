@@ -34,7 +34,7 @@ namespace duckdb {
         }
 
         NodeForUCT(NodeForUCT const& nfuct) {
-            printf("copy constructor of NodeForUCT\n");
+            //printf("copy constructor of NodeForUCT\n");
             join_node = nfuct.join_node;
             num_of_visits = nfuct.num_of_visits;
             reward = nfuct.reward;

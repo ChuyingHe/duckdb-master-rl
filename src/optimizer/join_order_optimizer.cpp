@@ -633,7 +633,7 @@ JoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extracted
 unique_ptr<LogicalOperator> JoinOrderOptimizer::RewritePlan(unique_ptr<LogicalOperator> plan, JoinNode *node) {
 	// now we have to rewrite the plan
 	bool root_is_join = plan->children.size() > 1;
-    std::cout << "children of plan (provided by previous optimizer) = " << plan->children.size() << "\n";
+    // std::cout << "children of plan (provided by previous optimizer) = " << plan->children.size() << "\n";
 
 	// first we will extract all relations from the main plan
 	vector<unique_ptr<LogicalOperator>> extracted_relations;
@@ -688,7 +688,7 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 		// do not support reordering this type of plan
 		return plan;
 	}
-	std::cout<< "❓ JOIN ORDER: relations.size = "<<relations.size()<< std::endl;
+	//std::cout<< "❓ JOIN ORDER: relations.size = "<<relations.size()<< std::endl;
 	if (relations.size() <= 1) {
 		// at most one relation, nothing to reorder
 		return plan;

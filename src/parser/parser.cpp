@@ -18,7 +18,7 @@ Parser::Parser() {
 }
 
 void Parser::ParseQuery(const string &query) {
-	printf("-void Parser::ParseQuery(const string &query) {");
+	//printf("-void Parser::ParseQuery(const string &query) {");
 	Transformer transformer;
 	{
 		PostgresParser parser;

@@ -16,7 +16,7 @@ TransactionContext::~TransactionContext() {
 }
 
 void TransactionContext::BeginTransaction() {
-	printf("void TransactionContext::BeginTransaction() {");
+	//printf("void TransactionContext::BeginTransaction() {");
 	D_ASSERT(!current_transaction); // cannot start a transaction within a transaction
 	current_transaction = transaction_manager.StartTransaction(context);
 }

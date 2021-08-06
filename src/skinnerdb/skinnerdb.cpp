@@ -28,8 +28,8 @@ void SkinnerDB::runStatement(shared_ptr<PreparedStatementData> plan){
 }
 
 void testfunc(unique_ptr<LogicalOperator> plan) {
-    printf("test func to remove one of the copy");
-    std::cout<< plan->GetName();
+    // printf("test func to remove one of the copy");
+    //std::cout<< plan->GetName();
 }
 
 unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &lock, const string &query,
@@ -64,7 +64,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
     while (loop_count < 100) {
     //while (!context.query_finished) {
         // 5.1 Create PreparedStatementData: extract the result column names from the plan
-        std::cout<<"\n 🦄️ loop_count = " << loop_count <<"\n";
+        //std::cout<<"\n 🦄️ loop_count = " << loop_count <<"\n";
 
         shared_ptr<PreparedStatementData> result = make_shared<PreparedStatementData>(statement_type);
         result->read_only = planner.read_only;
@@ -95,7 +95,11 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         Timer timer;
         query_result = context.ExecutePreparedStatementWithRLOptimizer(lock, query, move(result), move(bound_values), allow_stream_result);
         double reward = timer.check();
-        rl_optimizer.RewardUpdate(reward);
+        rl_optimizer.RewardUpdate((-1)*reward);
+
+
+        std::cout <<"loop = "<< loop_count << ", chosen_node = " <<chosen_node->order_of_relations << ", reward = " << chosen_node->reward <<", current_reward = " <<reward<< ".\n";
+
 
         loop_count += 1;
     }

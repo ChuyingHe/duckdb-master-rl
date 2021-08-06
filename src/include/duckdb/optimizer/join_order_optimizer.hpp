@@ -51,7 +51,7 @@ public:
 		}
 
 		unique_ptr<JoinNode> clone() const {
-		    printf("clone");
+		    //printf("clone");
             return make_unique<JoinNode>(*this);
 		}
 	};

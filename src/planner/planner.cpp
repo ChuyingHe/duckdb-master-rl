@@ -138,7 +138,7 @@ void Planner::PlanPrepare(unique_ptr<SQLStatement> statement) {
 }
 
 void Planner::CreatePlan(unique_ptr<SQLStatement> statement) {
-	printf("void Planner::CreatePlan(unique_ptr<SQLStatement> statement) {\n");
+	//printf("void Planner::CreatePlan(unique_ptr<SQLStatement> statement) {\n");
 	D_ASSERT(statement);
 	switch (statement->type) {
 	case StatementType::SELECT_STATEMENT:

@@ -29,21 +29,12 @@ struct FilterInfo {
     FilterInfo(){}
 
     FilterInfo(FilterInfo const& fi) {
-        printf("FilterInfo Copy Constructor\n");
+        //printf("FilterInfo Copy Constructor\n");
         filter_index = fi.filter_index;
         left_set = new JoinRelationSet(*fi.left_set);
         right_set = new JoinRelationSet(*fi.right_set);
         set = new JoinRelationSet(*fi.set);
     }
-    /* FilterInfo Copy() {
-        FilterInfo fi;
-
-        fi.filter_index = filter_index;
-        fi.left_set = new JoinRelationSet(*left_set);
-        fi.right_set = new JoinRelationSet(*right_set);
-        fi.set = new JoinRelationSet(*set);
-        return fi;
-    }*/
 };
 
 struct FilterNode {
@@ -58,7 +49,7 @@ struct NeighborInfo {
     NeighborInfo() {}
 
     NeighborInfo(NeighborInfo const& ni) {
-        printf("NeighborInfo copy constructor\n");
+        //printf("NeighborInfo copy constructor\n");
         neighbor = new JoinRelationSet(*ni.neighbor);
 
         filters.reserve(ni.filters.size());

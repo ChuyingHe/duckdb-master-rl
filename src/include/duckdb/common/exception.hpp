@@ -25,7 +25,7 @@ inline void assert_restrict_function(void *left_start, void *left_end, void *rig
 	// assert that the two pointers do not overlap
 #ifdef DEBUG
 	if (!(left_end <= right_start || right_end <= left_start)) {
-		printf("ASSERT RESTRICT FAILED: %s:%d\n", fname, linenr);
+		//printf("ASSERT RESTRICT FAILED: %s:%d\n", fname, linenr);
 		D_ASSERT(0);
 	}
 #endif

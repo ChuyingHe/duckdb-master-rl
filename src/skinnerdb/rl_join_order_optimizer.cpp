@@ -365,7 +365,7 @@ RLJoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extract
 }
 
 void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set<idx_t> exclusion_set, NodeForUCT* parent_node_for_uct) {
-    printf("IterateTree, ");
+    //printf("IterateTree, ");
     auto neighbors = query_graph.GetNeighbors(union_set, exclusion_set);        // Get neighbor of current plan: returns vector<idx_t>
 
     // Depth-First Traversal 无向图的深度优先搜索
@@ -409,7 +409,7 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
 /* this function generate all possible plans and add it to this->plans
  * the number of possible plan depends on the Join-Graph (ONLY use cross-product if there is no other choice)*/
 void RLJoinOrderOptimizer::GeneratePlans() {
-    printf("\nGeneratePlans\n");
+    //printf("\nGeneratePlans\n");
     // 1) initialize each of the single-table plans
     for (idx_t i = 0; i < relations.size(); i++) {
         auto &rel = *relations[i];
@@ -434,7 +434,7 @@ void RLJoinOrderOptimizer::GeneratePlans() {
         IterateTree(start_node, exclusion_set, root_node_for_uct->children.at(i));
     }
 
-    std::cout<< "\n 🐶 amount of plans = "<<plans.size()<<"\n";
+    //std::cout<< "\n 🐶 amount of plans = "<<plans.size()<<"\n";
 }
 
 // 1) use chosen_node
@@ -446,7 +446,6 @@ void RLJoinOrderOptimizer::RewardUpdate(double reward) {
         //printf("RewardUpdate\n");
         chosen_node->reward += reward;
 
-        std::cout << "chosen_node = " <<chosen_node->order_of_relations << " that has the reward = " <<chosen_node->reward << "\n";
         // update node's parent - until the root note
         NodeForUCT* parent_ptr = chosen_node->parent;
         while (parent_ptr) {
@@ -484,7 +483,7 @@ double RLJoinOrderOptimizer::CalculateUCB(double avg, int v_p, int v_c) {
 }*/
 JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
     //printf("\nUCTChoice\n");
-    auto next = root_node_for_uct;
+    /*auto next = root_node_for_uct;
     // determine the second-last node
     while (!next->children.empty()) {
         next->num_of_visits += 1;
@@ -504,7 +503,30 @@ JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
     // determine the last node
     next->num_of_visits += 1;
     chosen_node = next; //the first and the only child
+    return chosen_node->join_node;*/
+
+    auto next = root_node_for_uct;
+    // determine the second-last node
+    while (!next->children.empty()) {
+        next->num_of_visits += 1;
+        auto max = -1000000;
+        NodeForUCT* chosen_next;
+        auto children = next->children; // should be vector of ptr
+        for (auto const& n : children) {
+            double avg = (n->num_of_visits==0)? 0: (n->reward/n->num_of_visits);
+            auto ucb = CalculateUCB(avg, n->parent->num_of_visits, n->num_of_visits);
+            if (ucb > max) {
+                max = ucb;
+                chosen_next = n;
+            }
+        }
+        next = chosen_next;      // for next iteration in this while loop
+    }
+    // determine the last node
+    next->num_of_visits += 1;
+    chosen_node = next; //the first and the only child
     return chosen_node->join_node;
+
 }
 
 bool RLJoinOrderOptimizer::ContinueJoin(JoinOrderOptimizer::JoinNode* node, std::chrono::seconds duration) {
@@ -579,7 +601,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     LogicalOperator *op = plan.get();
     vector<LogicalOperator *> filter_operators;
 
-    std::cout<<"current LogicalOperator = "<<op->GetName()<<"\n";
+    //std::cout<<"current LogicalOperator = "<<op->GetName()<<"\n";
 
     if (!ExtractJoinRelations(*op, filter_operators)) {
         return plan;

@@ -29,7 +29,7 @@ std::string getRootPath() {
     }
 
     std::string rootPath = duckdb::string_t(build_path).GetString().substr(0,*(slash_pos.rbegin() + 1));
-    std::cout << "\n rootPath"<<rootPath <<std::endl;
+    // std::cout << "\n rootPath"<<rootPath <<std::endl;
 
     return rootPath;
 }

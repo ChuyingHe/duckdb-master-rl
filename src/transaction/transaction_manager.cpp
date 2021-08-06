@@ -54,7 +54,7 @@ TransactionManager::~TransactionManager() {
 }
 
 Transaction *TransactionManager::StartTransaction(ClientContext &context) {
-	printf("transaction_manager.cpp/StartTransaction(");
+	//printf("transaction_manager.cpp/StartTransaction(");
 	// obtain the transaction lock during this function
 	lock_guard<mutex> lock(transaction_lock);
 	if (current_start_timestamp >= TRANSACTION_ID_START) {      //2^62, count amount of transaction, +1 (below) when this function StartTransaction is called

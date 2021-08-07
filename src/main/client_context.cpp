@@ -317,11 +317,27 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatementWithRLOptimizer(C
     // create a materialized result by continuously fetching
     auto result = make_unique<MaterializedQueryResult>(statement.statement_type, statement.types, statement.names); // 🚩 2rd return
 
-    auto chunk = FetchInternal(lock);   // ONLY FETCH ONE CHUNK EACH ExecutePreparedStatementWithRLOptimizer()
+    //FIXME: here
+    /*auto chunk = FetchInternal(lock);   // ONLY FETCH ONE CHUNK EACH ExecutePreparedStatementWithRLOptimizer()
     if (chunk->size()!=0) {
         result->collection.Append(*chunk);
     } else {
         query_finished = true;
+    }*/
+    while (true) {
+        auto chunk = FetchInternal(lock);
+
+        if (chunk->size() == 0) {
+            break;
+        }
+#ifdef DEBUG
+        for (idx_t i = 0; i < chunk->ColumnCount(); i++) {
+            if (statement.types[i].id() == LogicalTypeId::VARCHAR) {
+                chunk->data[i].UTFVerify(chunk->size());
+            }
+        }
+#endif
+        result->collection.Append(*chunk);
     }
 
     if (progress_bar) {

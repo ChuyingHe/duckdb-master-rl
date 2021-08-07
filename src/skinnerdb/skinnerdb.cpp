@@ -60,6 +60,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
    /* RLJoinOrderOptimizer rl_optimizer(context);
     rl_optimizer.GeneratePlans();*/
 
+    chosen_node = nullptr;
+
     int loop_count = 0;
     while (loop_count < 100) {
     //while (!context.query_finished) {

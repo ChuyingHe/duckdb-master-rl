@@ -19,9 +19,9 @@ namespace duckdb {
         friend class RLJoinOrderOptimizer;
 
     public:
-        SkinnerDB(QueryProfiler &profiler, ClientContext& context);
+        SkinnerDB(QueryProfiler& profiler, ClientContext& context);
 
-        QueryProfiler profiler;
+        QueryProfiler& profiler;
         ClientContext& context;
 
         void runStatement(shared_ptr<PreparedStatementData> plan);

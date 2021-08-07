@@ -449,13 +449,8 @@ unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &l
 
     if (enable_rl_join_order_optimizer) {	//this should mix the process of selection and execution, and return a result in the end
         SkinnerDB skinnerDb(profiler, *this);
-        //printf("after created skinnerdb");
-
-        //FIXME: return unique_ptr<QueryResult> instead of void
-        // auto result = skinnerDb.Execute(lock, query, move(statement), allow_stream_result);
         auto result = skinnerDb.CreateAndExecuteStatement(lock, query, move(statement), allow_stream_result);
         return result;
-
     } else {
         // prepare the query for execution
         auto prepared = CreatePreparedStatement(lock, query, move(statement));  									//return optimized plan

@@ -17,7 +17,7 @@ namespace duckdb {
 NodeForUCT* root_node_for_uct;     //initialize the root of the tree
 NodeForUCT* chosen_node;
 
-SkinnerDB::SkinnerDB(QueryProfiler &profiler, ClientContext& context): profiler(move(profiler)), context(context) {
+SkinnerDB::SkinnerDB(QueryProfiler &profiler, ClientContext& context): profiler(profiler), context(context) {
 }
 
 void SkinnerDB::runStatement(shared_ptr<PreparedStatementData> plan){

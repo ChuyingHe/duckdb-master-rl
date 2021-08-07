@@ -195,7 +195,7 @@ bool RLJoinOrderOptimizer::ExtractJoinRelations(LogicalOperator &input_op, vecto
         // base table scan, add to set of relations
         auto get = (LogicalGet *)op;    // here op->bind_data is added
         auto relation = make_unique<SingleJoinRelation>(&input_op, parent);
-        relation_mapping[get->table_index] = relations.size();
+        relation_mapping[get->table_index] = relations.size();  //relations.size() returns the number of tables
         relations.push_back(move(relation));
         return true;
     } else if (op->type == LogicalOperatorType::LOGICAL_EXPRESSION_GET) {
@@ -596,6 +596,9 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<Logical
 
 unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOperator> plan) {
     D_ASSERT(filters.empty() && relations.empty()); // assert that the RLJoinOrderOptimizer has not been used before
+    if (!chosen_node) {
+        plans.clear();
+    }
     LogicalOperator *op = plan.get();
     vector<LogicalOperator *> filter_operators;
 
@@ -688,7 +691,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
         }
     }
 
-    if (!chosen_node) {
+    if (plans.empty()) {
         GeneratePlans();
     }
     auto final_plan = UCTChoice();      // returns JoinOrderOptimizer::JoinNode*

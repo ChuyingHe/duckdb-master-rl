@@ -792,7 +792,8 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 	}
 	auto total_relation = set_manager.GetJoinRelation(bindings);
 	auto final_plan = plans.find(total_relation);
-	std::cout<< "optimizer = Dynamic Programming, loop = NULL, join_order = " << final_plan->second->order_of_relations<<", reward = NULL, ";
+
+    std::cout<< "optimizer = Dynamic Programming, loop = NULL, join_order = " << final_plan->second->order_of_relations<<", reward = NULL, ";
 	if (final_plan == plans.end()) {
 		// could not find the final plan
 		// this should only happen in case the sets are actually disjunct

@@ -82,6 +82,10 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
         // testfunc(move(copy));
         RLJoinOrderOptimizer rl_optimizer(context);
+        if (loop_count == 0) {
+            rl_optimizer.plans.clear();
+            chosen_node = nullptr;
+        }
         unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(copy));
 
         // 5.3 Create physical plan
@@ -99,7 +103,9 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         double reward = timer.check();
         rl_optimizer.RewardUpdate((-1)*reward);
 
-        std::cout <<"optimizer = RL Optimizer, loop = "<< loop_count << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
+        std::string::size_type pos = query.find('.sql');
+        auto job_file_sql = query.substr(2, pos-1);
+        std::cout<<job_file_sql <<", optimizer = RL Optimizer, loop = "<< loop_count << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
 
         loop_count += 1;
     }

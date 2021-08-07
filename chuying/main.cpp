@@ -48,15 +48,21 @@ void runJOBQuerys(Connection con) {
     con.Query("PRAGMA enable_progress_bar");
     con.Query("PRAGMA enable_rl_join_order_optimizer");
 
+    //TODO: delete this
+    int count_sql = 0;
+
     std::string path = getRootPath() + "/chuying/job-query";
     for (const auto & entry : std::filesystem::directory_iterator(path)) {
         if (entry.path().u8string().find(".sql")!= std::string::npos) { //only take *.sql files
+
+            count_sql++;
+
             std::string job_file = entry.path().filename().string();
             std::cout <<"SQL = " <<job_file <<": \n";
             /*std::string job_profiling = "PRAGMA profile_output='" + getRootPath() +"/chuying/profiling/" + job_file + ".json';";
             con.Query(job_profiling);*/
             std::string job_query = readFileIntoString(entry.path());
-            std::cout <<"entry_path" <<entry.path() <<"\n 🎄 JOB query = " << job_query <<"\n\n";
+            //std::cout <<"entry_path" <<entry.path() <<"\n 🎄 JOB query = " << job_query <<"\n\n";
 
             Timer timer;
             auto result = con.Query(job_query);

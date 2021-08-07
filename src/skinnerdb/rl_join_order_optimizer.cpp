@@ -596,9 +596,9 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<Logical
 
 unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOperator> plan) {
     D_ASSERT(filters.empty() && relations.empty()); // assert that the RLJoinOrderOptimizer has not been used before
-    if (!chosen_node) {
+    /*if (!chosen_node) {
         plans.clear();
-    }
+    }*/
     LogicalOperator *op = plan.get();
     vector<LogicalOperator *> filter_operators;
 
@@ -691,7 +691,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
         }
     }
 
-    if (plans.empty()) {
+    if (!chosen_node) {
         GeneratePlans();
     }
     auto final_plan = UCTChoice();      // returns JoinOrderOptimizer::JoinNode*

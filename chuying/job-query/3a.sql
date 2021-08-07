@@ -1,3 +1,4 @@
+--3a.sql
 SELECT MIN(t.title) AS movie_title
 FROM keyword AS k,
      movie_info AS mi,

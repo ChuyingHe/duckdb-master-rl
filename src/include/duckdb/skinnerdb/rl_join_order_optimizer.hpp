@@ -55,6 +55,7 @@ namespace duckdb {
         unique_ptr <LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan);
         void RewardUpdate(double reward);
         void GeneratePlans();
+        static unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>, Hasher, EqualFn> plans;   // includes all the relations, to return
 
     private:
         ClientContext &context;
@@ -65,7 +66,6 @@ namespace duckdb {
         unordered_map <idx_t, idx_t> relation_mapping;
         JoinRelationSetManager set_manager;
         QueryGraph query_graph;
-        static unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>, Hasher, EqualFn> plans;   // includes all the relations, to return
         std::string order_of_rel = "";
         vector <unique_ptr<Expression>> filters;
         vector <unique_ptr<FilterInfo>> filter_infos;

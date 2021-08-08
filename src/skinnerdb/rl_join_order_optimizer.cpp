@@ -366,13 +366,14 @@ RLJoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extract
 }
 
 void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set<idx_t> exclusion_set, NodeForUCT* parent_node_for_uct) {
-    std::cout<< "IT: union_set = " << union_set->ToString() <<", exclusion_set.size="<<exclusion_set.size()<<", join oder of parent" << parent_node_for_uct->join_node->order_of_relations <<"\n";
+    std::cout<< "IT: union_set = " << union_set->ToString() <<", exclusion_set.size="<<exclusion_set.size()<<", join oder of parent=" << parent_node_for_uct->join_node->order_of_relations <<"\n";
     auto neighbors = query_graph.GetNeighbors(union_set, exclusion_set);        // Get neighbor of current plan: returns vector<idx_t>
 
     // Depth-First Traversal 无向图的深度优先搜索
     if (!neighbors.empty()) {                                                       // if there is relations left
         for (auto neighbor:neighbors) {
-            order_of_rel.append(std::to_string(neighbor));
+            /*order_of_rel.append(std::to_string(neighbor));
+            order_of_rel.append("-");*/
             auto *neighbor_relation = set_manager.GetJoinRelation(neighbor);        //returns JoinRelationSet*
 
             //fix filter problem
@@ -390,7 +391,10 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
             NodeForUCT* current_node_for_uct;
             if (entry == plans.end()) {
                 plans[new_set_copy_ptr] = move(new_plan);
-                plans[new_set_copy_ptr]->order_of_relations.append(order_of_rel);
+                plans[new_set_copy_ptr]->order_of_relations.append(parent_node_for_uct->join_node->order_of_relations);
+                plans[new_set_copy_ptr]->order_of_relations.append(std::to_string(neighbor));
+                plans[new_set_copy_ptr]->order_of_relations.append("-");
+
                 current_node_for_uct = new NodeForUCT{plans[new_set_copy_ptr].get(), 0, 0.0, parent_node_for_uct};
                 parent_node_for_uct->children.push_back(current_node_for_uct);
             }
@@ -404,6 +408,8 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
 
             order_of_rel = order_of_rel.substr(0, order_of_rel.size()-1);
         }
+    } else {
+        printf("neighbor is empty, go back to last possibility");
     }
 }
 /* this function generate all possible plans and add it to this->plans
@@ -419,6 +425,7 @@ void RLJoinOrderOptimizer::GeneratePlans() {
         JoinRelationSet* copy_node_ptr = new JoinRelationSet(*node);
         plans[copy_node_ptr] = make_unique<JoinOrderOptimizer::JoinNode>(move(copy_node_ptr), rel.op->EstimateCardinality(context));
         plans[copy_node_ptr]->order_of_relations.append(std::to_string(i));
+        plans[copy_node_ptr]->order_of_relations.append("-");
         NodeForUCT* node_for_uct = new NodeForUCT{plans[copy_node_ptr].get(), 0, 0.0, root_node_for_uct};
         root_node_for_uct->children.push_back(node_for_uct);
     }
@@ -429,8 +436,9 @@ void RLJoinOrderOptimizer::GeneratePlans() {
         unordered_set<idx_t> exclusion_set;
         exclusion_set.insert(i);    // put current one relation in the exclusion_set
 
-        order_of_rel.clear();
+        //order_of_rel.clear();
         order_of_rel.append(std::to_string(i));
+        order_of_rel.append("-");
         IterateTree(start_node, exclusion_set, root_node_for_uct->children.at(i));
     }
 

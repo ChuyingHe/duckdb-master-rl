@@ -26,6 +26,7 @@ private:
 };
 
 unique_ptr<PhysicalOperator> PhysicalPlanGenerator::CreatePlan(unique_ptr<LogicalOperator> op) {
+    printf("unique_ptr<PhysicalOperator> PhysicalPlanGenerator::CreatePlan\n");
 	// first resolve column references
 	context.profiler.StartPhase("column_binding");
 	ColumnBindingResolver resolver;

@@ -34,6 +34,7 @@ void testfunc(unique_ptr<LogicalOperator> plan) {
 
 unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &lock, const string &query,
                                                           unique_ptr<SQLStatement> statement, bool allow_stream_result){
+    printf("unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement\n");
     // 1. Preparation
     auto query_result = unique_ptr<QueryResult>();
     StatementType statement_type = statement->type;
@@ -64,6 +65,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
     int loop_count = 0;
     while (loop_count < 100) {
+        Timer timer;
     //while (!context.query_finished) {
         // 5.1 Create PreparedStatementData: extract the result column names from the plan
         //std::cout<<"\n 🦄️ loop_count = " << loop_count <<"\n";
@@ -98,7 +100,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         // 5.4 Execute optimized plan + Update reward
         result->plan = move(physical_plan);
         vector<Value> bound_values;
-        Timer timer;
+
         query_result = context.ExecutePreparedStatementWithRLOptimizer(lock, query, move(result), move(bound_values), allow_stream_result);
         double reward = timer.check();
         rl_optimizer.RewardUpdate((-1)*reward);

@@ -27,6 +27,23 @@ public:
 	ChunkCollection() : count(0) {
 	}
 
+    unique_ptr<ChunkCollection> clone() const {
+        auto chunkCollection = make_unique<ChunkCollection>();
+
+        chunkCollection->count = count;
+        chunkCollection->types = types;
+        // vector<unique_ptr<DataChunk>>
+        chunkCollection->chunks.reserve(chunks.size());
+        for (idx_t i =0; i<chunks.size(); i++) {
+            auto chunk = make_unique<DataChunk>();
+            chunk->Initialize(types);
+            chunks.at(i)->Copy(*chunk);
+            chunkCollection->chunks.push_back(move(chunk));
+        }
+
+        return move(chunkCollection);
+	}
+
 	//! The amount of columns in the ChunkCollection
 	DUCKDB_API vector<LogicalType> &Types() {
 		return types;

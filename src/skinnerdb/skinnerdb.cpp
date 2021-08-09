@@ -34,7 +34,7 @@ void testfunc(unique_ptr<LogicalOperator> plan) {
 
 unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &lock, const string &query,
                                                           unique_ptr<SQLStatement> statement, bool allow_stream_result){
-    //printf("unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement\n");
+    printf("unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement\n");
     // 1. Preparation
     auto query_result = unique_ptr<QueryResult>();
     StatementType statement_type = statement->type;
@@ -107,7 +107,11 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
         std::string::size_type pos = query.find('.sql');
         auto job_file_sql = query.substr(2, pos-1);
-        std::cout<<job_file_sql <<", optimizer = RL Optimizer, loop = "<< loop_count << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
+        if (chosen_node) {
+            std::cout<<job_file_sql <<", optimizer = RL Optimizer, loop = "<< loop_count << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
+        } else {
+            std::cout<< "nothing to optimize \n";
+        }
 
         loop_count += 1;
     }

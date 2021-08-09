@@ -46,7 +46,7 @@ void addIndexes(Connection con) {
 void runJOBQuerys(Connection con) {
     //con.Query("PRAGMA enable_profiling='json'");
     con.Query("PRAGMA enable_progress_bar");
-    //con.Query("PRAGMA enable_rl_join_order_optimizer");
+    con.Query("PRAGMA enable_rl_join_order_optimizer");
 
     //TODO: delete this
     int count_sql = 0;
@@ -64,7 +64,7 @@ void runJOBQuerys(Connection con) {
             std::string job_query = readFileIntoString(entry.path());
             Timer timer;
             auto result = con.Query(job_query);
-            // result->Print();
+            result->Print();
             double duration = timer.check();
             std::cout <<"duration(ms) = " <<duration <<"\n";
         }

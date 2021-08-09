@@ -31,9 +31,18 @@ public:
 	unique_ptr<ChunkCollection> collection;
 
 	// FOR DEBUG
-    LogicalChunkGet() : LogicalOperator(LogicalOperatorType::LOGICAL_CHUNK_GET) {}
+    /*LogicalChunkGet() : LogicalOperator(LogicalOperatorType::LOGICAL_CHUNK_GET) {}
     unique_ptr<LogicalOperator> clone() const override {
         return make_unique<LogicalChunkGet>();
+    }*/
+    // FOR IMPLEMENTATION
+    LogicalChunkGet(LogicalChunkGet const &lcg) : LogicalOperator(lcg) {
+        table_index = lcg.table_index;
+        chunk_types = lcg.chunk_types;
+        collection = lcg.collection->clone();
+    }
+    unique_ptr<LogicalOperator> clone() const override {
+        return make_unique<LogicalChunkGet>(*this);
     }
 
 public:

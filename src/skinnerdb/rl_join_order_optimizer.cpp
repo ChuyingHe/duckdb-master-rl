@@ -109,7 +109,7 @@ bool RLJoinOrderOptimizer::ExtractBindings(Expression &expression, unordered_set
 //! rewritten into joins. Returns true if there are joins in the tree that can be reordered, false otherwise.
 bool RLJoinOrderOptimizer::ExtractJoinRelations(LogicalOperator &input_op, vector<LogicalOperator *> &filter_operators,
                                               LogicalOperator *parent) {
-    printf("bool RLJoinOrderOptimizer::ExtractJoinRelations\n");
+    //printf("bool RLJoinOrderOptimizer::ExtractJoinRelations\n");
     LogicalOperator *op = &input_op;
     while (op->children.size() == 1 && (op->type != LogicalOperatorType::LOGICAL_PROJECTION &&
                                         op->type != LogicalOperatorType::LOGICAL_EXPRESSION_GET)) {
@@ -367,7 +367,7 @@ RLJoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extract
 
 void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set<idx_t> exclusion_set, NodeForUCT* parent_node_for_uct) {
     //std::cout<< "IT: union_set = " << union_set->ToString() <<", exclusion_set.size="<<exclusion_set.size()<<", join oder of parent=" << parent_node_for_uct->join_node->order_of_relations <<"\n";
-    printf(".");
+    //printf(".");
     auto neighbors = query_graph.GetNeighbors(union_set, exclusion_set);        // Get neighbor of current plan: returns vector<idx_t>
 
     // Depth-First Traversal 无向图的深度优先搜索
@@ -410,7 +410,7 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
 /* this function generate all possible plans and add it to this->plans
  * the number of possible plan depends on the Join-Graph (ONLY use cross-product if there is no other choice)*/
 void RLJoinOrderOptimizer::GeneratePlans() {
-    printf("void RLJoinOrderOptimizer::GeneratePlans\n");
+    //printf("void RLJoinOrderOptimizer::GeneratePlans\n");
     // 1) initialize each of the single-table plans
     for (idx_t i = 0; i < relations.size(); i++) {
         auto &rel = *relations[i];
@@ -433,14 +433,14 @@ void RLJoinOrderOptimizer::GeneratePlans() {
         IterateTree(start_node, exclusion_set, root_node_for_uct->children.at(i));
     }
 
-    std::cout<< "\n 🐶 amount of plans = "<<plans.size()<<"\n";
+    //std::cout<< "\n 🐶 amount of plans = "<<plans.size()<<"\n";
 }
 
 // 1) use chosen_node
 // 2) use input parameter
 // are they the same? maybe yes, because chosen_node is updated
 void RLJoinOrderOptimizer::RewardUpdate(double reward) {
-    printf("void RLJoinOrderOptimizer::RewardUpdate\n");
+    //printf("void RLJoinOrderOptimizer::RewardUpdate\n");
     // update the current leaf-node
     if (chosen_node) {
         //printf("RewardUpdate\n");
@@ -482,7 +482,7 @@ double RLJoinOrderOptimizer::CalculateUCB(double avg, int v_p, int v_c) {
     }
 }*/
 JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
-    printf("JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice\n");
+    //printf("JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice\n");
     /*auto next = root_node_for_uct;
     // determine the second-last node
     while (!next->children.empty()) {
@@ -556,7 +556,7 @@ void RLJoinOrderOptimizer::BackupState() {
 // node: final_plan chosen by UCTChoice()
 // (move(plan), final_plan);
 unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<LogicalOperator> plan, JoinOrderOptimizer::JoinNode *node) {
-    printf("unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan\n");
+    //printf("unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan\n");
     // now we have to rewrite the plan
     bool root_is_join = plan->children.size() > 1;
     // first we will extract all relations from the main plan
@@ -598,7 +598,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<Logical
 
 
 unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOperator> plan) {
-    printf("unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize\n");
+    //printf("unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize\n");
     D_ASSERT(filters.empty() && relations.empty()); // assert that the RLJoinOrderOptimizer has not been used before
     /*if (!chosen_node) {
         plans.clear();
@@ -698,7 +698,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     if (!chosen_node) {
         GeneratePlans();
     }
-    std::cout << "plan size=" << plans.size()<<"\n";
+    //std::cout << "plan size=" << plans.size()<<"\n";
     auto final_plan = UCTChoice();      // returns JoinOrderOptimizer::JoinNode*
     return RewritePlan(move(plan), final_plan);   // returns EXECUTABLE of the chosen_plan unique_ptr<LogicalOperator>
 }

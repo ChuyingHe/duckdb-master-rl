@@ -34,7 +34,7 @@ void testfunc(unique_ptr<LogicalOperator> plan) {
 
 unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &lock, const string &query,
                                                           unique_ptr<SQLStatement> statement, bool allow_stream_result){
-    printf("unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement\n");
+    //printf("unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement\n");
     // 1. Preparation
     auto query_result = unique_ptr<QueryResult>();
     StatementType statement_type = statement->type;

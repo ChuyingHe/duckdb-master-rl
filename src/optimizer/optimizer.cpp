@@ -129,8 +129,7 @@ unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan
 }
 
 unique_ptr<LogicalOperator> Optimizer::OptimizeBeforeRLOptimizer(unique_ptr<LogicalOperator> plan) {
-    printf("unique_ptr<LogicalOperator> Optimizer::OptimizeBeforeRLOptimizer\n");
-    //printf("unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan) {\n");
+    //printf("unique_ptr<LogicalOperator> Optimizer::OptimizeBeforeRLOptimizer\n");
     // first we perform expression rewrites using the ExpressionRewriter
     // this does not change the logical plan structure, but only simplifies the expression trees
     context.profiler.StartPhase("expression_rewriter");

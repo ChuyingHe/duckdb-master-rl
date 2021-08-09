@@ -367,7 +367,7 @@ RLJoinOrderOptimizer::GenerateJoins(vector<unique_ptr<LogicalOperator>> &extract
 
 void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set<idx_t> exclusion_set, NodeForUCT* parent_node_for_uct) {
     //std::cout<< "IT: union_set = " << union_set->ToString() <<", exclusion_set.size="<<exclusion_set.size()<<", join oder of parent=" << parent_node_for_uct->join_node->order_of_relations <<"\n";
-    //printf(".");
+    printf(".");
     auto neighbors = query_graph.GetNeighbors(union_set, exclusion_set);        // Get neighbor of current plan: returns vector<idx_t>
 
     // Depth-First Traversal 无向图的深度优先搜索
@@ -696,8 +696,8 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
 
     if (!chosen_node) {
         GeneratePlans();
+        std::cout << "plan size=" << plans.size()<<"\n";
     }
-    //std::cout << "plan size=" << plans.size()<<"\n";
     auto final_plan = UCTChoice();      // returns JoinOrderOptimizer::JoinNode*
     return RewritePlan(move(plan), final_plan);   // returns EXECUTABLE of the chosen_plan unique_ptr<LogicalOperator>
 }

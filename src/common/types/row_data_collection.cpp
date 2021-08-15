@@ -3,6 +3,8 @@
 #include "duckdb/common/bit_operations.hpp"
 #include "duckdb/common/types/chunk_collection.hpp"
 
+#include <iostream>
+
 namespace duckdb {
 
 RowDataCollection::RowDataCollection(BufferManager &buffer_manager, idx_t block_capacity, idx_t entry_size)
@@ -610,7 +612,8 @@ void RowDataCollection::SerializeVector(Vector &v, idx_t vcount, const Selection
 
 idx_t RowDataCollection::AppendToBlock(RowDataBlock &block, BufferHandle &handle,
                                        vector<BlockAppendEntry> &append_entries, idx_t remaining, idx_t entry_sizes[]) {
-	idx_t append_count = 0;
+	printf("RowDataCollection::AppendToBlock\n");
+    idx_t append_count = 0;
 	data_ptr_t dataptr;
 	if (entry_sizes) {
 		// compute how many entries fit if entry size if variable
@@ -632,6 +635,7 @@ idx_t RowDataCollection::AppendToBlock(RowDataBlock &block, BufferHandle &handle
 	}
 	append_entries.emplace_back(dataptr, append_count);
 	block.count += append_count;
+	std::cout<<", block.count="<<block.count <<"\n";
 	return append_count;
 }
 

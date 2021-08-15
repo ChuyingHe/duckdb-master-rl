@@ -3,6 +3,7 @@
 
 #include "duckdb/common/exception.hpp"
 #include "duckdb/parallel/concurrentqueue.hpp"
+#include <iostream>
 
 namespace duckdb {
 
@@ -34,7 +35,9 @@ BlockHandle::~BlockHandle() {
 }
 
 unique_ptr<BufferHandle> BlockHandle::Load(shared_ptr<BlockHandle> &handle) {
+    std::cout<< "BlockHandle::Load, block_de"<< handle->block_id <<"\n" ;
 	if (handle->state == BlockState::BLOCK_LOADED) {
+	    printf("BlockState::BLOCK_LOADED\n");
 		// already loaded
 		D_ASSERT(handle->buffer);
 		return make_unique<BufferHandle>(handle, handle->buffer.get());

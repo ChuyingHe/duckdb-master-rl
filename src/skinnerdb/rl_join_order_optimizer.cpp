@@ -479,27 +479,37 @@ void RLJoinOrderOptimizer::Expansion(JoinRelationSet* union_set, unordered_set<i
     Selection(parent_node_for_uct);
 }
 // Simulation/rollout
-void RLJoinOrderOptimizer::Simulation() {
+/*void RLJoinOrderOptimizer::Simulation() {
     printf("Simulation");
+}*/
+
+NodeForUCT* RLJoinOrderOptimizer::GetNodeWithMaxUCT(NodeForUCT* node) { //case "node->children.empty()" has been eliminated
+    NodeForUCT* result;
+    auto max = -1000000000000;
+
+    for (auto const& child:node->children) {
+        double avg = child->reward/(child->num_of_visits);
+        double ucb = CalculateUCB(avg, node->num_of_visits, child->num_of_visits);
+        if (ucb > max) {
+            max = ucb;
+            result = child;
+        }
+    }
+    result->num_of_visits+=1;
+    return result;
 }
+
 void RLJoinOrderOptimizer::Selection(NodeForUCT* node) {
     printf("Selection \n");
     if (node->children.empty()) {   //[3] current node is a LEAF// node.joinedTable.size() == node.total_table_amo
         //[4] Simulation/Rollout
+        //node->num_of_visits+=1;
+       // std::cout<< "size of plan = "<<plans.size() << ", join order of final_plan="<< node->join_node->order_of_relations <<"\n";
 
-        std::cout<< "size of plan = "<<plans.size() << ", join order of final_plan="<< node->join_node->order_of_relations <<"\n";
-
-        //[5] Reward update
+        //[5] Reward update (did in skinnerdb.cpp)
         //[6] Progress Tracker
-        bool progress_equal_100_percent = false;
-        if (progress_equal_100_percent) {
-            //print result
-        } else {
-            // next sample/simulation/rollout
-
-            chosen_node = node;
-            Simulation();
-        }
+        //[7] final_plan
+        chosen_node = node;
     } else {                        //current node still has child
         //[1.1] unexplored node exist
         for (auto const& child:node->children) {
@@ -529,16 +539,11 @@ void RLJoinOrderOptimizer::Selection(NodeForUCT* node) {
                     Expansion(child->join_node->set, exclusion_set, child);
                 }*/
                 Expansion(child->join_node->set, exclusion_set, child);
-                break;
+                return;
             }
         }
         //[1.2] all nodes have been visited - choose the one gives largest UCT
-        for (auto const& child:node->children) {
-            //choose node = max(uct)
-        }
-
-        //[2] continue
-        //Selection(chosen_node)
+        Selection(GetNodeWithMaxUCT(node));
     }
 }
 void RLJoinOrderOptimizer::Initialization() {
@@ -903,10 +908,17 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     if (sample_count==0) {
         Initialization();
     }
+    root_node_for_uct->num_of_visits+=1;
     Selection(root_node_for_uct);
 
     // GeneratePlans();
-    std::cout << "plan size=" << plans.size()<<"\n";
+    int test_count_complete = 0;
+    for (auto const& plan:plans) {
+        if (plan.first->count == 17) {
+            test_count_complete += 1;
+        }
+    }
+    std::cout << "plan size=" << test_count_complete<<"\n";
 
     //sample(*root_node_for_uct);
 

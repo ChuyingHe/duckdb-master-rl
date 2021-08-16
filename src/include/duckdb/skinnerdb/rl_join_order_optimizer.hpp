@@ -66,7 +66,7 @@ namespace duckdb {
         void Expansion(JoinRelationSet* union_set, unordered_set<idx_t> exclusion_set, NodeForUCT* parent_node_for_uct);   //find out potential nodes
         void Simulation();  //rollout
         void Initialization();
-        NodeForUCT* GetNodeWithMaxUCT();
+        NodeForUCT* GetNodeWithMaxUCT(NodeForUCT* node);
 
     private:
         ClientContext &context;

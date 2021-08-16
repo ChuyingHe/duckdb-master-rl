@@ -60,12 +60,11 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
     // 5. Execute query with different Join-order
     chosen_node = nullptr;
 
-    int loop_count = 0;
-    while (loop_count < 100) {
+    idx_t sample_count = 0;
+
+    while (sample_count < 10) {
+        std::cout<< "sample_count = " <<sample_count <<"\n";
         Timer timer;
-    //while (!context.query_finished) {
-        // 5.1 Create PreparedStatementData: extract the result column names from the plan
-        //std::cout<<"\n 🦄️ loop_count = " << loop_count <<"\n";
 
         shared_ptr<PreparedStatementData> result = make_shared<PreparedStatementData>(statement_type);
         result->read_only = planner.read_only;
@@ -81,11 +80,11 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
         // testfunc(move(copy));
         RLJoinOrderOptimizer rl_optimizer(context);
-        if (loop_count == 0) {
+        if (sample_count == 0) {
             rl_optimizer.plans.clear();
             chosen_node = nullptr;
         }
-        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(copy));
+        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(copy), sample_count);
 
         // 5.3 Create physical plan
         profiler.StartPhase("physical_planner");
@@ -105,12 +104,12 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         std::string::size_type pos = query.find('.sql');
         auto job_file_sql = query.substr(2, pos-1);
         if (chosen_node) {
-            std::cout<<job_file_sql <<", optimizer = RL Optimizer, loop = "<< loop_count << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
+            std::cout << job_file_sql << ", optimizer = RL Optimizer, loop = " << sample_count << ", join_order = " << chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward << ", duration(ms) = " << reward << "\n";
         } else {
             std::cout<< "nothing to optimize \n";
         }
 
-        loop_count += 1;
+        sample_count += 1;
     }
 
     //TODO: add up all query_result

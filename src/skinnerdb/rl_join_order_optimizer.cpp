@@ -107,7 +107,7 @@ bool RLJoinOrderOptimizer::ExtractBindings(Expression &expression, unordered_set
 
 //! Traverse the query tree to find (1) base relations, (2) existing join conditions and (3) filters that can be
 //! rewritten into joins. Returns true if there are joins in the tree that can be reordered, false otherwise.
-bool RLJoinOrderOptimizer::ExtractJoinRelations(LogicalOperator &input_op, vector<LogicalOperator *> &filter_operators,
+bool RLJoinOrderOptimizer::ExtractJoinRelations(idx_t sample_count, LogicalOperator &input_op, vector<LogicalOperator *> &filter_operators,
                                               LogicalOperator *parent) {
     //printf("bool RLJoinOrderOptimizer::ExtractJoinRelations\n");
     LogicalOperator *op = &input_op;
@@ -121,7 +121,7 @@ bool RLJoinOrderOptimizer::ExtractJoinRelations(LogicalOperator &input_op, vecto
             op->type == LogicalOperatorType::LOGICAL_WINDOW) {
             // don't push filters through projection or aggregate and group by
             RLJoinOrderOptimizer optimizer(context);
-            op->children[0] = optimizer.Optimize(move(op->children[0]));
+            op->children[0] = optimizer.Optimize(move(op->children[0]), sample_count);
             return false;
         }
         op = op->children[0].get();
@@ -169,7 +169,7 @@ bool RLJoinOrderOptimizer::ExtractJoinRelations(LogicalOperator &input_op, vecto
         // for this reason, we just start a new JoinOptimizer pass in each of the children of the join
         for (auto &child : op->children) {
             RLJoinOrderOptimizer optimizer(context);
-            child = optimizer.Optimize(move(child));
+            child = optimizer.Optimize(move(child), sample_count);
         }
         // after this we want to treat this node as one  "end node" (like e.g. a base relation)
         // however the join refers to multiple base relations
@@ -189,8 +189,8 @@ bool RLJoinOrderOptimizer::ExtractJoinRelations(LogicalOperator &input_op, vecto
     if (op->type == LogicalOperatorType::LOGICAL_COMPARISON_JOIN ||
         op->type == LogicalOperatorType::LOGICAL_CROSS_PRODUCT) {
         // inner join or cross product
-        bool can_reorder_left = ExtractJoinRelations(*op->children[0], filter_operators, op);
-        bool can_reorder_right = ExtractJoinRelations(*op->children[1], filter_operators, op);
+        bool can_reorder_left = ExtractJoinRelations(sample_count, *op->children[0], filter_operators, op);
+        bool can_reorder_right = ExtractJoinRelations(sample_count, *op->children[1], filter_operators, op);
         return can_reorder_left && can_reorder_right;
     } else if (op->type == LogicalOperatorType::LOGICAL_GET) {
         // base table scan, add to set of relations
@@ -217,7 +217,7 @@ bool RLJoinOrderOptimizer::ExtractJoinRelations(LogicalOperator &input_op, vecto
         auto proj = (LogicalProjection *)op;
         // we run the join order optimizer witin the subquery as well
         RLJoinOrderOptimizer optimizer(context);
-        op->children[0] = optimizer.Optimize(move(op->children[0]));
+        op->children[0] = optimizer.Optimize(move(op->children[0]), sample_count);
         // projection, add to the set of relations
         auto relation = make_unique<SingleJoinRelation>(&input_op, parent);
         relation_mapping[proj->table_index] = relations.size();
@@ -409,7 +409,7 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
 }
 /* this function generate all possible plans and add it to this->plans
  * the number of possible plan depends on the Join-Graph (ONLY use cross-product if there is no other choice)*/
-void RLJoinOrderOptimizer::GeneratePlans() {
+/*void RLJoinOrderOptimizer::GeneratePlans() {
     //printf("void RLJoinOrderOptimizer::GeneratePlans\n");
     // 1) initialize each of the single-table plans
     for (idx_t i = 0; i < relations.size(); i++) {
@@ -432,6 +432,149 @@ void RLJoinOrderOptimizer::GeneratePlans() {
 
         IterateTree(start_node, exclusion_set, root_node_for_uct->children.at(i));
     }
+
+    //std::cout<< "\n 🐶 amount of plans = "<<plans.size()<<"\n";
+}*/
+void RLJoinOrderOptimizer::Expansion(JoinRelationSet* union_set, unordered_set<idx_t> exclusion_set, NodeForUCT* parent_node_for_uct) {
+    printf("Expansion \n");
+    auto neighbors = query_graph.GetNeighbors(union_set, exclusion_set);        // Get neighbor of current plan: returns vector<idx_t>
+
+    // Depth-First Traversal 无向图的深度优先搜索
+    if (!neighbors.empty()) {                                                       // if there is relations left
+        for (auto neighbor:neighbors) {
+            auto *neighbor_relation = set_manager.GetJoinRelation(neighbor);        //returns JoinRelationSet*
+
+            //fix filter problem
+            auto info = query_graph.GetConnection(union_set, neighbor_relation);    //NeighborInfo
+            NeighborInfo* info_copy_ptr = new NeighborInfo(*info);
+
+            auto &left = plans[union_set];
+            auto new_set = set_manager.RLUnion(union_set, neighbor_relation);       //returns JoinRelationSet *
+            auto &right = plans[neighbor_relation];
+
+            JoinRelationSet* new_set_copy_ptr = new JoinRelationSet(*new_set);
+            auto new_plan = RL_CreateJoinTree(new_set_copy_ptr, info_copy_ptr, left.get(), right.get());
+
+            auto entry = plans.find(new_set);
+            NodeForUCT* current_node_for_uct;
+            if (entry == plans.end()) {
+                plans[new_set_copy_ptr] = move(new_plan);
+                plans[new_set_copy_ptr]->order_of_relations.append(parent_node_for_uct->join_node->order_of_relations);
+                plans[new_set_copy_ptr]->order_of_relations.append(std::to_string(neighbor));
+                plans[new_set_copy_ptr]->order_of_relations.append("-");
+
+                current_node_for_uct = new NodeForUCT{plans[new_set_copy_ptr].get(), 0, 0.0, parent_node_for_uct};
+                current_node_for_uct->current_table = neighbor;
+                parent_node_for_uct->children.push_back(current_node_for_uct);
+            }
+
+            /*exclusion_set.clear();
+            for (idx_t i = 0; i < new_set->count; ++i) {
+                exclusion_set.insert(new_set->relations[i]);
+            }
+
+            IterateTree(new_set, exclusion_set, current_node_for_uct);*/
+        }
+    }
+    Selection(parent_node_for_uct);
+}
+// Simulation/rollout
+void RLJoinOrderOptimizer::Simulation() {
+    printf("Simulation");
+}
+void RLJoinOrderOptimizer::Selection(NodeForUCT* node) {
+    printf("Selection \n");
+    if (node->children.empty()) {   //[3] current node is a LEAF// node.joinedTable.size() == node.total_table_amo
+        //[4] Simulation/Rollout
+
+        std::cout<< "size of plan = "<<plans.size() << ", join order of final_plan="<< node->join_node->order_of_relations <<"\n";
+
+        //[5] Reward update
+        //[6] Progress Tracker
+        bool progress_equal_100_percent = false;
+        if (progress_equal_100_percent) {
+            //print result
+        } else {
+            // next sample/simulation/rollout
+
+            chosen_node = node;
+            Simulation();
+        }
+    } else {                        //current node still has child
+        //[1.1] unexplored node exist
+        for (auto const& child:node->children) {
+            if (child->num_of_visits == 0) {
+                child->num_of_visits+=1;
+                child->total_table_amount = node->total_table_amount;
+                //child->parent = node;
+
+                child->unjoinedTables = node->unjoinedTables;
+                auto pos = find(child->unjoinedTables.begin(), child->unjoinedTables.end(), child->current_table);
+                child->unjoinedTables.erase(pos);
+                child->joinedTables = node->joinedTables;
+                child->joinedTables.push_back(child->current_table);
+
+                // child->children;  vector<NodeForUCT*> children; -------------------------
+
+                unordered_set<idx_t> exclusion_set;
+                for (auto const& jt:child->joinedTables) {
+                    exclusion_set.insert(jt);
+                }
+
+                JoinRelationSet* new_set;
+                /*if (node->parent) { //node is not ROOT
+                    new_set = set_manager.RLUnion(node->join_node->set, child->join_node->set);
+                    Expansion(new_set, exclusion_set, child);
+                } else {
+                    Expansion(child->join_node->set, exclusion_set, child);
+                }*/
+                Expansion(child->join_node->set, exclusion_set, child);
+                break;
+            }
+        }
+        //[1.2] all nodes have been visited - choose the one gives largest UCT
+        for (auto const& child:node->children) {
+            //choose node = max(uct)
+        }
+
+        //[2] continue
+        //Selection(chosen_node)
+    }
+}
+void RLJoinOrderOptimizer::Initialization() {
+    root_node_for_uct->total_table_amount = relations.size();
+    for (idx_t i = 0; i < root_node_for_uct->total_table_amount; i++) {
+        auto &rel = *relations[i];
+
+        auto node = set_manager.GetJoinRelation(i);
+        JoinRelationSet* copy_node_ptr = new JoinRelationSet(*node);
+        plans[copy_node_ptr] = make_unique<JoinOrderOptimizer::JoinNode>(move(copy_node_ptr), rel.op->EstimateCardinality(context));
+        plans[copy_node_ptr]->order_of_relations.append(std::to_string(i));
+        plans[copy_node_ptr]->order_of_relations.append("-");
+        NodeForUCT* node_for_uct = new NodeForUCT{plans[copy_node_ptr].get(), 0, 0.0, root_node_for_uct};
+        node_for_uct->current_table = i;
+
+        root_node_for_uct->unjoinedTables.push_back(i);
+        root_node_for_uct->children.push_back(node_for_uct);
+    }
+}
+
+void RLJoinOrderOptimizer::GeneratePlans() {
+    printf("void RLJoinOrderOptimizer::GeneratePlans\n");
+    // [0] Initialization
+
+
+    // [1] Selection
+    Selection(root_node_for_uct);
+
+
+    /*for (idx_t i = 0; i < relations.size(); i++) {
+        JoinRelationSet* start_node = set_manager.GetJoinRelation(i);
+        unordered_set<idx_t> exclusion_set;
+        exclusion_set.insert(i);    // put current one relation in the exclusion_set
+
+        IterateTree(start_node, exclusion_set, root_node_for_uct->children.at(i));
+    }*/
 
     //std::cout<< "\n 🐶 amount of plans = "<<plans.size()<<"\n";
 }
@@ -595,8 +738,71 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<Logical
 }
 
 
+/*
 
-unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOperator> plan) {
+void RLJoinOrderOptimizer::sample(NodeForUCT& node) {
+    node.num_of_visits+=1;
+
+    if (!node.join_node) {     //root
+
+        //current possibility
+        for (idx_t i = 0; i < relations.size(); i++) {
+            auto& rel = *relations[i];
+            auto rel_set = set_manager.GetJoinRelation(i);
+            JoinRelationSet* copy_node_ptr = new JoinRelationSet(*rel_set);
+
+            auto join_node = JoinOrderOptimizer::JoinNode(move(copy_node_ptr), rel.op->EstimateCardinality(context));
+            NodeForUCT* node_for_uct = new NodeForUCT{&join_node, 0, 0.0, root_node_for_uct};
+            node_for_uct->join_node->order_of_relations.append(std::to_string(i));
+            node_for_uct->parent = &node;
+            node_for_uct->current_rel = i;
+            //因为是root所以children的数量=unjoinedTables的数量
+
+            node.unjoinedTables.push_back(i);   //joinedTables=NULL
+            node.children.push_back(move(node_for_uct));
+        }
+
+        //choose next one - 1
+        for (auto const& elem : node.children) {
+            if (elem->num_of_visits==0) {
+                //chose current elem
+                elem->num_of_visits+=1;
+                elem->unjoinedTables.insert(elem->unjoinedTables.end(), node.unjoinedTables.begin(), node.unjoinedTables.end());
+                //elem->unjoinedTables.erase(elem->current_rel);
+
+                std::vector<idx_t>::iterator position = std::find(elem->unjoinedTables.begin(), elem->unjoinedTables.end(), elem->current_rel);
+                if (position != elem->unjoinedTables.end()) // == myVector.end() means the element was not found
+                    elem->unjoinedTables.erase(position);
+
+                elem->joinedTables.insert(elem->joinedTables.end(), node.joinedTables.begin(), node.joinedTables.end());
+                elem->joinedTables.push_back(elem->current_rel);
+
+                unordered_set<idx_t> exclusion_set;
+                for (auto const& jt:elem->joinedTables) {
+                    exclusion_set.insert(jt);
+                }
+                //auto new_set = elem->join_node->set;
+                // auto neighbors = query_graph.GetNeighbors(new_set, exclusion_set);    // returns vector<idx_t>
+                IterateTree(elem->join_node->set, exclusion_set, elem);
+                */
+/*for (auto const& neighbor:neighbors) {
+
+                }*//*
+
+                sample(*elem);
+                break;
+            }
+        }
+        //choose next one - 2 - all the children has been visited
+        for (auto const& elem : node.children) {
+
+        }
+    }
+}
+*/
+
+
+unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOperator> plan, idx_t sample_count) {
     //printf("unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize\n");
     D_ASSERT(filters.empty() && relations.empty()); // assert that the RLJoinOrderOptimizer has not been used before
     /*if (!chosen_node) {
@@ -607,7 +813,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
 
     //std::cout<<"current LogicalOperator = "<<op->GetName()<<"\n";
 
-    if (!ExtractJoinRelations(*op, filter_operators)) {
+    if (!ExtractJoinRelations(sample_count, *op, filter_operators)) {
         return plan;
     }
 
@@ -694,12 +900,18 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
         }
     }
 
-    if (!chosen_node) {
-        GeneratePlans();
-        std::cout << "plan size=" << plans.size()<<"\n";
+    if (sample_count==0) {
+        Initialization();
     }
-    auto final_plan = UCTChoice();      // returns JoinOrderOptimizer::JoinNode*
-    return RewritePlan(move(plan), final_plan);   // returns EXECUTABLE of the chosen_plan unique_ptr<LogicalOperator>
+    Selection(root_node_for_uct);
+
+    // GeneratePlans();
+    std::cout << "plan size=" << plans.size()<<"\n";
+
+    //sample(*root_node_for_uct);
+
+   //auto final_plan = UCTChoice();      // returns JoinOrderOptimizer::JoinNode*
+    return RewritePlan(move(plan), chosen_node->join_node);   // returns EXECUTABLE of the chosen_plan unique_ptr<LogicalOperator>
 }
 
 

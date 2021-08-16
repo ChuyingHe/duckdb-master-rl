@@ -26,6 +26,11 @@ namespace duckdb {
         NodeForUCT* parent;
         vector<NodeForUCT*> children;
 
+        idx_t current_table;
+        idx_t total_table_amount;
+        vector<idx_t> unjoinedTables;
+        vector<idx_t> joinedTables;
+
         NodeForUCT(JoinOrderOptimizer::JoinNode* join_node, int num_of_visits, double reward, NodeForUCT* parent) :
         join_node(join_node), num_of_visits(num_of_visits), reward(reward), parent(parent) {
         }
@@ -52,10 +57,16 @@ namespace duckdb {
                 context) { /*constructor, explicit prevent other type of parameter*/
         }
 
-        unique_ptr <LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan);
+        unique_ptr <LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan, idx_t sample_count);
         void RewardUpdate(double reward);
         void GeneratePlans();
         static unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>, Hasher, EqualFn> plans;   // includes all the relations, to return
+        void sample(NodeForUCT& node);
+        void Selection(NodeForUCT* node);   //choose the next among potential nodes
+        void Expansion(JoinRelationSet* union_set, unordered_set<idx_t> exclusion_set, NodeForUCT* parent_node_for_uct);   //find out potential nodes
+        void Simulation();  //rollout
+        void Initialization();
+        NodeForUCT* GetNodeWithMaxUCT();
 
     private:
         ClientContext &context;
@@ -73,7 +84,7 @@ namespace duckdb {
 
         bool ExtractBindings(Expression &expression, unordered_set <idx_t> &bindings);
 
-        bool ExtractJoinRelations(LogicalOperator &input_op, vector<LogicalOperator *> &filter_operators,
+        bool ExtractJoinRelations(idx_t sample_count, LogicalOperator &input_op, vector<LogicalOperator *> &filter_operators,
                                   LogicalOperator *parent = nullptr);
 
         // for JoinRelationSet

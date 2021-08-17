@@ -32,8 +32,8 @@ namespace duckdb {
 
     private:
         int state = 0;             //恢复执行状态?
-
-
+        string previous_order_of_relations = "";
+        int same_order_count = 1;
     };
 
 }

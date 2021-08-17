@@ -914,11 +914,11 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     // GeneratePlans();
     int test_count_complete = 0;
     for (auto const& plan:plans) {
-        if (plan.first->count == relations.size()) {
+        if (plan.first->count == 4) {
             test_count_complete += 1;
         }
     }
-    std::cout <<"relations_amount = " << relations.size() << ", plan size=" << test_count_complete<<"\n";
+    std::cout <<"relations_amount = " << 4 << ", plan size=" << test_count_complete<<"\n";
 
     //sample(*root_node_for_uct);
 

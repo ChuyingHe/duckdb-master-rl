@@ -62,7 +62,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
     idx_t sample_count = 0;
 
-    while (sample_count < 10) {
+    while (sample_count < 100) {
         //std::cout<< "sample_count = " <<sample_count <<"\n";
         Timer timer;
 
@@ -105,6 +105,18 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         auto job_file_sql = query.substr(2, pos-1);
         if (chosen_node) {
             std::cout << job_file_sql << ", optimizer = RL Optimizer, loop = " << sample_count << ", join_order = " << chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward << ", duration(ms) = " << reward << "\n";
+            std::cout <<"same_order_count = " << same_order_count <<"\n";
+            if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {
+                same_order_count +=1;
+                if (same_order_count>=5) {
+                    printf("final plan found \n");
+                    std::cout<<"final plan found in loop "<< sample_count;
+                    break;
+                }
+            } else {
+                same_order_count = 1;
+                previous_order_of_relations = chosen_node->join_node->order_of_relations;
+            }
         } else {
             std::cout<< "nothing to optimize \n";
         }

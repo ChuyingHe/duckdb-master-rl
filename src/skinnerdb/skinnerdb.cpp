@@ -109,7 +109,6 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
             if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {
                 same_order_count +=1;
                 if (same_order_count>=5) {
-                    printf("final plan found \n");
                     std::cout<<"final plan found in loop "<< sample_count << "\n";
                     break;
                 }

@@ -62,8 +62,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
     idx_t sample_count = 0;
 
-    while (sample_count < 100) {
-        std::cout<< "sample_count = " <<sample_count <<"\n";
+    while (sample_count < 10) {
+        //std::cout<< "sample_count = " <<sample_count <<"\n";
         Timer timer;
 
         shared_ptr<PreparedStatementData> result = make_shared<PreparedStatementData>(statement_type);

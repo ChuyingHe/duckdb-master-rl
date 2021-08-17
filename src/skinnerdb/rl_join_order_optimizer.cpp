@@ -436,7 +436,7 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
     //std::cout<< "\n 🐶 amount of plans = "<<plans.size()<<"\n";
 }*/
 void RLJoinOrderOptimizer::Expansion(JoinRelationSet* union_set, unordered_set<idx_t> exclusion_set, NodeForUCT* parent_node_for_uct) {
-    printf("Expansion \n");
+    //printf("Expansion \n");
     auto neighbors = query_graph.GetNeighbors(union_set, exclusion_set);        // Get neighbor of current plan: returns vector<idx_t>
 
     // Depth-First Traversal 无向图的深度优先搜索
@@ -500,7 +500,7 @@ NodeForUCT* RLJoinOrderOptimizer::GetNodeWithMaxUCT(NodeForUCT* node) { //case "
 }
 
 void RLJoinOrderOptimizer::Selection(NodeForUCT* node) {
-    printf("Selection \n");
+    //printf("Selection \n");
     if (node->children.empty()) {   //[3] current node is a LEAF// node.joinedTable.size() == node.total_table_amo
         //[4] Simulation/Rollout
         //node->num_of_visits+=1;
@@ -565,7 +565,7 @@ void RLJoinOrderOptimizer::Initialization() {
 }
 
 void RLJoinOrderOptimizer::GeneratePlans() {
-    printf("void RLJoinOrderOptimizer::GeneratePlans\n");
+    //printf("void RLJoinOrderOptimizer::GeneratePlans\n");
     // [0] Initialization
 
 
@@ -914,11 +914,11 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     // GeneratePlans();
     int test_count_complete = 0;
     for (auto const& plan:plans) {
-        if (plan.first->count == 17) {
+        if (plan.first->count == relations.size()) {
             test_count_complete += 1;
         }
     }
-    std::cout << "plan size=" << test_count_complete<<"\n";
+    std::cout <<"relations_amount = " << relations.size() << ", plan size=" << test_count_complete<<"\n";
 
     //sample(*root_node_for_uct);
 

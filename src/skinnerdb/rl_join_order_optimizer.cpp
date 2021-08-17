@@ -918,7 +918,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
             test_count_complete += 1;
         }
     }
-    std::cout <<"relations_amount = " << 4 << ", plan size=" << test_count_complete<<"\n";
+    // std::cout <<"relations_amount = " << 4 << ", plan size=" << test_count_complete<<"\n";
 
     //sample(*root_node_for_uct);
 

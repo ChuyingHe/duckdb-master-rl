@@ -34,7 +34,7 @@ void testfunc(unique_ptr<LogicalOperator> plan) {
 
 unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &lock, const string &query,
                                                           unique_ptr<SQLStatement> statement, bool allow_stream_result){
-    printf("unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement\n");
+    //printf("unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement\n");
     // 1. Preparation
     auto query_result = unique_ptr<QueryResult>();
     StatementType statement_type = statement->type;
@@ -105,12 +105,12 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         auto job_file_sql = query.substr(2, pos-1);
         if (chosen_node) {
             std::cout << job_file_sql << ", optimizer = RL Optimizer, loop = " << sample_count << ", join_order = " << chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward << ", duration(ms) = " << reward << "\n";
-            std::cout <<"same_order_count = " << same_order_count <<"\n";
+            //std::cout <<"same_order_count = " << same_order_count <<"\n";
             if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {
                 same_order_count +=1;
                 if (same_order_count>=5) {
                     printf("final plan found \n");
-                    std::cout<<"final plan found in loop "<< sample_count;
+                    std::cout<<"final plan found in loop "<< sample_count << "\n";
                     break;
                 }
             } else {

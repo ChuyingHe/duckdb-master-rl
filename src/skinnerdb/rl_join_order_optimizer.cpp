@@ -809,14 +809,11 @@ void RLJoinOrderOptimizer::sample(NodeForUCT& node) {
 
 unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOperator> plan, idx_t sample_count) {
     //printf("unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize\n");
+    /* extract relations from the logical plan:*/
     D_ASSERT(filters.empty() && relations.empty()); // assert that the RLJoinOrderOptimizer has not been used before
-    /*if (!chosen_node) {
-        plans.clear();
-    }*/
+
     LogicalOperator *op = plan.get();
     vector<LogicalOperator *> filter_operators;
-
-    //std::cout<<"current LogicalOperator = "<<op->GetName()<<"\n";
 
     if (!ExtractJoinRelations(sample_count, *op, filter_operators)) {
         return plan;

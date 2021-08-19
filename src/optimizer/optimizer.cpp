@@ -80,6 +80,7 @@ unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan
     plan = optimizer.Optimize(move(plan));
     context.profiler.EndPhase();
 
+/*
 	// removes any redundant DelimGets/DelimJoins
 	context.profiler.StartPhase("deliminator");
 	Deliminator deliminator;
@@ -124,6 +125,7 @@ unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan
 	ExpressionHeuristics expression_heuristics(*this);
 	plan = expression_heuristics.Rewrite(move(plan));
 	context.profiler.EndPhase();
+*/
 
 	return plan;
 }

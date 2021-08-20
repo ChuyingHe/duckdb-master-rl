@@ -104,21 +104,21 @@ bool existDB(std::string db) {
 
 int main() {
 
-    FileSystem fs;
+    /*FileSystem fs;
     if (!fs.DirectoryExists(IMDB_DIRECTORY_NAME)) {
         fs.CreateDirectory(IMDB_DIRECTORY_NAME);
     }
-    auto storage_db = fs.JoinPath(IMDB_DIRECTORY_NAME, "imdb");
-
+    auto storage_db = fs.JoinPath(IMDB_DIRECTORY_NAME, "imdb");*/
+    auto storage_db = IMDB_DIRECTORY + "imdb";
     //std::cout <<"🌈 main \n";
     DuckDB db(storage_db);
     Connection con(db);
 
     // con.Query("PRAGMA threads=4;");
-    if (!fs.DirectoryExists(storage_db)) {
+    /*if (!fs.DirectoryExists(storage_db)) {
         printf("condition\n");
-        loadTables(con);
-    }
+        //loadTables(con);
+    }*/
 
 	addIndexes(con);
 	runJOBQuerys(con);

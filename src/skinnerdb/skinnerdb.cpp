@@ -63,8 +63,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
     double duration_prep_preoptimizer = timer_prep_preoptimizer.check();
 
-    while (sample_count < 200) {
-    //while (true) {
+    //while (sample_count < 200) {
+    while (true) {
         //std::cout<< "sample_count = " <<sample_count <<"\n";
         Timer timer_prep_join_order;
 
@@ -115,18 +115,23 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
             if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {
                 same_order_count +=1;
                 if (same_order_count>=5) {
-                    std::cout<<"final plan found in loop "<< sample_count << "\n";
+                    //std::cout<<"final plan found in loop "<< sample_count << "\n";
+                    double time_prep = duration_prep_preoptimizer + duration_prep_join_order;
+                    std::cout   << job_file_sql << ", optimizer = RL Optimizer, loop = " << sample_count << ", join_order = "
+                                << chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward << ", num_of_visits = "
+                                << chosen_node->num_of_visits << ", time_preparation = " << time_prep << ", time_execution = "
+                                << duration_execution <<", time_total = "<< duration_execution+ time_prep<<"\n";
                     break;
                 }
             } else {
                 same_order_count = 1;
                 previous_order_of_relations = chosen_node->join_node->order_of_relations;
             }
-            double time_prep = duration_prep_preoptimizer + duration_prep_join_order;
+            /*double time_prep = duration_prep_preoptimizer + duration_prep_join_order;
             std::cout   << job_file_sql << ", optimizer = RL Optimizer, loop = " << sample_count << ", join_order = "
                         << chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward << ", num_of_visits = "
                         << chosen_node->num_of_visits << ", time_preparation = " << time_prep << ", time_execution = "
-                        << duration_execution <<", time_total = "<< duration_execution+ time_prep<<"\n";
+                        << duration_execution <<", time_total = "<< duration_execution+ time_prep<<"\n";*/
         } else {
             std::cout<< "nothing to optimize \n";
         }

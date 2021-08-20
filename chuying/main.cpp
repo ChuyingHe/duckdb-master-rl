@@ -9,6 +9,7 @@
 #include "duckdb/skinnerdb/timer.hpp"
 
 using namespace duckdb;
+#define IMDB_DIRECTORY_NAME "duckdb_imdb"
 
 string readFileIntoString(const string& path) {
     std::ifstream input_file(path);
@@ -46,7 +47,7 @@ void addIndexes(Connection con) {
 void runJOBQuerys(Connection con) {
     //con.Query("PRAGMA enable_profiling='json'");
     //con.Query("PRAGMA enable_progress_bar");
-    con.Query("PRAGMA enable_rl_join_order_optimizer");
+    //con.Query("PRAGMA enable_rl_join_order_optimizer");
 
     //TODO: delete this
     int count_sql = 0;
@@ -102,12 +103,23 @@ bool existDB(std::string db) {
 }
 
 int main() {
+
+    FileSystem fs;
+    if (!fs.DirectoryExists(IMDB_DIRECTORY_NAME)) {
+        fs.CreateDirectory(IMDB_DIRECTORY_NAME);
+    }
+    auto storage_db = fs.JoinPath(IMDB_DIRECTORY_NAME, "imdb");
+
     //std::cout <<"🌈 main \n";
-    DuckDB db(nullptr);
+    DuckDB db(storage_db);
     Connection con(db);
 
-    con.Query("PRAGMA threads=4;");
-    loadTables(con);
+    // con.Query("PRAGMA threads=4;");
+    if (!fs.DirectoryExists(storage_db)) {
+        printf("condition\n");
+        loadTables(con);
+    }
+
 	addIndexes(con);
 	runJOBQuerys(con);
 }

@@ -46,7 +46,7 @@ void addIndexes(Connection con) {
 void runJOBQuerys(Connection con) {
     //con.Query("PRAGMA enable_profiling='json'");
     //con.Query("PRAGMA enable_progress_bar");
-    //con.Query("PRAGMA enable_rl_join_order_optimizer");
+    con.Query("PRAGMA enable_rl_join_order_optimizer");
 
     //TODO: delete this
     int count_sql = 0;
@@ -58,17 +58,17 @@ void runJOBQuerys(Connection con) {
             std::cout<<"Progress = "<< count_sql <<"/113 \n";
 
             std::string job_file = entry.path().filename().string();
-            //std::cout <<job_file <<", ";
+            std::cout <<job_file <<", ";
             /*
             std::string job_profiling = "PRAGMA profile_output='" + getRootPath() +"/chuying/profiling/" + job_file + ".json';";
             con.Query(job_profiling);
             std::cout <<"entry_path" <<entry.path() <<"\n 🎄 JOB query = " << job_query <<"\n\n";*/
             std::string job_query = readFileIntoString(entry.path());
-            Timer timer;
+            // Timer timer;
             auto result = con.Query(job_query);
             result->Print();
-            double duration = timer.check();
-            std::cout <<"duration(ms) = " <<duration <<"\n";
+            //double duration = timer.check();
+            //std::cout <<"time_total = " << duration <<"\n";
         }
     }
     //printf("end of runJOBQuerys() \n");

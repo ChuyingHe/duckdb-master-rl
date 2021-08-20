@@ -158,6 +158,7 @@ unique_ptr<DataChunk> ClientContext::FetchInternal(ClientContextLock &) {
 shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement(ClientContextLock &lock, const string &query,
                                                                          unique_ptr<SQLStatement> statement) {
 	//printf("shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement\n");
+    Timer timer_preparation;
 	StatementType statement_type = statement->type;
 	auto result = make_shared<PreparedStatementData>(statement_type);
 
@@ -193,7 +194,10 @@ shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement(ClientC
 
     result->plan = move(physical_plan);
 
-	return result;  // PreparedStatementData result which includes the PLAN
+    double duration_preparation = timer_preparation.check();
+    std::cout <<"time_preparation = " <<duration_preparation <<", ";
+
+    return result;  // PreparedStatementData result which includes the PLAN
 }
 
 int ClientContext::GetProgress() {
@@ -212,7 +216,7 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
                                                                 shared_ptr<PreparedStatementData> statement_p,
                                                                 vector<Value> bound_values, bool allow_stream_result) {
 	//f("unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLock &lock, const string &query,\n");
-
+    Timer timer_execution;
 	auto &statement = *statement_p;     // shared_ptr<PreparedStatementData>: includes optimized physical PLAN
 	if (ActiveTransaction().IsInvalidated() && statement.requires_valid_transaction) {
 		throw Exception("Current transaction is aborted (please ROLLBACK)");
@@ -247,7 +251,9 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 		// successfully compiled SELECT clause and it is the last statement
 		// return a StreamQueryResult so the client can call Fetch() on it and stream the result
 		// 🌞 1st return - only a framework??? where is this FETCH() function and what did it do?
-		return make_unique<StreamQueryResult>(statement.statement_type, shared_from_this(), statement.types,
+        double duration_execution_1 = timer_execution.check();
+        std::cout <<"time_execution = " <<duration_execution_1 <<", ";
+        return make_unique<StreamQueryResult>(statement.statement_type, shared_from_this(), statement.types,
 		                                      statement.names, move(statement_p));
 	}
 	// create a materialized result by continuously fetching
@@ -270,6 +276,9 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 	if (progress_bar) {
 		progress_bar->Stop();
 	}
+
+    double duration_execution_2 = timer_execution.check();
+    std::cout <<"time_execution = " <<duration_execution_2 <<", ";
 	return move(result);    // 🚩 2rd return
 }
 
@@ -451,8 +460,7 @@ unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &l
     if (enable_rl_join_order_optimizer) {	//this should mix the process of selection and execution, and return a result in the end
         //printf("🌈 SkinnerDB RL\n");
         SkinnerDB skinnerDb(profiler, *this);
-        auto result = skinnerDb.CreateAndExecuteStatement(lock, query, move(statement), allow_stream_result);
-        return result;
+        return skinnerDb.CreateAndExecuteStatement(lock, query, move(statement), allow_stream_result);;
     } else {
         //printf("🌈 DuckDB DP\n");
         // prepare the query for execution
@@ -501,7 +509,10 @@ unique_ptr<QueryResult> ClientContext::RunStatementOrPreparedStatement(ClientCon
 	try {
 		if (statement) {
 			//printf("statement is not null");
+            Timer timer_total;
 			result = RunStatementInternal(lock, query, move(statement), allow_stream_result);
+            double duration_total = timer_total.check();
+            std::cout <<"time_total = " <<duration_total <<"\n";
 		} else {
 			auto &catalog = Catalog::GetCatalog(*this);
 			if (prepared->unbound_statement && catalog.GetCatalogVersion() != prepared->catalog_version) {

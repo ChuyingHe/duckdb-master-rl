@@ -15,7 +15,8 @@ public:
 };
 
 void PhysicalProjection::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state_p) {
-	auto state = reinterpret_cast<PhysicalProjectionState *>(state_p);
+    printf("PhysicalProjection::GetChunkInternal \n");
+    auto state = reinterpret_cast<PhysicalProjectionState *>(state_p);
 
 	// get the next chunk from the child
 	children[0]->GetChunk(context, state->child_chunk, state->child_state.get());

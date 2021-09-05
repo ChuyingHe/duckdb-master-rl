@@ -176,6 +176,7 @@ unique_ptr<PhysicalOperatorState> PhysicalHashJoin::GetOperatorState() {
 }
 
 void PhysicalHashJoin::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state_p) {
+    printf("PhysicalHashJoin::GetChunkInternal\n");
 	auto state = reinterpret_cast<PhysicalHashJoinState *>(state_p);
 	auto &sink = (HashJoinGlobalState &)*sink_state;
 	if (sink.hash_table->size() == 0 &&
@@ -184,7 +185,7 @@ void PhysicalHashJoin::GetChunkInternal(ExecutionContext &context, DataChunk &ch
 		return;
 	}
 	do {
-		ProbeHashTable(context, chunk, state);
+		ProbeHashTable(context, chunk, state);  //this function called GetChunk()
 		if (chunk.size() == 0) {
 #if STANDARD_VECTOR_SIZE >= 128
 			if (state->cached_chunk.size() > 0) {
@@ -237,7 +238,7 @@ void PhysicalHashJoin::ProbeHashTable(ExecutionContext &context, DataChunk &chun
 	}
 
 	// probe the HT
-	do {
+	/*do {
 		// fetch the chunk from the left side
 		children[0]->GetChunk(context, state->child_chunk, state->child_state.get());
 		if (state->child_chunk.size() == 0) {
@@ -248,12 +249,30 @@ void PhysicalHashJoin::ProbeHashTable(ExecutionContext &context, DataChunk &chun
 			return;
 		}
 		// resolve the join keys for the left chunk
-		state->probe_executor.Execute(state->child_chunk, state->join_keys);
+		state->probe_executor.Execute(state->child_chunk, state->join_keys);    //update state->join_keys
 
 		// perform the actual probe
 		state->scan_structure = sink.hash_table->Probe(state->join_keys);
 		state->scan_structure->Next(state->join_keys, state->child_chunk, chunk);
-	} while (chunk.size() == 0);
+	} while (chunk.size() == 0);*/
+
+	//test
+    // fetch the chunk from the left side
+    children[0]->GetChunk(context, state->child_chunk, state->child_state.get());
+    if (state->child_chunk.size() == 0) {
+        return;
+    }
+    if (sink.hash_table->size() == 0) {
+        ConstructEmptyJoinResult(sink.hash_table->join_type, sink.hash_table->has_null, state->child_chunk, chunk);
+        return;
+    }
+    // resolve the join keys for the left chunk
+    state->probe_executor.Execute(state->child_chunk, state->join_keys);    //update state->join_keys
+
+    // perform the actual probe
+    state->scan_structure = sink.hash_table->Probe(state->join_keys);
+    state->scan_structure->Next(state->join_keys, state->child_chunk, chunk);
+    //end of test
 }
 
 } // namespace duckdb

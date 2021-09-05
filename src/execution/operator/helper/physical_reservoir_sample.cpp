@@ -52,6 +52,7 @@ void PhysicalReservoirSample::Sink(ExecutionContext &context, GlobalOperatorStat
 //===--------------------------------------------------------------------===//
 void PhysicalReservoirSample::GetChunkInternal(ExecutionContext &context, DataChunk &chunk,
                                                PhysicalOperatorState *state_p) {
+    printf("PhysicalReservoirSample::GetChunkInternal\n");
 	auto &sink = (SampleGlobalOperatorState &)*this->sink_state;
 	if (!sink.sample) {
 		return;

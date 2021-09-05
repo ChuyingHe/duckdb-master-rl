@@ -964,6 +964,7 @@ static void Scan(PhysicalWindowOperatorState &state, DataChunk &chunk) {
 }
 
 void PhysicalWindow::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state_p) {
+    printf("PhysicalWindow::GetChunkInternal\n");
 	auto &state = *reinterpret_cast<PhysicalWindowOperatorState *>(state_p);
 	auto &gstate = (WindowGlobalState &)*sink_state;
 

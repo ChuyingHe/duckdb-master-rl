@@ -67,7 +67,7 @@ void StandardColumnData::Scan(Transaction &transaction, ColumnScanState &state, 
 	// fetch validity data
 	validity.Scan(transaction, state.child_states[0], result);
 
-	// perform a scan of this segment
+	// perform a scan of this segment - state.current is a PersistentSegment
 	state.current->Scan(state, state.vector_index, result);
 
 	// merge the updates into the result

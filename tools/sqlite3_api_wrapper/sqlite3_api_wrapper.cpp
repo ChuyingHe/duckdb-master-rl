@@ -701,6 +701,7 @@ const char *sqlite3_errmsg(sqlite3 *db) {
 }
 
 void sqlite3_interrupt(sqlite3 *db) {
+    printf("sqlite3_interrupt \n");
 	if (db) {
 		db->con->Interrupt();
 	}

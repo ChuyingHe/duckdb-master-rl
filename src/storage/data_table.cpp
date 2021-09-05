@@ -336,33 +336,34 @@ bool DataTable::CheckZonemap(TableScanState &state, const vector<column_t> &colu
 
 bool DataTable::ScanBaseTable(Transaction &transaction, DataChunk &result, TableScanState &state,
                               const vector<column_t> &column_ids, idx_t &current_row, idx_t max_row) {
+    printf("Scan the persistent segments: DataTable::ScanBaseTable \n");
 	if (current_row >= max_row) {
 		// exceeded the amount of rows to scan
 		return false;
 	}
-	auto max_count = MinValue<idx_t>(STANDARD_VECTOR_SIZE, max_row - current_row);
-	idx_t vector_offset = (current_row - state.base_row) / STANDARD_VECTOR_SIZE;
-	//! first check the zonemap if we have to scan this partition
+	auto max_count = MinValue<idx_t>(STANDARD_VECTOR_SIZE, max_row - current_row);  // min(1024, 3080-0) = 1024
+	idx_t vector_offset = (current_row - state.base_row) / STANDARD_VECTOR_SIZE;        // (0-0)/1024 = 0 -> current row position in the table
+	//! first check the zonemap if we have to scan this PARTITION -- 判断当下的partition是否包含符合条件的数据条
 	if (!CheckZonemap(state, column_ids, state.table_filters, current_row)) {
 		return true;
 	}
 	// second, scan the version chunk manager to figure out which tuples to load for this transaction
 	SelectionVector valid_sel(STANDARD_VECTOR_SIZE);
-	while (vector_offset >= MorselInfo::MORSEL_VECTOR_COUNT) {
+	while (vector_offset >= MorselInfo::MORSEL_VECTOR_COUNT) {  // MORSEL_VECTOR_COUNT = 100;
 		state.version_info = (MorselInfo *)state.version_info->next.get();
 		state.base_row += MorselInfo::MORSEL_SIZE;
 		vector_offset -= MorselInfo::MORSEL_VECTOR_COUNT;
 	}
-	idx_t count = state.version_info->GetSelVector(transaction, vector_offset, valid_sel, max_count);
+	idx_t count = state.version_info->GetSelVector(transaction, vector_offset, valid_sel, max_count);   //1024
 	if (count == 0) {
-		// nothing to scan for this vector, skip the entire vector
+		// nothing to scan for this vector, skip the entire VECTOR
 		state.NextVector();
 		current_row += STANDARD_VECTOR_SIZE;
 		return true;
 	}
-	idx_t approved_tuple_count = count;
+	idx_t approved_tuple_count = count; //1024
 	if (count == max_count && !state.table_filters) {
-		//! If we don't have any deleted tuples or filters we can just run a regular scan
+		//! If we don't have any deleted tuples or filters we can just run a regular scan 🌿
 		for (idx_t i = 0; i < column_ids.size(); i++) {
 			auto column = column_ids[i];
 			if (column == COLUMN_IDENTIFIER_ROW_ID) {
@@ -370,7 +371,7 @@ bool DataTable::ScanBaseTable(Transaction &transaction, DataChunk &result, Table
 				D_ASSERT(result.data[i].GetType().InternalType() == ROW_TYPE);
 				result.data[i].Sequence(current_row, 1);
 			} else {
-				columns[column]->Scan(transaction, state.column_scans[i], result.data[i]);
+				columns[column]->Scan(transaction, state.column_scans[i], result.data[i]);  //columns 包含了data
 			}
 		}
 	} else {

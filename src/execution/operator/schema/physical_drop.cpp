@@ -4,6 +4,7 @@
 namespace duckdb {
 
 void PhysicalDrop::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) {
+    printf("PhysicalDrop::GetChunkInternal \n");
 	switch (info->type) {
 	case CatalogType::PREPARED_STATEMENT: {
 		// DEALLOCATE silently ignores errors

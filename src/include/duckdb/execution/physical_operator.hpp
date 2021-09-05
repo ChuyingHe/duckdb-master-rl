@@ -89,6 +89,7 @@ public:
 	}
 	// initialize 3 elements(amount of types), put them in vector<Vector> data;
 	virtual void InitializeChunkEmpty(DataChunk &chunk) {
+	    //printf("virtual void InitializeChunkEmpty \n");
 		auto &types = GetTypes();   // get types of current physical_operator
 		chunk.InitializeEmpty(types);
 	}

@@ -89,6 +89,7 @@ void LocalStorage::InitializeScan(DataTable *table, LocalScanState &state, Table
 }
 
 void LocalStorage::Scan(LocalScanState &state, const vector<column_t> &column_ids, DataChunk &result) {
+    printf("Scan the transaction-local segments: LocalStorage::Scan \n");
 	auto storage = state.GetStorage();
 	if (!storage || state.chunk_index > state.max_index) {
 		// nothing left to scan

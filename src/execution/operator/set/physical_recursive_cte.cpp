@@ -105,6 +105,7 @@ void PhysicalRecursiveCTE::GetChunkInternal(ExecutionContext &context, DataChunk
 }
 
 void PhysicalRecursiveCTE::ExecuteRecursivePipelines(ExecutionContext &context) {
+    printf("PhysicalRecursiveCTE::ExecuteRecursivePipelines \n");
 	if (pipelines.empty()) {
 		return;
 	}

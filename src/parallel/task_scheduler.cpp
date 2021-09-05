@@ -43,6 +43,7 @@ struct QueueProducerToken {
 };
 
 void ConcurrentQueue::Enqueue(ProducerToken &token, unique_ptr<Task> task) {
+    //printf("ConcurrentQueue::Enqueue \n");
 	lock_guard<mutex> producer_lock(token.producer_lock);
 	if (q.enqueue(token.token->queue_token, move(task))) {
 		semaphore.signal();
@@ -52,6 +53,7 @@ void ConcurrentQueue::Enqueue(ProducerToken &token, unique_ptr<Task> task) {
 }
 
 bool ConcurrentQueue::DequeueFromProducer(ProducerToken &token, unique_ptr<Task> &task) {
+    //printf("ConcurrentQueue::DequeueFromProducer \n");
 	lock_guard<mutex> producer_lock(token.producer_lock);
 	return q.try_dequeue_from_producer(token.token->queue_token, task);
 }
@@ -94,33 +96,40 @@ ProducerToken::~ProducerToken() {
 }
 
 TaskScheduler::TaskScheduler() : queue(make_unique<ConcurrentQueue>()) {
+    //printf("TaskScheduler::TaskScheduler() \n");
 }
 
 TaskScheduler::~TaskScheduler() {
+    //printf("TaskScheduler::~TaskScheduler \n");
 #ifndef DUCKDB_NO_THREADS
 	SetThreadsInternal(1);
 #endif
 }
 
 TaskScheduler &TaskScheduler::GetScheduler(ClientContext &context) {
+    //printf("TaskScheduler::GetScheduler \n");
 	return context.db->GetScheduler();
 }
 
 unique_ptr<ProducerToken> TaskScheduler::CreateProducer() {
+    //printf("TaskScheduler::CreateProducer \n");
 	auto token = make_unique<QueueProducerToken>(*queue);
 	return make_unique<ProducerToken>(*this, move(token));
 }
 
 void TaskScheduler::ScheduleTask(ProducerToken &token, unique_ptr<Task> task) {
+    //printf("TaskScheduler::ScheduleTask \n");
 	// Enqueue a task for the given producer token and signal any sleeping threads
 	queue->Enqueue(token, move(task));
 }
 
 bool TaskScheduler::GetTaskFromProducer(ProducerToken &token, unique_ptr<Task> &task) {
+    //printf("TaskScheduler::GetTaskFromProducer \n");
 	return queue->DequeueFromProducer(token, task);
 }
 
 void TaskScheduler::ExecuteForever(atomic<bool> *marker) {
+    //printf("TaskScheduler::ExecuteForever \n");
 #ifndef DUCKDB_NO_THREADS
 	unique_ptr<Task> task;
 	// loop until the marker is set to false
@@ -139,15 +148,18 @@ void TaskScheduler::ExecuteForever(atomic<bool> *marker) {
 
 #ifndef DUCKDB_NO_THREADS
 static void ThreadExecuteTasks(TaskScheduler *scheduler, atomic<bool> *marker) {    // a.k.a. has thread, then execute this
+    //printf("ThreadExecuteTasks \n");
 	scheduler->ExecuteForever(marker);
 }
 #endif
 
 int32_t TaskScheduler::NumberOfThreads() {
+    //printf("TaskScheduler::NumberOfThreads \n");
 	return threads.size() + 1;
 }
 
 void TaskScheduler::SetThreads(int32_t n) {
+    //printf("TaskScheduler::SetThreads \n");
 #ifndef DUCKDB_NO_THREADS
 	if (n < 1) {
 		throw SyntaxException("Must have at least 1 thread!");
@@ -161,6 +173,7 @@ void TaskScheduler::SetThreads(int32_t n) {
 }
 
 void TaskScheduler::SetThreadsInternal(int32_t n) {
+    //printf("TaskScheduler::SetThreadsInternal \n");
 #ifndef DUCKDB_NO_THREADS
 	if (threads.size() == idx_t(n - 1)) {
 		return;
@@ -181,7 +194,7 @@ void TaskScheduler::SetThreadsInternal(int32_t n) {
 	} else if (threads.size() > new_thread_count) {
 		// we are reducing the number of threads: cancel any threads exceeding new_thread_count
 		for (idx_t i = new_thread_count; i < threads.size(); i++) {
-			*markers[i] = false;
+			*markers[i] = false;    //THREAD i WILL BE STOPPED
 		}
 		// now join the threads to ensure they are fully stopped before erasing them
 		for (idx_t i = new_thread_count; i < threads.size(); i++) {

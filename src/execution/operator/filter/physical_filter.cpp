@@ -30,6 +30,7 @@ PhysicalFilter::PhysicalFilter(vector<LogicalType> types, vector<unique_ptr<Expr
 }
 
 void PhysicalFilter::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state_p) {
+    printf("PhysicalFilter::GetChunkInternal\n");
 	auto state = reinterpret_cast<PhysicalFilterState *>(state_p);
 	SelectionVector sel(STANDARD_VECTOR_SIZE);
 	idx_t initial_count;
@@ -43,7 +44,7 @@ void PhysicalFilter::GetChunkInternal(ExecutionContext &context, DataChunk &chun
 		}
 		initial_count = chunk.size();
 		result_count = state->executor.SelectExpression(chunk, sel);
-	} while (result_count == 0);
+	} while (result_count == 0);    // if find result, then return first
 
 	if (result_count == initial_count) {
 		// nothing was filtered: skip adding any selection vectors

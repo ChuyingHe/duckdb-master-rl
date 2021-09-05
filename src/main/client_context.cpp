@@ -60,7 +60,7 @@ ClientContext::~ClientContext() {
 }
 
 unique_ptr<ClientContextLock> ClientContext::LockContext() {
-	//printf("unique_ptr<ClientContextLock> ClientContext::LockContext\n");
+	printf("unique_ptr<ClientContextLock> ClientContext::LockContext\n");
 	return make_unique<ClientContextLock>(context_lock);
 }
 
@@ -152,12 +152,13 @@ void ClientContext::CleanupInternal(ClientContextLock &lock) {
 }
 
 unique_ptr<DataChunk> ClientContext::FetchInternal(ClientContextLock &) {
+    printf("ClientContext::FetchInternal");
 	return executor.FetchChunk();
 }
 
 shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement(ClientContextLock &lock, const string &query,
                                                                          unique_ptr<SQLStatement> statement) {
-	//printf("shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement\n");
+	printf("shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement\n");
     Timer timer_preparation;
 	StatementType statement_type = statement->type;
 	auto result = make_shared<PreparedStatementData>(statement_type);
@@ -215,7 +216,7 @@ int ClientContext::GetProgress() {
 unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLock &lock, const string &query,
                                                                 shared_ptr<PreparedStatementData> statement_p,
                                                                 vector<Value> bound_values, bool allow_stream_result) {
-	//f("unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLock &lock, const string &query,\n");
+	printf("ExecutePreparedStatement(ClientContextLock &lock, const string &query,\n");
     Timer timer_execution;
 	auto &statement = *statement_p;     // shared_ptr<PreparedStatementData>: includes optimized physical PLAN
 	if (ActiveTransaction().IsInvalidated() && statement.requires_valid_transaction) {
@@ -226,20 +227,22 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 		throw Exception(StringUtil::Format("Cannot execute statement of type \"%s\" in read-only mode!",
 		                                   StatementTypeToString(statement.statement_type)));
 	}
-
+    printf("ExecutePreparedStatement - 1 - before Bind() \n");
 	// bind the bound values before execution
 	statement.Bind(move(bound_values)); //bound_values: empty vector
+	printf("ExecutePreparedStatement - 2 - after Bind() \n");
 
 	bool create_stream_result = statement.allow_stream_result && allow_stream_result;
-	if (enable_progress_bar) {
+	if (enable_progress_bar) {  //progress runs in another thread, parallel to the main thread
 		if (!progress_bar) {
 			progress_bar = make_shared<ProgressBar>(&executor, wait_time);
 		}
 		progress_bar->Start();
 	}
-	// store the physical plan in the context for calls to Fetch()
-	executor.Initialize(statement.plan.get());  //statement.plan is the physical_plan
-
+	printf("ExecutePreparedStatement - 3 - before executor.Initialize() \n");
+    // store the physical plan in the context for calls to Fetch()
+	executor.Initialize(statement.plan.get());  // 1 time
+	printf("ExecutePreparedStatement - 4 - after executor.Initialize() \n");
 	auto types = executor.GetTypes();
 
 	D_ASSERT(types == statement.types);
@@ -256,9 +259,13 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
         return make_unique<StreamQueryResult>(statement.statement_type, shared_from_this(), statement.types,
 		                                      statement.names, move(statement_p));
 	}
+	printf("ExecutePreparedStatement - 5 - before result = make_unique<MaterializedQueryResult>() \n");
 	// create a materialized result by continuously fetching
 	auto result = make_unique<MaterializedQueryResult>(statement.statement_type, statement.types, statement.names); // 🚩 2rd return
-	while (true) {
+	printf("ExecutePreparedStatement - 6 - before true loop \n");
+
+    while (true) {
+	    printf("true loop includes FetchInternal\n ");
 		auto chunk = FetchInternal(lock);   // Get chunk recursively
 
 		if (chunk->size() == 0) {
@@ -286,7 +293,7 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 unique_ptr<QueryResult> ClientContext::ExecutePreparedStatementWithRLOptimizer(ClientContextLock &lock, const string &query,
                                                                 shared_ptr<PreparedStatementData> statement_p,
                                                                 vector<Value> bound_values, bool allow_stream_result) {
-    //printf("unique_ptr<QueryResult> ClientContext::ExecutePreparedStatementWithRLOptimizer \n");
+    printf("unique_ptr<QueryResult> ClientContext::ExecutePreparedStatementWithRLOptimizer \n");
     auto &statement = *statement_p;     // shared_ptr<PreparedStatementData>: includes optimized PLAN
     if (ActiveTransaction().IsInvalidated() && statement.requires_valid_transaction) {
         throw Exception("Current transaction is aborted (please ROLLBACK)");
@@ -357,7 +364,7 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatementWithRLOptimizer(C
 }
 
 void ClientContext::InitialCleanup(ClientContextLock &lock) {
-	//printf("void ClientContext::InitialCleanup\n");
+	printf("ClientContext::InitialCleanup\n");
 	//! Cleanup any open results and reset the interrupted flag
 	CleanupInternal(lock);
 	interrupted = false;
@@ -369,7 +376,7 @@ vector<unique_ptr<SQLStatement>> ClientContext::ParseStatements(const string &qu
 }
 
 vector<unique_ptr<SQLStatement>> ClientContext::ParseStatementsInternal(ClientContextLock &lock, const string &query) {
-	//printf("vector<unique_ptr<SQLStatement>> ClientContext::ParseStatementsInternal\n");
+	printf("ClientContext::ParseStatementsInternal\n");
 	Parser parser;
 	parser.ParseQuery(query);
 
@@ -460,14 +467,16 @@ unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &l
     if (enable_rl_join_order_optimizer) {	//this should mix the process of selection and execution, and return a result in the end
         //printf("🌈 SkinnerDB RL\n");
         SkinnerDB skinnerDb(profiler, *this);
-        return skinnerDb.CreateAndExecuteStatement(lock, query, move(statement), allow_stream_result);;
+        return skinnerDb.CreateAndExecuteStatement(lock, query, move(statement), allow_stream_result);
     } else {
-        //printf("🌈 DuckDB DP\n");
+        printf("🌈 DuckDB DP\n");
+        std::cout<<"query = "<< query <<"\n";
         // prepare the query for execution
         auto prepared = CreatePreparedStatement(lock, query, move(statement));  	//return PreparedStatementData which contains physical_plan - prepared.plan
         // by default, no values are bound
         vector<Value> bound_values;
         // execute the prepared statement
+        std::cout<<"🐱 before execution \n";
         return ExecutePreparedStatement(lock, query, move(prepared), move(bound_values), allow_stream_result);	    //return unique_ptr<QueryResult>
     }
 
@@ -614,7 +623,7 @@ unique_ptr<QueryResult> ClientContext::Query(unique_ptr<SQLStatement> statement,
 }
 
 unique_ptr<QueryResult> ClientContext::Query(const string &query, bool allow_stream_result) {
-	//printf("unique_ptr<QueryResult> ClientContext::Query\n");
+	printf("unique_ptr<QueryResult> ClientContext::Query\n");
 	auto lock = LockContext();          // create lock
 	LogQueryInternal(*lock, query); // write log file if its enabled. Put query inside also
 
@@ -637,6 +646,7 @@ unique_ptr<QueryResult> ClientContext::Query(const string &query, bool allow_str
 
 
 void ClientContext::Interrupt() {
+    printf("ClientContext::Interrupt \n");
 	interrupted = true;
 }
 
@@ -651,7 +661,7 @@ void ClientContext::DisableProfiling() {
 }
 
 string ClientContext::VerifyQuery(ClientContextLock &lock, const string &query, unique_ptr<SQLStatement> statement) {
-	//printf("string ClientContext::VerifyQuery\n");
+	printf("string ClientContext::VerifyQuery\n");
 	D_ASSERT(statement->type == StatementType::SELECT_STATEMENT);
 	// aggressive query verification
 

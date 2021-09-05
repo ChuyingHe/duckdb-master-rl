@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include <iostream>
 namespace duckdb {
 
 class PhysicalTableScanOperatorState : public PhysicalOperatorState {
@@ -32,6 +33,7 @@ PhysicalTableScan::PhysicalTableScan(vector<LogicalType> types, TableFunction fu
 }
 
 void PhysicalTableScan::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state_p) {
+    printf("PhysicalTableScan::GetChunkInternal() \n");
 	auto &state = (PhysicalTableScanOperatorState &)*state_p;
 	if (column_ids.empty()) {
 		return;
@@ -61,8 +63,9 @@ void PhysicalTableScan::GetChunkInternal(ExecutionContext &context, DataChunk &c
 		state.initialized = true;
 	}
 	if (!state.parallel_state) {
+        //printf("PhysicalTableScan::GetChunkInternal - 2; ");
 		// sequential scan
-		function.function(context.client, bind_data.get(), state.operator_data.get(), nullptr, chunk);
+		function.function(context.client, bind_data.get(), state.operator_data.get(), nullptr, chunk);  // call TableScanFunc()
 		if (chunk.size() != 0) {
 			return;
 		}

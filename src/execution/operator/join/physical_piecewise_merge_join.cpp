@@ -281,6 +281,7 @@ void PhysicalPiecewiseMergeJoin::ResolveComplexJoin(ExecutionContext &context, D
 
 void PhysicalPiecewiseMergeJoin::GetChunkInternal(ExecutionContext &context, DataChunk &chunk,
                                                   PhysicalOperatorState *state_p) {
+    printf("PhysicalPiecewiseMergeJoin::GetChunkInternal\n");
 	auto state = reinterpret_cast<PhysicalPiecewiseMergeJoinState *>(state_p);
 	auto &gstate = (MergeJoinGlobalState &)*sink_state;
 

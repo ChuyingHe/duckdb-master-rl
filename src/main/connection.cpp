@@ -62,7 +62,7 @@ unique_ptr<QueryResult> Connection::SendQuery(const string &query) {
 }
 
 unique_ptr<MaterializedQueryResult> Connection::Query(const string &query) {
-    // printf("unique_ptr<MaterializedQueryResult> Connection::Query\n");
+    printf("unique_ptr<MaterializedQueryResult> Connection::Query\n");
     auto result = context->Query(query, false);
     D_ASSERT(result->type == QueryResultType::MATERIALIZED_RESULT);
     return unique_ptr_cast<QueryResult, MaterializedQueryResult>(move(result));

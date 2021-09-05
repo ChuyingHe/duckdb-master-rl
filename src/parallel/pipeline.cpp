@@ -80,8 +80,10 @@ bool Pipeline::GetProgress(int &current_percentage) {
 }
 
 void Pipeline::Execute(TaskContext &task) {	//execution of task(pipeline without dependencies
+    printf("Pipeline::Execute - 1; ");      // 4 times
 	auto &client = executor.context;
 	if (client.interrupted) {
+        printf("Pipeline::Execute - interrupted \n");
 		return;
 	}
 	if (parallel_state) {
@@ -90,14 +92,18 @@ void Pipeline::Execute(TaskContext &task) {	//execution of task(pipeline without
 
 	ThreadContext thread(client);
 	ExecutionContext context(client, thread, task);
+
 	try {
-		auto state = child->GetOperatorState();	//child is a PhysicalOperator
+		auto state = child->GetOperatorState();
 		auto lstate = sink->GetLocalSinkState(context);
 		// incrementally process the pipeline
 		DataChunk intermediate;
 		child->InitializeChunkEmpty(intermediate);  //initialize intermediate with pre-defined type: TABLE_SCAN of "company_type": intermediate is initialized with 2 data [Vector, Vector]
-		while (true) {
-			child->GetChunk(context, intermediate, state.get());
+
+		int test = 0;
+		/*while (true) {
+            //printf("Pipeline::Execute - 2 \n");
+			child->GetChunk(context, intermediate, state.get());    // Execute the Child of current Pipeline
 			thread.profiler.StartOperator(sink);
 			if (intermediate.size() == 0) {
 				sink->Combine(context, *sink_state, *lstate);
@@ -105,13 +111,27 @@ void Pipeline::Execute(TaskContext &task) {	//execution of task(pipeline without
 			}
 			sink->Sink(context, *sink_state, *lstate, intermediate);
 			thread.profiler.EndOperator(nullptr);
-		}
+            test+=1;
+		}*/
+		std::cout<< "pipeline.cpp: while (true) loop count = " <<test <<"\n";
+
+		//start of test
+        printf("Pipeline::Execute - 2 \n");    // 4092 times
+        child->GetChunk(context, intermediate, state.get());    // here
+        thread.profiler.StartOperator(sink);
+        sink->Combine(context, *sink_state, *lstate);
+        sink->Sink(context, *sink_state, *lstate, intermediate);
+        thread.profiler.EndOperator(nullptr);
+        //end of test
+
+        printf("Pipeline::Execute - 5 \n");
 		child->FinalizeOperatorState(*state, context);
 	} catch (std::exception &ex) {
 		executor.PushError(ex.what());
 	} catch (...) {
 		executor.PushError("Unknown exception in pipeline!");
 	}
+    printf("Pipeline::Execute - 6 \n");
 	executor.Flush(thread);
 }
 

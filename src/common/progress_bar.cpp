@@ -5,7 +5,7 @@
 namespace duckdb {
 
 void ProgressBar::ProgressBarThread() {
-#ifndef DUCKDB_NO_THREADS   /*if DUCKDB_NO_THREADS is not defined yet, define it now*/
+#ifndef DUCKDB_NO_THREADS   /*if DUCKDB_NO_THREADS is not defined */
 	WaitFor(std::chrono::milliseconds(show_progress_after)); /*in client_context.hpp: show_progress_after = 2000*/
 	while (!stop) {
 		int new_percentage;

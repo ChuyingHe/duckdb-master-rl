@@ -23,6 +23,7 @@ public:
 };
 
 void PhysicalCopyToFile::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) {
+    printf("PhysicalCopyToFile::GetChunkInternal\n");
 	auto &g = (CopyToFunctionGlobalState &)*sink_state;
 
 	chunk.SetCardinality(1);

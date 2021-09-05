@@ -12,6 +12,7 @@ public:
 };
 
 void PhysicalChunkScan::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state_p) {
+    printf("PhysicalChunkScan::GetChunkInternal \n");
 	auto state = (PhysicalChunkScanState *)state_p;
 	D_ASSERT(collection);
 	if (collection->Count() == 0) {

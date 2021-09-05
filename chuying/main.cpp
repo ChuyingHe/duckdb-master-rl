@@ -45,7 +45,7 @@ void addIndexes(Connection con) {
 }
 
 void runJOBQuerys(Connection con) {
-    //con.Query("PRAGMA enable_profiling='json'");
+    //con.Query("PRAGMA enable_profiling='json'");        //ProgressBar uses a seperated thread for tracking purpose
     //con.Query("PRAGMA enable_progress_bar");
     //con.Query("PRAGMA enable_rl_join_order_optimizer");
 
@@ -104,22 +104,19 @@ bool existDB(std::string db) {
 
 int main() {
 
-    /*FileSystem fs;
-    if (!fs.DirectoryExists(IMDB_DIRECTORY_NAME)) {
-        fs.CreateDirectory(IMDB_DIRECTORY_NAME);
-    }
-    auto storage_db = fs.JoinPath(IMDB_DIRECTORY_NAME, "imdb");*/
+    // if persistent db exist
     auto storage_db = IMDB_DIRECTORY + "imdb";
-    //std::cout <<"🌈 main \n";
     DuckDB db(storage_db);
     Connection con(db);
 
-    // con.Query("PRAGMA threads=4;");
-    /*if (!fs.DirectoryExists(storage_db)) {
-        printf("condition\n");
-        //loadTables(con);
+    // if persistent db not exist
+    /*FileSystem fs;
+    if (!fs.DirectoryExists(storage_db)) {
+        printf("create persistent db \n");
+        loadTables(con);
     }*/
 
-	addIndexes(con);
+	//addIndexes(con);
 	runJOBQuerys(con);
+
 }

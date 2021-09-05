@@ -95,6 +95,7 @@ unique_ptr<LocalSinkState> PhysicalUpdate::GetLocalSinkState(ExecutionContext &c
 // GetChunkInternal
 //===--------------------------------------------------------------------===//
 void PhysicalUpdate::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) {
+    printf("PhysicalUpdate::GetChunkInternal\n");
 	auto &gstate = (UpdateGlobalState &)*sink_state;
 
 	chunk.SetCardinality(1);

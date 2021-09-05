@@ -29,6 +29,7 @@ void *dlsym(void *handle, const char *name) {
 #endif
 
 void PhysicalLoad::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) {
+    printf("PhysicalLoad::GetChunkInternal\n");
 	auto &fs = FileSystem::GetFileSystem(context.client);
 	auto filename = fs.ConvertSeparators(info->filename);
 	if (!fs.FileExists(filename)) {

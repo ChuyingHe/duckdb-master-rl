@@ -27,8 +27,11 @@ PhysicalOperatorState::PhysicalOperatorState(PhysicalOperator &op, PhysicalOpera
 }
 // 1.para: econtext(context, thread, task); // 2.para: chunk.data
 void PhysicalOperator::GetChunk(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) {
+    printf("PhysicalOperator::GetChunk() \n");
 	if (context.client.interrupted) {
-		throw InterruptException();
+	    printf("context.client.interrupted");
+		//throw InterruptException();
+        return;
 	}
 	// reset the chunk back to its initial state
 	chunk.Reference(state->initial_chunk);
@@ -39,7 +42,9 @@ void PhysicalOperator::GetChunk(ExecutionContext &context, DataChunk &chunk, Phy
 
 	// execute the operator
 	context.thread.profiler.StartOperator(this);
-	GetChunkInternal(context, chunk, state);    // function defined in src/execution/operator/aggregate/physical_simple_aggregate.cpp
+	//printf("PhysicalOperator::GetChunk - 2; ");
+	GetChunkInternal(context, chunk, state);    // current PhysicalOperator decide which GetChunkInternal() to use: every Physical Operator has its own
+	//printf("PhysicalOperator::GetChunk - 3; ");
 	context.thread.profiler.EndOperator(&chunk);
 
 	chunk.Verify();
@@ -50,3 +55,8 @@ void PhysicalOperator::Print() {
 }
 
 } // namespace duckdb
+
+
+
+
+

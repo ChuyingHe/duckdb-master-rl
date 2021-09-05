@@ -71,6 +71,7 @@ public:
 	bool print_progress_bar = true;
 	//! The wait time before showing the progress bar
 	int wait_time = 2000;
+    //int wait_time = 0;
 
 	bool query_finished = false;
 

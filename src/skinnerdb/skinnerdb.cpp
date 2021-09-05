@@ -27,11 +27,6 @@ void SkinnerDB::runStatement(shared_ptr<PreparedStatementData> plan){
 
 }
 
-void testfunc(unique_ptr<LogicalOperator> plan) {
-    // printf("test func to remove one of the copy");
-    //std::cout<< plan->GetName();
-}
-
 unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &lock, const string &query,
                                                           unique_ptr<SQLStatement> statement, bool allow_stream_result){
     Timer timer_prep_preoptimizer;
@@ -63,8 +58,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
     double duration_prep_preoptimizer = timer_prep_preoptimizer.check();
 
-    //while (sample_count < 200) {
-    while (true) {
+    while (sample_count < 20) {
+    //while (true) {
         //std::cout<< "sample_count = " <<sample_count <<"\n";
         Timer timer_prep_join_order;
 
@@ -112,9 +107,9 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         std::string::size_type pos = query.find('.sql');
         auto job_file_sql = query.substr(2, pos-1);
         if (chosen_node) {
-            if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {
+            /*if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {
                 same_order_count +=1;
-                if (same_order_count>=5) {
+                if (same_order_count>=5 || sample_count==99) {
                     //std::cout<<"final plan found in loop "<< sample_count << "\n";
                     double time_prep = duration_prep_preoptimizer + duration_prep_join_order;
                     std::cout   << job_file_sql << ", optimizer = RL Optimizer, loop = " << sample_count << ", join_order = "
@@ -126,12 +121,12 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
             } else {
                 same_order_count = 1;
                 previous_order_of_relations = chosen_node->join_node->order_of_relations;
-            }
-            /*double time_prep = duration_prep_preoptimizer + duration_prep_join_order;
+            }*/
+            double time_prep = duration_prep_preoptimizer + duration_prep_join_order;
             std::cout   << job_file_sql << ", optimizer = RL Optimizer, loop = " << sample_count << ", join_order = "
                         << chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward << ", num_of_visits = "
                         << chosen_node->num_of_visits << ", time_preparation = " << time_prep << ", time_execution = "
-                        << duration_execution <<", time_total = "<< duration_execution+ time_prep<<"\n";*/
+                        << duration_execution <<", time_total = "<< duration_execution+ time_prep<<"\n";
         } else {
             std::cout<< "nothing to optimize \n";
         }

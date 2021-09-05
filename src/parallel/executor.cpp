@@ -22,6 +22,7 @@ Executor::~Executor() {
 }
 
 void Executor::Initialize(PhysicalOperator *plan) {
+    printf("Executor::Initialize \n");
 	Reset();
 
 	physical_plan = plan;
@@ -30,9 +31,7 @@ void Executor::Initialize(PhysicalOperator *plan) {
 	context.profiler.Initialize(physical_plan);
 	auto &scheduler = TaskScheduler::GetScheduler(context);
 	this->producer = scheduler.CreateProducer();        // returns unique_ptr<ProducerToken>
-
 	BuildPipelines(physical_plan, nullptr);     //create this->pipelines
-
 	this->total_pipelines = pipelines.size();
 
 	// schedule pipelines that do not have dependents
@@ -41,15 +40,18 @@ void Executor::Initialize(PhysicalOperator *plan) {
 			pipeline->Schedule();   // if current pipeline doesn't have dependencies/child, then pipeline.total_tasks+1
 		}
 	}
-
+    printf("Executor::Initialize - 8; ");
 	// now execute tasks from this producer until all pipelines are completed
 	while (completed_pipelines < total_pipelines) {
+	    printf("Executor::Initialize - 9; ");           // 1 time
 		unique_ptr<Task> task;
 		while (scheduler.GetTaskFromProducer(*producer, task)) {
+            printf("Executor::Initialize - 10 \n");     // 4 times
 			task->Execute();    // get tasks from pipelines  = pipeline which doesn't have dependencies
 			task.reset();
 		}
 	}
+    printf("Executor::Initialize - 11 after execute over task of pipelines \n");
 
 	pipelines.clear();
 	if (!exceptions.empty()) {
@@ -237,7 +239,7 @@ bool Executor::GetPipelinesProgress(int &current_progress) {
 	lock_guard<mutex> elock(executor_lock);
 
 	if (!pipelines.empty()) {
-		return pipelines.back()->GetProgress(current_progress);
+		return pipelines.back()->GetProgress(current_progress); //last elem in pipelines
 	} else {
 		current_progress = -1;
 		return true;
@@ -245,6 +247,7 @@ bool Executor::GetPipelinesProgress(int &current_progress) {
 }
 
 unique_ptr<DataChunk> Executor::FetchChunk() {
+    printf("Executor::FetchChunk \n");
 	D_ASSERT(physical_plan);
 
 	ThreadContext thread(context);

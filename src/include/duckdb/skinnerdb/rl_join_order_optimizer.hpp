@@ -57,7 +57,9 @@ namespace duckdb {
                 context) { /*constructor, explicit prevent other type of parameter*/
         }
 
-        unique_ptr <LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan, idx_t sample_count);
+        unique_ptr <LogicalOperator> Selection(unique_ptr<LogicalOperator> plan, idx_t sample_count);
+        //unique_ptr <LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan, idx_t sample_count);
+
         void RewardUpdate(double reward);
         void GeneratePlans();
         static unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>, Hasher, EqualFn> plans;   // includes all the relations, to return

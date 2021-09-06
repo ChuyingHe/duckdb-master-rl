@@ -48,6 +48,7 @@ void Executor::Initialize(PhysicalOperator *plan) {
 		while (scheduler.GetTaskFromProducer(*producer, task)) {
             printf("Executor::Initialize - 10 \n");     // 4 times
 			task->Execute();    // get tasks from pipelines  = pipeline which doesn't have dependencies
+			printf("Executor::Initialize - 11 \n");
 			task.reset();
 		}
 	}

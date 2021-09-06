@@ -101,7 +101,7 @@ void Pipeline::Execute(TaskContext &task) {	//execution of task(pipeline without
 		child->InitializeChunkEmpty(intermediate);  //initialize intermediate with pre-defined type: TABLE_SCAN of "company_type": intermediate is initialized with 2 data [Vector, Vector]
 
 		int test = 0;
-		/*while (true) {
+		while (true) {
             //printf("Pipeline::Execute - 2 \n");
 			child->GetChunk(context, intermediate, state.get());    // Execute the Child of current Pipeline
 			thread.profiler.StartOperator(sink);
@@ -112,16 +112,16 @@ void Pipeline::Execute(TaskContext &task) {	//execution of task(pipeline without
 			sink->Sink(context, *sink_state, *lstate, intermediate);
 			thread.profiler.EndOperator(nullptr);
             test+=1;
-		}*/
+		}
 		std::cout<< "pipeline.cpp: while (true) loop count = " <<test <<"\n";
 
 		//start of test
-        printf("Pipeline::Execute - 2 \n");    // 4092 times
+        /*printf("Pipeline::Execute - 2 \n");    // 4092 times
         child->GetChunk(context, intermediate, state.get());    // here
         thread.profiler.StartOperator(sink);
         sink->Combine(context, *sink_state, *lstate);
         sink->Sink(context, *sink_state, *lstate, intermediate);
-        thread.profiler.EndOperator(nullptr);
+        thread.profiler.EndOperator(nullptr);*/
         //end of test
 
         printf("Pipeline::Execute - 5 \n");
@@ -133,6 +133,7 @@ void Pipeline::Execute(TaskContext &task) {	//execution of task(pipeline without
 	}
     printf("Pipeline::Execute - 6 \n");
 	executor.Flush(thread);
+    printf("Pipeline::Execute - 7 \n");
 }
 
 void Pipeline::FinishTask() {
@@ -324,6 +325,7 @@ void Pipeline::CompleteDependency() {
 }
 
 void Pipeline::Finish() {
+    printf("Pipeline::Finish()\n");
 	D_ASSERT(!finished);
 	finished = true;
 	// finished processing the pipeline, now we can schedule pipelines that depend on this pipeline

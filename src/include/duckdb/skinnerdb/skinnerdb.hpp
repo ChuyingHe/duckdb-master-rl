@@ -24,11 +24,7 @@ namespace duckdb {
         QueryProfiler& profiler;
         ClientContext& context;
 
-        void runStatement(shared_ptr<PreparedStatementData> plan);
-
-        // unique_ptr<QueryResult> Execute(ClientContextLock &lock, const string &query, unique_ptr<SQLStatement> statement, bool allow_stream_result);
         unique_ptr<QueryResult> CreateAndExecuteStatement(ClientContextLock &lock, const string &query, unique_ptr<SQLStatement> statement, bool allow_stream_result);
-
 
     private:
         int state = 0;             //恢复执行状态?

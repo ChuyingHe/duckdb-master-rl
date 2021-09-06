@@ -1,7 +1,9 @@
 //
 // Created by Chuying He on 26/06/2021.
 //
-
+/*
+ * Entrance of SkinnerDB Algorithm
+ */
 #include "duckdb/skinnerdb/skinnerdb.hpp"
 
 #include "duckdb/planner/planner.hpp"
@@ -18,13 +20,6 @@ NodeForUCT* root_node_for_uct;     //initialize the root of the tree
 NodeForUCT* chosen_node;
 
 SkinnerDB::SkinnerDB(QueryProfiler &profiler, ClientContext& context): profiler(profiler), context(context) {
-}
-
-void SkinnerDB::runStatement(shared_ptr<PreparedStatementData> plan){
-    //1. execute Query
-    // measure: how long does it take to EXECUTE one CHUNK
-    //2. update
-
 }
 
 unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &lock, const string &query,
@@ -58,7 +53,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
     double duration_prep_preoptimizer = timer_prep_preoptimizer.check();
 
-    while (sample_count < 20) {
+    while (sample_count < 1) {
     //while (true) {
         //std::cout<< "sample_count = " <<sample_count <<"\n";
         Timer timer_prep_join_order;
@@ -80,7 +75,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
             rl_optimizer.plans.clear();
             chosen_node = nullptr;
         }
-        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(copy), sample_count);
+        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Selection(move(copy), sample_count);
 
         // 5.3 Create physical plan
         profiler.StartPhase("physical_planner");
@@ -97,6 +92,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         //std::cout <<"time_preparation = " <<duration_preparation <<", ";
 
         Timer timer_execution;
+        //TODO: here we need info of the Progress 🐈
         query_result = context.ExecutePreparedStatementWithRLOptimizer(lock, query, move(result), move(bound_values), allow_stream_result);
         double duration_execution = timer_execution.check();
 

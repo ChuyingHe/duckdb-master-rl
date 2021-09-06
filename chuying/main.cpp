@@ -110,11 +110,11 @@ int main() {
     Connection con(db);
 
     // if persistent db not exist
-    /*FileSystem fs;
+    FileSystem fs;
     if (!fs.DirectoryExists(storage_db)) {
         printf("create persistent db \n");
         loadTables(con);
-    }*/
+    }
 
 	//addIndexes(con);
 	runJOBQuerys(con);

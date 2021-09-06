@@ -238,7 +238,7 @@ void PhysicalHashJoin::ProbeHashTable(ExecutionContext &context, DataChunk &chun
 	}
 
 	// probe the HT
-	/*do {
+	do {
 		// fetch the chunk from the left side
 		children[0]->GetChunk(context, state->child_chunk, state->child_state.get());
 		if (state->child_chunk.size() == 0) {
@@ -254,11 +254,11 @@ void PhysicalHashJoin::ProbeHashTable(ExecutionContext &context, DataChunk &chun
 		// perform the actual probe
 		state->scan_structure = sink.hash_table->Probe(state->join_keys);
 		state->scan_structure->Next(state->join_keys, state->child_chunk, chunk);
-	} while (chunk.size() == 0);*/
+	} while (chunk.size() == 0);
 
 	//test
     // fetch the chunk from the left side
-    children[0]->GetChunk(context, state->child_chunk, state->child_state.get());
+   /* children[0]->GetChunk(context, state->child_chunk, state->child_state.get());
     if (state->child_chunk.size() == 0) {
         return;
     }
@@ -271,7 +271,7 @@ void PhysicalHashJoin::ProbeHashTable(ExecutionContext &context, DataChunk &chun
 
     // perform the actual probe
     state->scan_structure = sink.hash_table->Probe(state->join_keys);
-    state->scan_structure->Next(state->join_keys, state->child_chunk, chunk);
+    state->scan_structure->Next(state->join_keys, state->child_chunk, chunk);*/
     //end of test
 }
 

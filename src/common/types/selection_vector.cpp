@@ -5,7 +5,7 @@
 namespace duckdb {
 
 string SelectionVector::ToString(idx_t count) const {
-	string result = "Selection Vector (" + to_string(count) + ") [";
+	string result = "SelectJoinOrder Vector (" + to_string(count) + ") [";
 	for (idx_t i = 0; i < count; i++) {
 		if (i != 0) {
 			result += ", ";

@@ -124,7 +124,7 @@ bool RLJoinOrderOptimizer::ExtractJoinRelations(idx_t sample_count, LogicalOpera
             op->type == LogicalOperatorType::LOGICAL_WINDOW) {
             // don't push filters through projection or aggregate and group by
             RLJoinOrderOptimizer optimizer(context);
-            op->children[0] = optimizer.Selection(move(op->children[0]), sample_count);
+            op->children[0] = optimizer.SelectJoinOrder(move(op->children[0]), sample_count);
             return false;
         }
         op = op->children[0].get();
@@ -172,7 +172,7 @@ bool RLJoinOrderOptimizer::ExtractJoinRelations(idx_t sample_count, LogicalOpera
         // for this reason, we just start a new JoinOptimizer pass in each of the children of the join
         for (auto &child : op->children) {
             RLJoinOrderOptimizer optimizer(context);
-            child = optimizer.Selection(move(child), sample_count);
+            child = optimizer.SelectJoinOrder(move(child), sample_count);
         }
         // after this we want to treat this node as one  "end node" (like e.g. a base relation)
         // however the join refers to multiple base relations
@@ -220,7 +220,7 @@ bool RLJoinOrderOptimizer::ExtractJoinRelations(idx_t sample_count, LogicalOpera
         auto proj = (LogicalProjection *)op;
         // we run the join order optimizer witin the subquery as well
         RLJoinOrderOptimizer optimizer(context);
-        op->children[0] = optimizer.Selection(move(op->children[0]), sample_count);
+        op->children[0] = optimizer.SelectJoinOrder(move(op->children[0]), sample_count);
         // projection, add to the set of relations
         auto relation = make_unique<SingleJoinRelation>(&input_op, parent);
         relation_mapping[proj->table_index] = relations.size();
@@ -810,7 +810,7 @@ void RLJoinOrderOptimizer::sample(NodeForUCT& node) {
 */
 
 
-unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Selection(unique_ptr<LogicalOperator> plan, idx_t sample_count) {
+unique_ptr<LogicalOperator> RLJoinOrderOptimizer::SelectJoinOrder(unique_ptr<LogicalOperator> plan, idx_t sample_count) {
     //printf("unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize\n");
     /* extract relations from the logical plan:*/
     D_ASSERT(filters.empty() && relations.empty()); // assert that the RLJoinOrderOptimizer has not been used before

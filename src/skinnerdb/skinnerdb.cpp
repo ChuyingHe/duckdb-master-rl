@@ -75,7 +75,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
             rl_optimizer.plans.clear();
             chosen_node = nullptr;
         }
-        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Selection(move(copy), sample_count);
+        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.SelectJoinOrder(move(copy), sample_count);
 
         // 5.3 Create physical plan
         profiler.StartPhase("physical_planner");

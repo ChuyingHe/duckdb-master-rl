@@ -13,7 +13,7 @@
 
 namespace duckdb {
 
-//! Selection vector cache used for caching vector slices
+//! SelectJoinOrder vector cache used for caching vector slices
 struct SelCache {
 	unordered_map<sel_t *, buffer_ptr<VectorBuffer>> cache;
 };

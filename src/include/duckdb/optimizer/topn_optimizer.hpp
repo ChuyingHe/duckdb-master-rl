@@ -16,7 +16,7 @@ class Optimizer;
 
 class TopN {
 public:
-	//! Selection ORDER BY + LIMIT to TopN
+	//! SelectJoinOrder ORDER BY + LIMIT to TopN
 	unique_ptr<LogicalOperator> Optimize(unique_ptr<LogicalOperator> op);
 };
 

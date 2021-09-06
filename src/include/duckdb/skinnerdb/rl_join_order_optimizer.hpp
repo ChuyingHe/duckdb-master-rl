@@ -57,7 +57,7 @@ namespace duckdb {
                 context) { /*constructor, explicit prevent other type of parameter*/
         }
 
-        unique_ptr <LogicalOperator> Selection(unique_ptr<LogicalOperator> plan, idx_t sample_count);
+        unique_ptr <LogicalOperator> SelectJoinOrder(unique_ptr<LogicalOperator> plan, idx_t sample_count);
         //unique_ptr <LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan, idx_t sample_count);
 
         void RewardUpdate(double reward);

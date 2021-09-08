@@ -6,3 +6,5 @@ cmake-build-release/
 chuying/profiling/
 chuying/imdb/
 chuying/imdb-mini/
+chuying/imdb-origin/
+chuying/visualization/

@@ -47,15 +47,14 @@ void addIndexes(Connection con) {
 void runJOBQuerys(Connection con) {
     //con.Query("PRAGMA enable_profiling='json'");        //ProgressBar uses a seperated thread for tracking purpose
     //con.Query("PRAGMA enable_progress_bar");
-    //con.Query("PRAGMA enable_rl_join_order_optimizer");
 
-    //TODO: delete this
     int count_sql = 0;
 
     std::string path = getRootPath() + "/chuying/job-query";
     for (const auto & entry : std::filesystem::directory_iterator(path)) {
         if (entry.path().u8string().find(".sql")!= std::string::npos) { //only take *.sql files
             count_sql++;
+            //con.Query("PRAGMA enable_rl_join_order_optimizer");
             std::cout<<"Progress = "<< count_sql <<"/113 \n";
 
             std::string job_file = entry.path().filename().string();
@@ -66,6 +65,7 @@ void runJOBQuerys(Connection con) {
             std::cout <<"entry_path" <<entry.path() <<"\n 🎄 JOB query = " << job_query <<"\n\n";*/
             std::string job_query = readFileIntoString(entry.path());
             // Timer timer;
+
             auto result = con.Query(job_query);
             result->Print();
             //double duration = timer.check();
@@ -110,11 +110,11 @@ int main() {
     Connection con(db);
 
     // if persistent db not exist
-    FileSystem fs;
+    /*FileSystem fs;
     if (!fs.DirectoryExists(storage_db)) {
         printf("create persistent db \n");
         loadTables(con);
-    }
+    }*/
 
 	//addIndexes(con);
 	runJOBQuerys(con);

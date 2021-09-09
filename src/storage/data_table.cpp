@@ -293,16 +293,30 @@ bool DataTable::NextParallelScan(ClientContext &context, ParallelTableScanState 
 }
 
 void DataTable::Scan(Transaction &transaction, DataChunk &result, TableScanState &state, vector<column_t> &column_ids) {
-	// scan the persistent segments
-	while (ScanBaseTable(transaction, result, state, column_ids, state.current_row, state.max_row)) {
-		if (result.size() > 0) {
-			return;
-		}
-		result.Reset();
-	}
+    if (enable_rl_join_order_optimizer) {
+        // scan the persistent segments
+        /*while (ScanBaseTable(transaction, result, state, column_ids, state.current_row, state.max_row)) {
+            if (result.size() > 0) {
+                return;
+            }
+            result.Reset();
+        }*/
+        ScanBaseTable(transaction, result, state, column_ids, state.current_row, state.max_row);
 
-	// scan the transaction-local segments
-	transaction.storage.Scan(state.local_state, column_ids, result);
+        // scan the transaction-local segments
+        transaction.storage.Scan(state.local_state, column_ids, result);
+    } else {
+        // scan the persistent segments
+        while (ScanBaseTable(transaction, result, state, column_ids, state.current_row, state.max_row)) {
+            if (result.size() > 0) {
+                return;
+            }
+            result.Reset();
+        }
+
+        // scan the transaction-local segments
+        transaction.storage.Scan(state.local_state, column_ids, result);
+    }
 }
 
 bool DataTable::CheckZonemap(TableScanState &state, const vector<column_t> &column_ids, TableFilterSet *table_filters,
@@ -336,7 +350,7 @@ bool DataTable::CheckZonemap(TableScanState &state, const vector<column_t> &colu
 
 bool DataTable::ScanBaseTable(Transaction &transaction, DataChunk &result, TableScanState &state,
                               const vector<column_t> &column_ids, idx_t &current_row, idx_t max_row) {
-    printf("Scan the persistent segments: DataTable::ScanBaseTable \n");
+    //printf("Scan the persistent segments: DataTable::ScanBaseTable \n");
 	if (current_row >= max_row) {
 		// exceeded the amount of rows to scan
 		return false;

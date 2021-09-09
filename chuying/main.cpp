@@ -58,7 +58,7 @@ void runJOBQuerys(Connection con) {
             std::cout<<"Progress = "<< count_sql <<"/113 \n";
 
             std::string job_file = entry.path().filename().string();
-            std::cout <<job_file <<", ";
+            std::cout <<job_file <<",";
             /*
             std::string job_profiling = "PRAGMA profile_output='" + getRootPath() +"/chuying/profiling/" + job_file + ".json';";
             con.Query(job_profiling);

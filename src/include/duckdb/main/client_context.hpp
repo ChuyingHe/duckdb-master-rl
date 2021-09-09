@@ -96,6 +96,8 @@ public:
 	//! The random generator used by random(). Its seed value can be set by setseed().
 	std::mt19937 random_engine;
 
+    shared_ptr<ClientContext> ShareClientContext(ClientContext& context);
+
 public:
 	DUCKDB_API Transaction &ActiveTransaction() {
 		return transaction.ActiveTransaction();
@@ -165,9 +167,10 @@ public:
                                                      shared_ptr<PreparedStatementData> statement,
                                                      vector<Value> bound_values, bool allow_stream_result);
 
-    unique_ptr<QueryResult> ExecutePreparedStatementWithRLOptimizer(ClientContextLock &lock, const string &query,
+    unique_ptr<QueryResult> ContinueJoin(ClientContextLock &lock, const string &query,
                                                      shared_ptr<PreparedStatementData> statement,
-                                                     vector<Value> bound_values, bool allow_stream_result);
+                                                     vector<Value> bound_values, bool allow_stream_result,
+                                                     int simulation_count);
 
 
 private:

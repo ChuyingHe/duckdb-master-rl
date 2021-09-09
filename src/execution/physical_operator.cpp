@@ -27,10 +27,10 @@ PhysicalOperatorState::PhysicalOperatorState(PhysicalOperator &op, PhysicalOpera
 }
 // 1.para: econtext(context, thread, task); // 2.para: chunk.data
 void PhysicalOperator::GetChunk(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) {
-    printf("PhysicalOperator::GetChunk() \n");
+    //printf("PhysicalOperator::GetChunk(): ");
 	if (context.client.interrupted) {
-	    printf("context.client.interrupted");
-		//throw InterruptException();
+	    //printf("context.client.interrupted");
+		throw InterruptException();
         return;
 	}
 	// reset the chunk back to its initial state

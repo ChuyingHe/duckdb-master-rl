@@ -80,10 +80,10 @@ bool Pipeline::GetProgress(int &current_percentage) {
 }
 
 void Pipeline::Execute(TaskContext &task) {	//execution of task(pipeline without dependencies
-    printf("Pipeline::Execute - 1; ");      // 4 times
+    //printf("Pipeline::Execute - 1; ");      // 4 times
 	auto &client = executor.context;
 	if (client.interrupted) {
-        printf("Pipeline::Execute - interrupted \n");
+        //printf("Pipeline::Execute - interrupted \n");
 		return;
 	}
 	if (parallel_state) {
@@ -100,7 +100,6 @@ void Pipeline::Execute(TaskContext &task) {	//execution of task(pipeline without
 		DataChunk intermediate;
 		child->InitializeChunkEmpty(intermediate);  //initialize intermediate with pre-defined type: TABLE_SCAN of "company_type": intermediate is initialized with 2 data [Vector, Vector]
 
-		int test = 0;
 		while (true) {
             //printf("Pipeline::Execute - 2 \n");
 			child->GetChunk(context, intermediate, state.get());    // Execute the Child of current Pipeline
@@ -111,9 +110,7 @@ void Pipeline::Execute(TaskContext &task) {	//execution of task(pipeline without
 			}
 			sink->Sink(context, *sink_state, *lstate, intermediate);
 			thread.profiler.EndOperator(nullptr);
-            test+=1;
 		}
-		std::cout<< "pipeline.cpp: while (true) loop count = " <<test <<"\n";
 
 		//start of test
         /*printf("Pipeline::Execute - 2 \n");    // 4092 times
@@ -124,16 +121,16 @@ void Pipeline::Execute(TaskContext &task) {	//execution of task(pipeline without
         thread.profiler.EndOperator(nullptr);*/
         //end of test
 
-        printf("Pipeline::Execute - 5 \n");
+        //printf("Pipeline::Execute - 5 \n");
 		child->FinalizeOperatorState(*state, context);
 	} catch (std::exception &ex) {
 		executor.PushError(ex.what());
 	} catch (...) {
 		executor.PushError("Unknown exception in pipeline!");
 	}
-    printf("Pipeline::Execute - 6 \n");
+    //printf("Pipeline::Execute - 6 \n");
 	executor.Flush(thread);
-    printf("Pipeline::Execute - 7 \n");
+    //printf("Pipeline::Execute - 7 \n");
 }
 
 void Pipeline::FinishTask() {
@@ -325,7 +322,7 @@ void Pipeline::CompleteDependency() {
 }
 
 void Pipeline::Finish() {
-    printf("Pipeline::Finish()\n");
+    //printf("Pipeline::Finish()\n");
 	D_ASSERT(!finished);
 	finished = true;
 	// finished processing the pipeline, now we can schedule pipelines that depend on this pipeline

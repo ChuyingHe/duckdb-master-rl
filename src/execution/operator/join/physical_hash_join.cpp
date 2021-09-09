@@ -176,7 +176,7 @@ unique_ptr<PhysicalOperatorState> PhysicalHashJoin::GetOperatorState() {
 }
 
 void PhysicalHashJoin::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state_p) {
-    printf("PhysicalHashJoin::GetChunkInternal\n");
+    //printf("PhysicalHashJoin::GetChunkInternal - ");
 	auto state = reinterpret_cast<PhysicalHashJoinState *>(state_p);
 	auto &sink = (HashJoinGlobalState &)*sink_state;
 	if (sink.hash_table->size() == 0 &&

@@ -70,6 +70,10 @@ namespace duckdb {
         void Initialization();
         NodeForUCT* GetNodeWithMaxUCT(NodeForUCT* node);
 
+/*        unique_ptr<QueryResult> TestContinueJoin(ClientContextLock &lock, const string &query,
+                                                 shared_ptr<PreparedStatementData> statement_p,
+                                                 vector<Value> bound_values, bool allow_stream_result);*/
+
     private:
         ClientContext &context;
         idx_t pairs = 0;

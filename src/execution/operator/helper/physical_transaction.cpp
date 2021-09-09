@@ -4,7 +4,7 @@
 namespace duckdb {
 
 void PhysicalTransaction::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) {
-    printf("PhysicalTransaction::GetChunkInternal\n");
+    //printf("PhysicalTransaction::GetChunkInternal\n");
 	auto &client = context.client;
 
 	switch (info->type) {

@@ -60,7 +60,7 @@ ClientContext::~ClientContext() {
 }
 
 unique_ptr<ClientContextLock> ClientContext::LockContext() {
-	printf("unique_ptr<ClientContextLock> ClientContext::LockContext\n");
+	//printf("unique_ptr<ClientContextLock> ClientContext::LockContext\n");
 	return make_unique<ClientContextLock>(context_lock);
 }
 
@@ -152,14 +152,15 @@ void ClientContext::CleanupInternal(ClientContextLock &lock) {
 }
 
 unique_ptr<DataChunk> ClientContext::FetchInternal(ClientContextLock &) {
-    printf("ClientContext::FetchInternal");
+    //printf("ClientContext::FetchInternal");
 	return executor.FetchChunk();
 }
 
 shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement(ClientContextLock &lock, const string &query,
                                                                          unique_ptr<SQLStatement> statement) {
-	printf("shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement\n");
-    Timer timer_preparation;
+	//printf("shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement\n");
+//    Timer timer_preparation;
+
 	StatementType statement_type = statement->type;
 	auto result = make_shared<PreparedStatementData>(statement_type);
 
@@ -195,8 +196,8 @@ shared_ptr<PreparedStatementData> ClientContext::CreatePreparedStatement(ClientC
 
     result->plan = move(physical_plan);
 
-    double duration_preparation = timer_preparation.check();
-    std::cout <<"time_preparation = " <<duration_preparation <<", ";
+//    double duration_preparation = timer_preparation.check();
+//    std::cout <<"time_preparation = " <<duration_preparation <<", ";
 
     return result;  // PreparedStatementData result which includes the PLAN
 }
@@ -216,8 +217,9 @@ int ClientContext::GetProgress() {
 unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLock &lock, const string &query,
                                                                 shared_ptr<PreparedStatementData> statement_p,
                                                                 vector<Value> bound_values, bool allow_stream_result) {
-	printf("ExecutePreparedStatement(ClientContextLock &lock, const string &query,\n");
-    Timer timer_execution;
+	//printf("ExecutePreparedStatement(ClientContextLock &lock, const string &query,\n");
+//    Timer timer_execution;
+
 	auto &statement = *statement_p;     // shared_ptr<PreparedStatementData>: includes optimized physical PLAN
 	if (ActiveTransaction().IsInvalidated() && statement.requires_valid_transaction) {
 		throw Exception("Current transaction is aborted (please ROLLBACK)");
@@ -227,10 +229,10 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 		throw Exception(StringUtil::Format("Cannot execute statement of type \"%s\" in read-only mode!",
 		                                   StatementTypeToString(statement.statement_type)));
 	}
-    printf("ExecutePreparedStatement - 1 - before Bind() \n");
+    //printf("ExecutePreparedStatement - 1 - before Bind() \n");
 	// bind the bound values before execution
 	statement.Bind(move(bound_values)); //bound_values: empty vector
-	printf("ExecutePreparedStatement - 2 - after Bind() \n");
+	//printf("ExecutePreparedStatement - 2 - after Bind() \n");
 
 	bool create_stream_result = statement.allow_stream_result && allow_stream_result;
 	if (enable_progress_bar) {  //progress runs in another thread, parallel to the main thread
@@ -239,10 +241,10 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 		}
 		progress_bar->Start();
 	}
-	printf("ExecutePreparedStatement - 3 - before executor.Initialize() \n");
+	//printf("ExecutePreparedStatement - 3 - before executor.Initialize() \n");
     // store the physical plan in the context for calls to Fetch()
 	executor.Initialize(statement.plan.get());  // 1 time
-	printf("ExecutePreparedStatement - 4 - after executor.Initialize() \n");
+	//printf("ExecutePreparedStatement - 4 - after executor.Initialize() \n");
 	auto types = executor.GetTypes();
 
 	D_ASSERT(types == statement.types);
@@ -254,18 +256,18 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 		// successfully compiled SELECT clause and it is the last statement
 		// return a StreamQueryResult so the client can call Fetch() on it and stream the result
 		// 🌞 1st return - only a framework??? where is this FETCH() function and what did it do?
-        double duration_execution_1 = timer_execution.check();
-        std::cout <<"time_execution = " <<duration_execution_1 <<", ";
+        //double duration_execution_1 = timer_execution.check();
+        // std::cout <<"time_execution = " <<duration_execution_1 <<", ";
         return make_unique<StreamQueryResult>(statement.statement_type, shared_from_this(), statement.types,
 		                                      statement.names, move(statement_p));
 	}
-	printf("ExecutePreparedStatement - 5 - before result = make_unique<MaterializedQueryResult>() \n");
+	//printf("ExecutePreparedStatement - 5 - before result = make_unique<MaterializedQueryResult>() \n");
 	// create a materialized result by continuously fetching
 	auto result = make_unique<MaterializedQueryResult>(statement.statement_type, statement.types, statement.names); // 🚩 2rd return
-	printf("ExecutePreparedStatement - 6 - before true loop \n");
+	//printf("ExecutePreparedStatement - 6 - before true loop \n");
 
     while (true) {
-	    printf("true loop includes FetchInternal\n ");
+	    //printf("true loop includes FetchInternal\n ");
 		auto chunk = FetchInternal(lock);   // Get chunk recursively
 
 		if (chunk->size() == 0) {
@@ -284,16 +286,17 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 		progress_bar->Stop();
 	}
 
-    double duration_execution_2 = timer_execution.check();
-    std::cout <<"time_execution = " <<duration_execution_2 <<", ";
+//    double duration_execution_2 = timer_execution.check();
+//    std::cout <<"time_execution = " <<duration_execution_2 <<", ";
 	return move(result);    // 🚩 2rd return
 }
 
 
-unique_ptr<QueryResult> ClientContext::ExecutePreparedStatementWithRLOptimizer(ClientContextLock &lock, const string &query,
+unique_ptr<QueryResult> ClientContext::ContinueJoin(ClientContextLock &lock, const string &query,
                                                                 shared_ptr<PreparedStatementData> statement_p,
-                                                                vector<Value> bound_values, bool allow_stream_result) {
-    printf("unique_ptr<QueryResult> ClientContext::ExecutePreparedStatementWithRLOptimizer \n");
+                                                                vector<Value> bound_values, bool allow_stream_result,
+                                                                int simulation_count) {
+    //printf("unique_ptr<QueryResult> ClientContext::ExecutePreparedStatementWithRLOptimizer \n");
     auto &statement = *statement_p;     // shared_ptr<PreparedStatementData>: includes optimized PLAN
     if (ActiveTransaction().IsInvalidated() && statement.requires_valid_transaction) {
         throw Exception("Current transaction is aborted (please ROLLBACK)");
@@ -315,7 +318,7 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatementWithRLOptimizer(C
         progress_bar->Start();
     }
     // store the physical plan in the context for calls to Fetch()
-    executor.Initialize(statement.plan.get());  /*initialize the PLAN in Executor*/
+    executor.InitializeForRL(statement.plan.get(), simulation_count);  /*initialize the PLAN in Executor*/
 
     auto types = executor.GetTypes();
 
@@ -364,7 +367,7 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatementWithRLOptimizer(C
 }
 
 void ClientContext::InitialCleanup(ClientContextLock &lock) {
-	printf("ClientContext::InitialCleanup\n");
+	//printf("ClientContext::InitialCleanup\n");
 	//! Cleanup any open results and reset the interrupted flag
 	CleanupInternal(lock);
 	interrupted = false;
@@ -376,7 +379,7 @@ vector<unique_ptr<SQLStatement>> ClientContext::ParseStatements(const string &qu
 }
 
 vector<unique_ptr<SQLStatement>> ClientContext::ParseStatementsInternal(ClientContextLock &lock, const string &query) {
-	printf("ClientContext::ParseStatementsInternal\n");
+	//printf("ClientContext::ParseStatementsInternal\n");
 	Parser parser;
 	parser.ParseQuery(query);
 
@@ -465,19 +468,31 @@ unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &l
                                                             bool allow_stream_result) {
     //printf("unique_ptr<QueryResult> ClientContext::RunStatementInternal\n");
     if (enable_rl_join_order_optimizer) {	//this should mix the process of selection and execution, and return a result in the end
-        //printf("🌈 SkinnerDB RL\n");
-        SkinnerDB skinnerDb(profiler, *this);
-        return skinnerDb.CreateAndExecuteStatement(lock, query, move(statement), allow_stream_result);
+        //printf("🦄️ SkinnerDB\n");
+        // SkinnerDB skinnerDb(profiler, *this);
+        SkinnerDB skinnerdb(profiler, *this, lock, query, move(statement), allow_stream_result);
+        //SkinnerDB skinnerdb(profiler, shared_from_this(), lock, query, move(statement), allow_stream_result);
+        return skinnerdb.CreateAndExecuteStatement();
     } else {
-        printf("🌈 DuckDB DP\n");
-        std::cout<<"query = "<< query <<"\n";
+        //printf("🌈 DuckDB\n");
+        //std::cout<<"query = "<< query <<"\n";
         // prepare the query for execution
+        Timer timer_prep;
         auto prepared = CreatePreparedStatement(lock, query, move(statement));  	//return PreparedStatementData which contains physical_plan - prepared.plan
+        double duration_prep = timer_prep.check();
+        //std::cout <<"time_preparation=" <<duration_prep <<",";
+        std::cout <<duration_prep <<",";
+
+        Timer timer_exec;
         // by default, no values are bound
         vector<Value> bound_values;
         // execute the prepared statement
-        std::cout<<"🐱 before execution \n";
-        return ExecutePreparedStatement(lock, query, move(prepared), move(bound_values), allow_stream_result);	    //return unique_ptr<QueryResult>
+        auto result = ExecutePreparedStatement(lock, query, move(prepared), move(bound_values), allow_stream_result);
+        double duration_exec = timer_exec.check();
+        //std::cout <<"time_execution=" <<duration_exec <<",";
+        std::cout <<duration_exec <<",";
+
+        return result;	    //return unique_ptr<QueryResult>
     }
 
 }
@@ -521,7 +536,8 @@ unique_ptr<QueryResult> ClientContext::RunStatementOrPreparedStatement(ClientCon
             Timer timer_total;
 			result = RunStatementInternal(lock, query, move(statement), allow_stream_result);
             double duration_total = timer_total.check();
-            std::cout <<"time_total = " <<duration_total <<"\n";
+            //std::cout <<"time_total=" <<duration_total <<"\n";
+            std::cout <<duration_total <<"\n";
 		} else {
 			auto &catalog = Catalog::GetCatalog(*this);
 			if (prepared->unbound_statement && catalog.GetCatalogVersion() != prepared->catalog_version) {
@@ -623,7 +639,7 @@ unique_ptr<QueryResult> ClientContext::Query(unique_ptr<SQLStatement> statement,
 }
 
 unique_ptr<QueryResult> ClientContext::Query(const string &query, bool allow_stream_result) {
-	printf("unique_ptr<QueryResult> ClientContext::Query\n");
+	//printf("unique_ptr<QueryResult> ClientContext::Query\n");
 	auto lock = LockContext();          // create lock
 	LogQueryInternal(*lock, query); // write log file if its enabled. Put query inside also
 
@@ -646,7 +662,7 @@ unique_ptr<QueryResult> ClientContext::Query(const string &query, bool allow_str
 
 
 void ClientContext::Interrupt() {
-    printf("ClientContext::Interrupt \n");
+    //printf("ClientContext::Interrupt \n");
 	interrupted = true;
 }
 
@@ -661,7 +677,7 @@ void ClientContext::DisableProfiling() {
 }
 
 string ClientContext::VerifyQuery(ClientContextLock &lock, const string &query, unique_ptr<SQLStatement> statement) {
-	printf("string ClientContext::VerifyQuery\n");
+	//printf("string ClientContext::VerifyQuery\n");
 	D_ASSERT(statement->type == StatementType::SELECT_STATEMENT);
 	// aggressive query verification
 

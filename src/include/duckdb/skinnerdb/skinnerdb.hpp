@@ -11,25 +11,34 @@
 #include "duckdb/planner/logical_operator.hpp"
 #include "duckdb/optimizer/expression_rewriter.hpp"
 #include "duckdb/optimizer/optimizer.hpp"
+#include "duckdb/planner/planner.hpp"
 
 namespace duckdb {
-
 
     class SkinnerDB {
         friend class RLJoinOrderOptimizer;
 
     public:
-        SkinnerDB(QueryProfiler& profiler, ClientContext& context);
+        SkinnerDB(QueryProfiler& profiler, ClientContext& context, ClientContextLock& lock, const string& query, unique_ptr<SQLStatement> statement, bool allow_stream_result);
 
         QueryProfiler& profiler;
         ClientContext& context;
+        ClientContextLock& lock;
+        const string& query;
+        unique_ptr<SQLStatement> statement;
+        bool allow_stream_result;
 
-        unique_ptr<QueryResult> CreateAndExecuteStatement(ClientContextLock &lock, const string &query, unique_ptr<SQLStatement> statement, bool allow_stream_result);
+
+        unique_ptr<LogicalOperator> Preprocessing();
+
+        //unique_ptr<QueryResult> CreateAndExecuteStatement(ClientContextLock &lock, const string &query, unique_ptr<SQLStatement> statement, bool allow_stream_result);
+        unique_ptr<QueryResult> CreateAndExecuteStatement();
 
     private:
         int state = 0;             //恢复执行状态?
         string previous_order_of_relations = "";
         int same_order_count = 1;
+        Planner planner;
     };
 
 }

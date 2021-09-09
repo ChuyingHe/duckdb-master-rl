@@ -21,8 +21,48 @@ Executor::Executor(ClientContext &context) : context(context) {
 Executor::~Executor() {
 }
 
+void Executor::InitializeForRL(PhysicalOperator *plan, int simulation_count) {
+    //printf("Executor::InitializeForRL \n");
+    Reset();
+
+    physical_plan = plan;
+    physical_state = physical_plan->GetOperatorState();
+
+    context.profiler.Initialize(physical_plan);
+    auto &scheduler = TaskScheduler::GetScheduler(context);
+    this->producer = scheduler.CreateProducer();        // returns unique_ptr<ProducerToken>
+    BuildPipelines(physical_plan, nullptr);     //create this->pipelines
+    this->total_pipelines = pipelines.size();
+
+    // schedule pipelines that do not have dependents
+    for (auto &pipeline : pipelines) {
+        if (!pipeline->HasDependencies()) {
+            pipeline->Schedule();   // if current pipeline doesn't have dependencies/child, then pipeline.total_tasks+1
+        }
+    }
+    //printf("Executor::InitializeForRL - 8; ");
+    // now execute tasks from this producer until all pipelines are completed
+    while (completed_pipelines < total_pipelines) {
+        //printf("Executor::InitializeForRL - 9; ");           // 1 time
+        unique_ptr<Task> task;
+        while (scheduler.GetTaskFromProducer(*producer, task)) {
+            //printf("\n 🐱 Executor::InitializeForRL - 10 \n");     // 4 times
+            task->Execute();    // get tasks from pipelines  = pipeline which doesn't have dependencies
+            task.reset();
+        }
+    }
+    //printf("Executor::InitializeForRL - 11 after execute over task of pipelines \n");
+
+    pipelines.clear();
+    if (!exceptions.empty()) {
+        // an exception has occurred executing one of the pipelines
+        throw Exception(exceptions[0]);
+    }
+}
+
+
 void Executor::Initialize(PhysicalOperator *plan) {
-    printf("Executor::Initialize \n");
+    //printf("Executor::Initialize \n");
 	Reset();
 
 	physical_plan = plan;
@@ -40,19 +80,18 @@ void Executor::Initialize(PhysicalOperator *plan) {
 			pipeline->Schedule();   // if current pipeline doesn't have dependencies/child, then pipeline.total_tasks+1
 		}
 	}
-    printf("Executor::Initialize - 8; ");
+    //printf("Executor::Initialize - 8; ");
 	// now execute tasks from this producer until all pipelines are completed
 	while (completed_pipelines < total_pipelines) {
-	    printf("Executor::Initialize - 9; ");           // 1 time
+	    //printf("Executor::Initialize - 9; ");           // 1 time
 		unique_ptr<Task> task;
 		while (scheduler.GetTaskFromProducer(*producer, task)) {
-            printf("Executor::Initialize - 10 \n");     // 4 times
+            //printf("\n 🐱 Executor::InitializeForRL - 10 \n");     // 4 times
 			task->Execute();    // get tasks from pipelines  = pipeline which doesn't have dependencies
-			printf("Executor::Initialize - 11 \n");
 			task.reset();
 		}
 	}
-    printf("Executor::Initialize - 11 after execute over task of pipelines \n");
+    //printf("Executor::Initialize - 11 after execute over task of pipelines \n");
 
 	pipelines.clear();
 	if (!exceptions.empty()) {
@@ -248,7 +287,7 @@ bool Executor::GetPipelinesProgress(int &current_progress) {
 }
 
 unique_ptr<DataChunk> Executor::FetchChunk() {
-    printf("Executor::FetchChunk \n");
+    //printf("Executor::FetchChunk \n");
 	D_ASSERT(physical_plan);
 
 	ThreadContext thread(context);

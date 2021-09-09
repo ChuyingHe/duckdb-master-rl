@@ -33,7 +33,7 @@ PhysicalTableScan::PhysicalTableScan(vector<LogicalType> types, TableFunction fu
 }
 
 void PhysicalTableScan::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state_p) {
-    printf("PhysicalTableScan::GetChunkInternal() \n");
+    //printf("PhysicalTableScan::GetChunkInternal() - ");
 	auto &state = (PhysicalTableScanOperatorState &)*state_p;
 	if (column_ids.empty()) {
 		return;

@@ -37,6 +37,7 @@ public:
 
 public:
 	void Initialize(PhysicalOperator *physical_plan);
+	void InitializeForRL(PhysicalOperator *physical_plan, int simulation_count);
 	void BuildPipelines(PhysicalOperator *op, Pipeline *parent);
 
 	void Reset();

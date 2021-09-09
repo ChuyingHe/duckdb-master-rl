@@ -130,7 +130,7 @@ unique_ptr<LogicalOperator> Optimizer::Optimize(unique_ptr<LogicalOperator> plan
 	return plan;
 }
 
-unique_ptr<LogicalOperator> Optimizer::OptimizeBeforeRLOptimizer(unique_ptr<LogicalOperator> plan) {
+unique_ptr<LogicalOperator> Optimizer::OptimizeForRL(unique_ptr<LogicalOperator> plan) {
     //printf("unique_ptr<LogicalOperator> Optimizer::OptimizeBeforeRLOptimizer\n");
     // first we perform expression rewrites using the ExpressionRewriter
     // this does not change the logical plan structure, but only simplifies the expression trees

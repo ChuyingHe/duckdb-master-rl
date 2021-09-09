@@ -76,7 +76,7 @@ static void TableScanFunc(ClientContext &context, const FunctionData *bind_data_
     //printf("TableScanFunc - 3 \n");
 	bind_data.chunk_count++;
     //printf("TableScanFunc - 4 \n");
-    //std::cout<<"Chunk Nr."<<bind_data.chunk_count << " has progress = "<< state.scan_state.current_row<<"/"<< state.scan_state.max_row <<" \n";
+    std::cout<<"Chunk Nr."<<bind_data.chunk_count << " has progress = "<< state.scan_state.current_row<<"/"<< state.scan_state.max_row <<" \n";
 }
 
 struct ParallelTableFunctionScanState : public ParallelState {

@@ -451,18 +451,6 @@ unique_ptr<QueryResult> ClientContext::Execute(const string &query, shared_ptr<P
 	return RunStatementOrPreparedStatement(*lock, query, nullptr, prepared, &values, allow_stream_result);
 }
 
-/*unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &lock, const string &query,
-                                                            unique_ptr<SQLStatement> statement,
-                                                            bool allow_stream_result) {
-	printf("RunStatementInternal: use duckdb-optimizer\n");
-	// prepare the query for execution
-	auto prepared = CreatePreparedStatement(lock, query, move(statement));  									//return optimized plan
-	// by default, no values are bound
-	vector<Value> bound_values;
-	// execute the prepared statement
-	return ExecutePreparedStatement(lock, query, move(prepared), move(bound_values), allow_stream_result);	//run chosen plan
-}*/
-
 unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &lock, const string &query,
                                                             unique_ptr<SQLStatement> statement,
                                                             bool allow_stream_result) {

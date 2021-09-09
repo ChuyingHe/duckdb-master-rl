@@ -32,7 +32,7 @@ PhysicalUnnest::PhysicalUnnest(vector<LogicalType> types, vector<unique_ptr<Expr
 }
 
 void PhysicalUnnest::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state_p) {
-    printf("PhysicalUnnest::GetChunkInternal\n");
+    //printf("PhysicalUnnest::GetChunkInternal\n");
 	auto state = reinterpret_cast<PhysicalUnnestOperatorState *>(state_p);
 	while (true) { // repeat until we actually have produced some rows
 		if (state->child_chunk.size() == 0 || state->parent_position >= state->child_chunk.size()) {

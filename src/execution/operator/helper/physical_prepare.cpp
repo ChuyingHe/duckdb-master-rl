@@ -4,7 +4,7 @@
 namespace duckdb {
 
 void PhysicalPrepare::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) {
-    printf("PhysicalPrepare::GetChunkInternal\n");
+    //printf("PhysicalPrepare::GetChunkInternal\n");
 	auto &client = context.client;
 
 	// store the prepared statement in the context

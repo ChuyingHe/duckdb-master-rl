@@ -32,7 +32,7 @@ uint64_t GetDelimiter(DataChunk &input, Expression *expr, uint64_t original_valu
 }
 
 void PhysicalLimit::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state_p) {
-    printf("PhysicalLimit::GetChunkInternal\n");
+    //printf("PhysicalLimit::GetChunkInternal\n");
 	auto state = reinterpret_cast<PhysicalLimitOperatorState *>(state_p);
 
 	idx_t max_element = limit + offset;

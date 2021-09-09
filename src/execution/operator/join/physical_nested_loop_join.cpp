@@ -353,7 +353,7 @@ void PhysicalNestedLoopJoin::ResolveComplexJoin(ExecutionContext &context, DataC
 
 void PhysicalNestedLoopJoin::GetChunkInternal(ExecutionContext &context, DataChunk &chunk,
                                               PhysicalOperatorState *state_p) {
-    printf("PhysicalNestedLoopJoin::GetChunkInternal\n");
+    //printf("PhysicalNestedLoopJoin::GetChunkInternal\n");
 	auto state = reinterpret_cast<PhysicalNestedLoopJoinState *>(state_p);
 	auto &gstate = (NestedLoopJoinGlobalState &)*sink_state;
 

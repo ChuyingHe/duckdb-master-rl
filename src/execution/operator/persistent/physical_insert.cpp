@@ -79,7 +79,7 @@ unique_ptr<LocalSinkState> PhysicalInsert::GetLocalSinkState(ExecutionContext &c
 // GetChunkInternal
 //===--------------------------------------------------------------------===//
 void PhysicalInsert::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) {
-    printf("PhysicalInsert::GetChunkInternal\n");
+    //printf("PhysicalInsert::GetChunkInternal\n");
 	auto &gstate = (InsertGlobalState &)*sink_state;
 
 	chunk.SetCardinality(1);

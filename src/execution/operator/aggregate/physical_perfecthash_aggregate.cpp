@@ -181,7 +181,7 @@ public:
 
 void PhysicalPerfectHashAggregate::GetChunkInternal(ExecutionContext &context, DataChunk &chunk,
                                                     PhysicalOperatorState *state_p) {
-    printf("PhysicalPerfectHashAggregate::GetChunkInternal\n");
+    //printf("PhysicalPerfectHashAggregate::GetChunkInternal\n");
 	auto &state = (PerfectHashAggregateState &)*state_p;
 	auto &gstate = (PerfectHashAggregateGlobalState &)*sink_state;
 

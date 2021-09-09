@@ -1888,7 +1888,7 @@ static void Scan(ClientContext &context, DataChunk &chunk, PhysicalOrderOperator
 }
 
 void PhysicalOrder::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state_p) {
-    printf("PhysicalOrder::GetChunkInternal\n");
+    //printf("PhysicalOrder::GetChunkInternal\n");
 	auto &state = *reinterpret_cast<PhysicalOrderOperatorState *>(state_p);
 	auto &gstate = (OrderGlobalState &)*this->sink_state;
 	const auto &payload_state = *gstate.payload_state;

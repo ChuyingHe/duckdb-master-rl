@@ -99,7 +99,7 @@ void PhysicalDelimJoin::Combine(ExecutionContext &context, GlobalOperatorState &
 }
 
 void PhysicalDelimJoin::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state_p) {
-    printf("PhysicalDelimJoin::GetChunkInternal\n");
+    //printf("PhysicalDelimJoin::GetChunkInternal\n");
 	auto state = reinterpret_cast<PhysicalDelimJoinState *>(state_p);
 	if (!state->join_state) {
 		// create the state of the underlying join

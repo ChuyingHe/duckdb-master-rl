@@ -75,7 +75,7 @@ static void WriteCopyStatement(FileSystem &fs, stringstream &ss, TableCatalogEnt
 }
 
 void PhysicalExport::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) {
-    printf("PhysicalExport::GetChunkInternal\n");
+    //printf("PhysicalExport::GetChunkInternal\n");
 	auto &ccontext = context.client;
 	auto &fs = FileSystem::GetFileSystem(ccontext);
 

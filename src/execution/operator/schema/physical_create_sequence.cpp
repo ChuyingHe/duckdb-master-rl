@@ -5,7 +5,7 @@ namespace duckdb {
 
 void PhysicalCreateSequence::GetChunkInternal(ExecutionContext &context, DataChunk &chunk,
                                               PhysicalOperatorState *state) {
-    printf("PhysicalCreateSequence::GetChunkInternal \n");
+    //printf("PhysicalCreateSequence::GetChunkInternal \n");
 	Catalog::GetCatalog(context.client).CreateSequence(context.client, info.get());
 	state->finished = true;
 }

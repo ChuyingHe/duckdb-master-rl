@@ -180,7 +180,7 @@ public:
 };
 
 void PhysicalTopN::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state_p) {
-    printf("PhysicalTopN::GetChunkInternal\n");
+    //printf("PhysicalTopN::GetChunkInternal\n");
 	auto &state = (PhysicalTopNOperatorState &)*state_p;
 	auto &gstate = (TopNGlobalState &)*sink_state;
 

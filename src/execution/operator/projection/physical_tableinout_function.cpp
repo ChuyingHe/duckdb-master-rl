@@ -25,7 +25,7 @@ PhysicalTableInOutFunction::PhysicalTableInOutFunction(vector<LogicalType> types
 
 void PhysicalTableInOutFunction::GetChunkInternal(ExecutionContext &context, DataChunk &chunk,
                                                   PhysicalOperatorState *state_p) {
-    printf("PhysicalTableInOutFunction::GetChunkInternal\n");
+    //printf("PhysicalTableInOutFunction::GetChunkInternal\n");
 	auto &state = (PhysicalTableInOutFunctionState &)*state_p;
 
 	if (!state.initialized) {

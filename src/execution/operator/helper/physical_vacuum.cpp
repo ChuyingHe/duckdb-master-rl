@@ -3,7 +3,7 @@
 namespace duckdb {
 
 void PhysicalVacuum::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) {
-    printf("PhysicalVacuum::GetChunkInternal\n");
+    //printf("PhysicalVacuum::GetChunkInternal\n");
 	// NOP
 	state->finished = true;
 }

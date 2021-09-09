@@ -482,10 +482,6 @@ void RLJoinOrderOptimizer::Expansion(JoinRelationSet* union_set, unordered_set<i
     }
     Selection(parent_node_for_uct);
 }
-// Simulation/rollout
-/*void RLJoinOrderOptimizer::Simulation() {
-    printf("Simulation");
-}*/
 
 NodeForUCT* RLJoinOrderOptimizer::GetNodeWithMaxUCT(NodeForUCT* node) { //case "node->children.empty()" has been eliminated
     NodeForUCT* result;

@@ -14,7 +14,7 @@ PhysicalCreateTable::PhysicalCreateTable(LogicalOperator &op, SchemaCatalogEntry
 }
 
 void PhysicalCreateTable::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state) {
-    printf("PhysicalCreateTable::GetChunkInternal \n");
+    //printf("PhysicalCreateTable::GetChunkInternal \n");
 	auto &catalog = Catalog::GetCatalog(context.client);
 	catalog.CreateTable(context.client, schema, info.get());
 	state->finished = true;

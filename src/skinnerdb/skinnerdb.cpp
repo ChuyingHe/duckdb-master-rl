@@ -71,7 +71,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
     bool found_optimal_join_order = false;
     unique_ptr<LogicalOperator> rl_plan;
 
-    //printf("----- simulation----- \n");
+    //printf("----- simulation----- ");
     while (!found_optimal_join_order) {  //️ 🐈 simulation_count = executed_chunk
         Timer timer_simulation;
 
@@ -98,10 +98,12 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
 
 
         //TODO: here we need info of the Progress 🐈
-        query_result = context.ContinueJoin(lock, query, result, move(bound_values), allow_stream_result, simulation_count);
+        context.ContinueJoin(lock, query, result, move(bound_values), allow_stream_result, simulation_count);
         double duration_sim = timer_simulation.check();
 
         rl_optimizer.RewardUpdate((-1)*duration_sim);
+
+       //std::cout<<"simulation nr."<<simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations<<" took " <<duration_sim <<" ms\n";
 
         if (chosen_node) {
             if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {
@@ -140,7 +142,6 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
 
     // Execution
     Timer timer_execution;
-
     //printf("----- execution----- \n");
     enable_rl_join_order_optimizer = false;
     vector<Value> bound_values;

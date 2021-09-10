@@ -103,7 +103,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
 
         rl_optimizer.RewardUpdate((-1)*duration_sim);
 
-       //std::cout<<"simulation nr."<<simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations<<" took " <<duration_sim <<" ms\n";
+        //std::cout<<"simu_nr."<<simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations<<" took " <<duration_sim <<" ms | ";
 
         if (chosen_node) {
             if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {

@@ -20,6 +20,7 @@
 #include "duckdb/optimizer/regex_range_filter.hpp"
 #include "duckdb/optimizer/in_clause_rewriter.hpp"
 
+#include <algorithm>
 
 namespace duckdb {
 NodeForUCT* root_node_for_uct;     //initialize the root of the tree
@@ -96,14 +97,25 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         result->plan = move(physical_plan); //only part in result that need to be update
         vector<Value> bound_values;
 
-
         //TODO: here we need info of the Progress 🐈
         context.ContinueJoin(lock, query, result, move(bound_values), allow_stream_result, simulation_count);
         double duration_sim = timer_simulation.check();
 
-        rl_optimizer.RewardUpdate((-1)*duration_sim);
+        double base;
+        if (simulation_count==0) {
+            base = duration_sim;
+        }
 
-        //std::cout<<"simu_nr."<<simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations<<" took " <<duration_sim <<" ms | ";
+        //rl_optimizer.RewardUpdate((-1)*duration_sim);
+        //   f(x) = x / (1 + abs(x))
+        // 1 = win
+        // 0 = lose
+        //TODO: correct this
+        auto intermediate = 1/(std::min(1.0, duration_sim/(base*2))); //invert 0-1 to 1-0: because the longer the worse
+        double reward = intermediate/(1+ abs(intermediate));
+        rl_optimizer.RewardUpdate(reward);
+
+        std::cout<<"simu_nr."<<simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations<<" took " <<duration_sim <<"ms, intermediate = "<<intermediate<<", reward=" << reward <<"\n";
 
         if (chosen_node) {
             if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {
@@ -125,6 +137,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
                 same_order_count = 1;
                 previous_order_of_relations = chosen_node->join_node->order_of_relations;
             }
+
             //double time_prep = duration_prep_preoptimizer + duration_prep_join_order;
             /*double time_prep =  duration_prep_join_order;
             std::cout << "optimizer = RL Optimizer, loop = " << simulation_count << ", join_order = "

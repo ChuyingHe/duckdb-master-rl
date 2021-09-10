@@ -52,19 +52,26 @@ void NumericSegment::InitializeScan(ColumnScanState &state) {
 // Fetch base data
 //===--------------------------------------------------------------------===//
 void NumericSegment::FetchBaseData(ColumnScanState &state, idx_t vector_index, Vector &result) {
-	D_ASSERT(vector_index < max_vector_count);
-	D_ASSERT(vector_index * STANDARD_VECTOR_SIZE <= tuple_count);
+    if (enable_rl_join_order_optimizer) {
+        //TODO: instead of vector_num * vector_size = 1024
+        //TODO: use row_num (vector_size 不要了)
+        //memcpy(FlatVector::GetData(result), source_data, row_count * type_size);
+    } else {
+        D_ASSERT(vector_index < max_vector_count);
+        D_ASSERT(vector_index * STANDARD_VECTOR_SIZE <= tuple_count);
 
-	auto data = state.primary_handle->node->buffer;
-	auto offset = vector_index * vector_size;
+        auto data = state.primary_handle->node->buffer;
+        auto offset = vector_index * vector_size;
 
-	idx_t count = GetVectorCount(vector_index);
+        idx_t count = GetVectorCount(vector_index); //vector_index = number of vector, count = number of row
 
-	auto source_data = data + offset;
+        auto source_data = data + offset;
 
-	// fetch the nullmask and copy the data from the base table
-	result.SetVectorType(VectorType::FLAT_VECTOR);
-	memcpy(FlatVector::GetData(result), source_data, count * type_size);
+        // fetch the nullmask and copy the data from the base table
+        result.SetVectorType(VectorType::FLAT_VECTOR);
+        memcpy(FlatVector::GetData(result), source_data, count * type_size);     //copy N=count * type_size items from "source_data" to "result"
+    }
+
 }
 
 //===--------------------------------------------------------------------===//

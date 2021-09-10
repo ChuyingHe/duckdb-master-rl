@@ -112,15 +112,6 @@ void Pipeline::Execute(TaskContext &task) {	//execution of task(pipeline without
 			thread.profiler.EndOperator(nullptr);
 		}
 
-		//start of test
-        /*printf("Pipeline::Execute - 2 \n");    // 4092 times
-        child->GetChunk(context, intermediate, state.get());    // here
-        thread.profiler.StartOperator(sink);
-        sink->Combine(context, *sink_state, *lstate);
-        sink->Sink(context, *sink_state, *lstate, intermediate);
-        thread.profiler.EndOperator(nullptr);*/
-        //end of test
-
         //printf("Pipeline::Execute - 5 \n");
 		child->FinalizeOperatorState(*state, context);
 	} catch (std::exception &ex) {

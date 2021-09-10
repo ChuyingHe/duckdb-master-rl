@@ -62,7 +62,7 @@ void Executor::InitializeForRL(PhysicalOperator *plan, int simulation_count) {
 
 
 void Executor::Initialize(PhysicalOperator *plan) {
-    //printf("Executor::Initialize \n");
+    printf("Executor::Initialize \n");
 	Reset();
 
 	physical_plan = plan;

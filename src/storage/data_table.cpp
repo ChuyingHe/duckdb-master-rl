@@ -348,6 +348,12 @@ bool DataTable::CheckZonemap(TableScanState &state, const vector<column_t> &colu
 	return true;
 }
 
+bool DataTable::ScanBaseTableForRL(Transaction &transaction, DataChunk &result, TableScanState &state,
+                                  const vector<column_t> &column_ids, idx_t &current_row, idx_t max_row) {
+
+
+}
+
 bool DataTable::ScanBaseTable(Transaction &transaction, DataChunk &result, TableScanState &state,
                               const vector<column_t> &column_ids, idx_t &current_row, idx_t max_row) {
     //printf("Scan the persistent segments: DataTable::ScanBaseTable \n");

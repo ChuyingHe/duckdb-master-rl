@@ -12,6 +12,7 @@ PreparedStatementData::~PreparedStatementData() {
 }
 
 void PreparedStatementData::Bind(vector<Value> values) {
+    //printf("PreparedStatementData::Bind \n");
 	// set parameters
 	if (values.size() != value_map.size()) {
 		throw BinderException("Parameter/argument count mismatch for prepared statement. Expected %llu, got %llu",
@@ -19,6 +20,7 @@ void PreparedStatementData::Bind(vector<Value> values) {
 	}
 	// bind the values
 	for (idx_t i = 0; i < values.size(); i++) {
+        //printf("PreparedStatementData::Bind-2 \n");
 		auto it = value_map.find(i + 1);
 		if (it == value_map.end()) {
 			throw BinderException("Could not find parameter with index %llu", i + 1);

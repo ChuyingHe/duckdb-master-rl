@@ -152,7 +152,7 @@ void ClientContext::CleanupInternal(ClientContextLock &lock) {
 }
 
 unique_ptr<DataChunk> ClientContext::FetchInternal(ClientContextLock &) {
-    //printf("ClientContext::FetchInternal");
+    printf("ClientContext::FetchInternal \n");
 	return executor.FetchChunk();
 }
 
@@ -273,6 +273,11 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 		if (chunk->size() == 0) {
 			break;
 		}
+
+        //test
+        std::cout<< "current chunk has " << chunk->size() << " items: column[0]="<< chunk->GetValue(0,0).ToString() <<"\n";
+        //end of test
+
 #ifdef DEBUG
 		for (idx_t i = 0; i < chunk->ColumnCount(); i++) {
 			if (statement.types[i].id() == LogicalTypeId::VARCHAR) {
@@ -291,7 +296,7 @@ unique_ptr<QueryResult> ClientContext::ExecutePreparedStatement(ClientContextLoc
 	return move(result);    // 🚩 2rd return
 }
 
-
+// specific designed for RL Simulation
 unique_ptr<QueryResult> ClientContext::ContinueJoin(ClientContextLock &lock, const string &query,
                                                                 shared_ptr<PreparedStatementData> statement_p,
                                                                 vector<Value> bound_values, bool allow_stream_result,
@@ -318,6 +323,17 @@ unique_ptr<QueryResult> ClientContext::ContinueJoin(ClientContextLock &lock, con
         progress_bar->Start();
     }
     // store the physical plan in the context for calls to Fetch()
+    /*TODO:
+     * input:
+         * 1) Join order
+         * 2) query
+         * 3) tuple indices [[0,1] [1,2], [0,1,2]]
+         * 4) tuple offsets [0,0,0]
+         * 5) result
+         * 6) time budget
+     * return:
+     *
+     */
     executor.InitializeForRL(statement.plan.get(), simulation_count);  /*initialize the PLAN in Executor*/
 
     auto types = executor.GetTypes();
@@ -335,15 +351,9 @@ unique_ptr<QueryResult> ClientContext::ContinueJoin(ClientContextLock &lock, con
                                               statement.names, move(statement_p));
     }
     // create a materialized result by continuously fetching
-    auto result = make_unique<MaterializedQueryResult>(statement.statement_type, statement.types, statement.names); // 🚩 2rd return
+    auto result = make_unique<MaterializedQueryResult>(statement.statement_type, statement.types, statement.names);
 
-    //FIXME: here
-    /*auto chunk = FetchInternal(lock);   // ONLY FETCH ONE CHUNK EACH ExecutePreparedStatementWithRLOptimizer()
-    if (chunk->size()!=0) {
-        result->collection.Append(*chunk);
-    } else {
-        query_finished = true;
-    }*/
+    // 🐈 Final Materialization?
     while (true) {
         auto chunk = FetchInternal(lock);
 

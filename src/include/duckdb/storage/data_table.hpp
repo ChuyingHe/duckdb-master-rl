@@ -204,6 +204,8 @@ private:
 	                  idx_t &current_row);
 	bool ScanBaseTable(Transaction &transaction, DataChunk &result, TableScanState &state,
 	                   const vector<column_t> &column_ids, idx_t &current_row, idx_t max_row);
+	bool ScanBaseTableForRL(Transaction &transaction, DataChunk &result, TableScanState &state,
+					   const vector<column_t> &column_ids, idx_t &current_row, idx_t max_row);
 	bool ScanCreateIndex(CreateIndexScanState &state, const vector<column_t> &column_ids, DataChunk &result,
 	                     idx_t &current_row, idx_t max_row, bool allow_pending_updates = false);
 

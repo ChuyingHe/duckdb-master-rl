@@ -72,6 +72,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
     bool found_optimal_join_order = false;
     unique_ptr<LogicalOperator> rl_plan;
 
+    double prev_duration, current_duration, prev_reward, current_reward, delta;
+
     //printf("----- simulation----- ");
     while (!found_optimal_join_order) {  //️ 🐈 simulation_count = executed_chunk
         Timer timer_simulation;
@@ -99,9 +101,10 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
 
         //TODO: here we need info of the Progress 🐈
         context.ContinueJoin(lock, query, result, move(bound_values), allow_stream_result, simulation_count);
-        double duration_sim = timer_simulation.check();
+        current_duration = timer_simulation.check();
 
-        double base;
+
+        /*double base;
         if (simulation_count==0) {
             base = duration_sim;
         }
@@ -112,10 +115,51 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         // 0 = lose
         //TODO: correct this
         auto intermediate = 1/(std::min(1.0, duration_sim/(base*2))); //invert 0-1 to 1-0: because the longer the worse
-        double reward = intermediate/(1+ abs(intermediate));
-        rl_optimizer.RewardUpdate(reward);
+         double reward = intermediate/(1+ abs(intermediate));
+        */
+        /*double base;
+        double reward;
+        double delta;
+        if (simulation_count==0) {
+            base = duration_sim;
+            reward=0.5;
+            rl_optimizer.RewardUpdate(reward);
+        } else {
+            delta = abs(duration_sim-base);
+            if (duration_sim>=base) {
+                reward = std::min(base-delta, 0.0);
+            } else {
+                reward = std::max(base+delta, 1.0);
+            }
+            rl_optimizer.RewardUpdate(reward);
+            base = duration_sim;
+        }*/
+        std::cout << "simulation=" << simulation_count <<" | join_order = " << chosen_node->join_node->order_of_relations;
+        if (simulation_count == 0) {
+            std::cout <<" | prev_duration = "<< prev_duration << " | current_duration = " << current_duration;
+            prev_duration = current_duration;
+            prev_reward = 0.5;
+            current_reward = 0.5;
+            rl_optimizer.RewardUpdate(current_reward);
+        } else {
+            std::cout <<" | prev_duration = "<< prev_duration << " | current_duration = " << current_duration;
+            delta = abs(current_duration - prev_duration);
+            if (current_duration >= prev_duration) {
+                current_reward = std::max(prev_reward - delta/prev_duration, 0.0);
+                //current_reward = std::max(0.5 - delta/prev_duration, 0.0);
+            } else {
+                current_reward = std::min(prev_reward + delta/prev_duration, 1.0);
+                //current_reward = std::min(0.5 + delta/prev_duration, 1.0);
+            }
+            std::cout<<" | prev_reward = " <<prev_reward << " | current_reward = " << current_reward <<"\n";
+            prev_duration = current_duration;
+            prev_reward = current_reward;
+            rl_optimizer.RewardUpdate(current_reward);
+        }
 
-        std::cout<<"simu_nr."<<simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations<<" took " <<duration_sim <<"ms, intermediate = "<<intermediate<<", reward=" << reward <<"\n";
+
+
+        //std::cout << "simu_nr." << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << " took " << current_duration << "ms, intermediate = " << delta << ", reward=" << reward << "\n";
 
         if (chosen_node) {
             if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {

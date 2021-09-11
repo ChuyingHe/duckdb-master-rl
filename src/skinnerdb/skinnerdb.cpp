@@ -104,20 +104,23 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         context.ContinueJoin(lock, query, result, move(bound_values), allow_stream_result, simulation_count);
         current_duration = timer_simulation.check();
 
-
-        /*double base;
-        if (simulation_count==0) {
-            base = duration_sim;
-        }
-
         //rl_optimizer.RewardUpdate((-1)*duration_sim);
         //   f(x) = x / (1 + abs(x))
         // 1 = win
         // 0 = lose
-        //TODO: correct this
-        auto intermediate = 1/(std::min(1.0, duration_sim/(base*2))); //invert 0-1 to 1-0: because the longer the worse
-         double reward = intermediate/(1+ abs(intermediate));
-        */
+        // 🏆 REWARD FUNCTION C
+        rl_optimizer.Backpropogation((-1)*current_duration);
+        //std::cout << "simu_nr." << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << " took " << current_duration << "ms, reward=" << (-1)*current_duration << "\n";
+
+        // 🏆 REWARD FUNCTION B
+        /*double base;
+        if (simulation_count==0) {
+            base = current_duration;
+        }
+        auto intermediate = 1/(std::min(1.0, current_duration/(base*2))); //invert 0-1 to 1-0: because the longer the worse
+        double reward = intermediate/(1+ abs(intermediate));
+        std::cout << "simu_nr." << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << " took " << current_duration << "ms, intermediate = " << delta << ", reward=" << reward << "\n";*/
+
         /*double base;
         double reward;
         double delta;
@@ -135,7 +138,10 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
             rl_optimizer.RewardUpdate(reward);
             base = duration_sim;
         }*/
-        std::cout << "simulation=" << simulation_count <<" | join_order = " << chosen_node->join_node->order_of_relations;
+
+
+        // 🏆 REWARD FUNCTION A
+        /*std::cout << "simulation=" << simulation_count <<" | join_order = " << chosen_node->join_node->order_of_relations;
         if (simulation_count == 0) {
             std::cout <<" | prev_duration = "<< prev_duration << " | current_duration = " << current_duration;
             prev_duration = current_duration;
@@ -156,11 +162,10 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
             prev_duration = current_duration;
             prev_reward = current_reward;
             rl_optimizer.Backpropogation(current_reward);
-        }
+        }*/
 
 
 
-        //std::cout << "simu_nr." << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << " took " << current_duration << "ms, intermediate = " << delta << ", reward=" << reward << "\n";
 
         /*if (chosen_node) {
             if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {

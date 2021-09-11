@@ -69,13 +69,14 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
     result->value_map = move(planner.value_map);
     result->catalog_version = Transaction::GetTransaction(context).catalog_version;
 
-    bool found_optimal_join_order = false;
+    //bool found_optimal_join_order = false;
     unique_ptr<LogicalOperator> rl_plan;
 
     double prev_duration, current_duration, prev_reward, current_reward, delta;
 
     //printf("----- simulation----- ");
-    while (!found_optimal_join_order) {  //️ 🐈 simulation_count = executed_chunk
+    //while (!found_optimal_join_order) {  //️ 🐈 simulation_count = executed_chunk
+    while (true){
         Timer timer_simulation;
 
         // 5.2 Optimize plan in RL-Optimizer
@@ -140,7 +141,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
             prev_duration = current_duration;
             prev_reward = 0.5;
             current_reward = 0.5;
-            rl_optimizer.RewardUpdate(current_reward);
+            rl_optimizer.Backpropogation(current_reward);
         } else {
             std::cout <<" | prev_duration = "<< prev_duration << " | current_duration = " << current_duration;
             delta = abs(current_duration - prev_duration);
@@ -154,43 +155,41 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
             std::cout<<" | prev_reward = " <<prev_reward << " | current_reward = " << current_reward <<"\n";
             prev_duration = current_duration;
             prev_reward = current_reward;
-            rl_optimizer.RewardUpdate(current_reward);
+            rl_optimizer.Backpropogation(current_reward);
         }
 
 
 
         //std::cout << "simu_nr." << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << " took " << current_duration << "ms, intermediate = " << delta << ", reward=" << reward << "\n";
 
-        if (chosen_node) {
+        /*if (chosen_node) {
             if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {
                 same_order_count +=1;
-                if (same_order_count>=2) {
+                if (same_order_count>=2 || simulation_count>=10) {
                     found_optimal_join_order = true;
                 }
-                /*
-                if (same_order_count>=5 || sample_count==99) {
-                    //std::cout<<"final plan found in loop "<< sample_count << "\n";
-                    double time_prep = duration_prep_preoptimizer + duration_prep_join_order;
-                    std::cout   << job_file_sql << ", optimizer = RL Optimizer, loop = " << sample_count << ", join_order = "
-                                << chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward << ", num_of_visits = "
-                                << chosen_node->num_of_visits << ", time_preparation = " << time_prep << ", time_execution = "
-                                << duration_execution <<", time_total = "<< duration_execution+ time_prep<<"\n";
-                    break;
-                }*/
+
             } else {
                 same_order_count = 1;
                 previous_order_of_relations = chosen_node->join_node->order_of_relations;
             }
-
-            //double time_prep = duration_prep_preoptimizer + duration_prep_join_order;
-            /*double time_prep =  duration_prep_join_order;
-            std::cout << "optimizer = RL Optimizer, loop = " << simulation_count << ", join_order = "
-                        << chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward << ", num_of_visits = "
-                        << chosen_node->num_of_visits << ", time_preparation = " << time_prep << ", time_execution = "
-                        << duration_execution <<", time_total = "<< duration_execution+ time_prep<<"\n";*/
-            //std::cout << "optimizer = RL Optimizer, loop = " << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<"\n";
         } else {
             std::cout<< "nothing to optimize \n";
+        }*/
+
+        if (chosen_node) {
+            if (same_order_count>=2 || simulation_count>=10) {
+                //found_optimal_join_order = true;
+                //break for while(true){}
+                break;
+            } else {
+                if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {
+                    same_order_count +=1;
+                } else {
+                    same_order_count = 1;
+                    previous_order_of_relations = chosen_node->join_node->order_of_relations;
+                }
+            }
         }
 
         simulation_count += 1;

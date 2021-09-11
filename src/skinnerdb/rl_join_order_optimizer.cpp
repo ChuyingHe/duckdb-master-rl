@@ -587,7 +587,7 @@ void RLJoinOrderOptimizer::GeneratePlans() {
 // 1) use chosen_node
 // 2) use input parameter
 // are they the same? maybe yes, because chosen_node is updated
-void RLJoinOrderOptimizer::RewardUpdate(double reward) {
+void RLJoinOrderOptimizer::Backpropogation(double reward) {
     //printf("void RLJoinOrderOptimizer::RewardUpdate\n");
     // update the current leaf-node
     if (chosen_node) {

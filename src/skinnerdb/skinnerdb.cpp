@@ -183,7 +183,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         }*/
 
         if (chosen_node) {
-            if (same_order_count>=2 || simulation_count>=20) {
+            if (same_order_count>=2 || simulation_count >= 20) {
                 //found_optimal_join_order = true;
                 //break for while(true){}
                 break;

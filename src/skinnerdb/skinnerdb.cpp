@@ -104,7 +104,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         context.ContinueJoin(lock, query, result, move(bound_values), allow_stream_result, simulation_count);
         current_duration = timer_simulation.check();
 
-        //rl_optimizer.RewardUpdate((-1)*duration_sim);
+
+                //rl_optimizer.RewardUpdate((-1)*duration_sim);
         //   f(x) = x / (1 + abs(x))
         // 1 = win
         // 0 = lose
@@ -183,7 +184,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         }*/
 
         if (chosen_node) {
-            if (same_order_count>=2 || simulation_count >= 20) {
+            if (same_order_count>=2 || simulation_count >= 10) {
                 //found_optimal_join_order = true;
                 //break for while(true){}
                 break;
@@ -196,6 +197,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
                 }
             }
         }
+        std::cout << "simu_nr." << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << " took " << current_duration << "ms, intermediate = " << delta << ", reward=" << (-1)*current_duration << "\n";
 
         simulation_count += 1;
     }

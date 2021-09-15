@@ -184,7 +184,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         }*/
 
         if (chosen_node) {
-            if (same_order_count>=2 || simulation_count >= 10) {
+            if (same_order_count>=2 || simulation_count>=10) {
                 //found_optimal_join_order = true;
                 //break for while(true){}
                 break;
@@ -197,6 +197,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
                 }
             }
         }
+
         std::cout << "simu_nr." << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << " took " << current_duration << "ms, intermediate = " << delta << ", reward=" << (-1)*current_duration << "\n";
 
         simulation_count += 1;

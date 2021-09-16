@@ -909,62 +909,21 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::SelectJoinOrder(unique_ptr<Log
     Selection(root_node_for_uct);
 
     // GeneratePlans();
+    vector<JoinOrderOptimizer::JoinNode*> join_orders;
+
     int test_count_complete = 0;
     for (auto const& plan:plans) {
         if (plan.first->count == 4) {
             test_count_complete += 1;
+            join_orders.push_back(plan.second.get());
         }
     }
-    // std::cout <<"relations_amount = " << 4 << ", plan size=" << test_count_complete<<"\n";
+    std::cout <<"relations_amount = " << relations.size() << ", plan size=" << test_count_complete<< ", join_orders size =  "<< join_orders.size() << "\n";
 
     //sample(*root_node_for_uct);
 
    //auto final_plan = UCTChoice();      // returns JoinOrderOptimizer::JoinNode*
     return RewritePlan(move(plan), chosen_node->join_node);   // returns EXECUTABLE of the chosen_plan unique_ptr<LogicalOperator>
 }
-
-// Simulation = Execution
-/*unique_ptr<QueryResult> RLJoinOrderOptimizer::TestContinueJoin(ClientContextLock &lock, const string &query,
-                                             shared_ptr<PreparedStatementData> statement_p,
-                                             vector<Value> bound_values, bool allow_stream_result) {
-    auto &statement = *statement_p;
-    if (context.transaction.ActiveTransaction().IsInvalidated() && statement.requires_valid_transaction) {
-        throw Exception("Current transaction is aborted (please ROLLBACK)");
-    }
-
-    auto &config = DBConfig::GetConfig(context);
-    if (config.access_mode == AccessMode::READ_ONLY && !statement.read_only) {
-        throw Exception(StringUtil::Format("Cannot execute statement of type \"%s\" in read-only mode!",
-                                           StatementTypeToString(statement.statement_type)));
-    }
-
-    statement.Bind(move(bound_values));
-
-    bool create_stream_result = statement.allow_stream_result && allow_stream_result;
-    if (context.enable_progress_bar) {  //progress runs in another thread, parallel to the main thread
-        if (!context.progress_bar) {
-            context.progress_bar = make_shared<ProgressBar>(&context.executor, context.wait_time);
-        }
-        context.progress_bar->Start();
-    }
-
-    context.executor.Initialize(statement.plan.get());
-
-    auto types = context.executor.GetTypes();
-    D_ASSERT(types == statement.types);
-
-    if (create_stream_result) {
-        if (context.progress_bar) {
-            context.progress_bar->Stop();
-        }
-        return make_unique<StreamQueryResult>(statement.statement_type, shared_ptr<ClientContext>(*context), statement.types,
-                                              statement.names, move(statement_p));
-    }
-
-    auto result = make_unique<MaterializedQueryResult>(statement.statement_type, statement.types, statement.names);
-
-    while (true) {}
-
-}*/
 
 }

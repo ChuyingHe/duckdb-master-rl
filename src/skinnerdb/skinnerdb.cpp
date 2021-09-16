@@ -123,6 +123,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
                 same_order_count = 1;
                 previous_order_of_relations = chosen_node->join_node->order_of_relations;
             }
+
             //double time_prep = duration_prep_preoptimizer + duration_prep_join_order;
             /*double time_prep =  duration_prep_join_order;
             std::cout << "optimizer = RL Optimizer, loop = " << simulation_count << ", join_order = "
@@ -135,6 +136,10 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         }
 
         simulation_count += 1;
+
+        std::cout << "optimizer=SkinnerDB, loop = " << simulation_count << ", join_order = "
+                  << chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward << ", num_of_visits = "
+                  << chosen_node->num_of_visits;
     }
     double duration_prep = timer_prep.check();
 

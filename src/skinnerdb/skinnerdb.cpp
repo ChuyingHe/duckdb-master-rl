@@ -16,6 +16,7 @@
 namespace duckdb {
 NodeForUCT* root_node_for_uct;     //initialize the root of the tree
 NodeForUCT* chosen_node;
+vector<JoinOrderOptimizer::JoinNode*> join_orders;
 
 SkinnerDB::SkinnerDB(QueryProfiler &profiler, ClientContext& context): profiler(profiler), context(context) {
 }
@@ -60,13 +61,56 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
     // 5. Execute query with different Join-order
     chosen_node = nullptr;
 
-    int loop_count = 0;
-    while (loop_count < 100) {
-        Timer timer;
-    //while (!context.query_finished) {
-        // 5.1 Create PreparedStatementData: extract the result column names from the plan
-        //std::cout<<"\n 🦄️ loop_count = " << loop_count <<"\n";
 
+    // first simulation to get the join_orders ------------------------------------------------
+    Timer timer;
+    shared_ptr<PreparedStatementData> result = make_shared<PreparedStatementData>(statement_type);
+    result->read_only = planner.read_only;
+    result->requires_valid_transaction = planner.requires_valid_transaction;
+    result->allow_stream_result = planner.allow_stream_result;
+    result->names = planner.names;
+    result->types = planner.types;
+    result->value_map = move(planner.value_map);
+    result->catalog_version = Transaction::GetTransaction(context).catalog_version;
+
+    auto copy = plan->clone();
+
+    RLJoinOrderOptimizer rl_optimizer(context);
+
+    rl_optimizer.plans.clear();
+    chosen_node = nullptr;
+
+    unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(copy));
+
+    profiler.StartPhase("physical_planner");
+    PhysicalPlanGenerator physical_planner(context);
+    auto physical_plan = physical_planner.CreatePlan(move(rl_plan));
+    profiler.EndPhase();
+
+    result->plan = move(physical_plan);
+    vector<Value> bound_values;
+
+    query_result = context.ExecutePreparedStatementWithRLOptimizer(lock, query, move(result), move(bound_values), allow_stream_result);
+    double reward = timer.check();
+    rl_optimizer.RewardUpdate((-1)*reward);
+
+    std::string::size_type pos = query.find('.sql');
+    auto job_file_sql = query.substr(2, pos-1);
+    if (chosen_node) {
+        // std::cout<<job_file_sql <<", optimizer = RL Optimizer, loop = "<< loop_count << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
+        std::cout<<job_file_sql <<", optimizer = RL Optimizer, loop = " << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
+    } else {
+        std::cout<< "nothing to optimize \n";
+    }
+
+    //loop_count += 1;
+    // ------------------------------------------------
+
+    int loop_count = 0;
+    //while (loop_count < 100) {
+    for (auto it:join_orders){
+        std::cout<<"simulaiton: " << it->order_of_relations<<"\n";
+        Timer timer;
         shared_ptr<PreparedStatementData> result = make_shared<PreparedStatementData>(statement_type);
         result->read_only = planner.read_only;
         result->requires_valid_transaction = planner.requires_valid_transaction;
@@ -76,25 +120,17 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         result->value_map = move(planner.value_map);
         result->catalog_version = Transaction::GetTransaction(context).catalog_version;
 
-        // 5.2 Optimize plan in RL-Optimizer
-        auto copy = plan->clone();  // Clone plan for next iteration
+        auto copy = plan->clone();
 
-        // testfunc(move(copy));
         RLJoinOrderOptimizer rl_optimizer(context);
-        if (loop_count == 0) {
-            rl_optimizer.plans.clear();
-            chosen_node = nullptr;
-        }
+
         unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(copy));
 
-        // 5.3 Create physical plan
         profiler.StartPhase("physical_planner");
-        // now convert logical query plan into a physical query plan
         PhysicalPlanGenerator physical_planner(context);
         auto physical_plan = physical_planner.CreatePlan(move(rl_plan));
         profiler.EndPhase();
 
-        // 5.4 Execute optimized plan + Update reward
         result->plan = move(physical_plan);
         vector<Value> bound_values;
 

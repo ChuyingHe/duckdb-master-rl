@@ -398,6 +398,11 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
                 parent_node_for_uct->children.push_back(current_node_for_uct);
             }
 
+            if (new_set_copy_ptr->count == relations.size()) {
+                // add get() of unique_ptr to join_orders
+                join_orders.push_back(plans[new_set_copy_ptr].get());
+            }
+
             exclusion_set.clear();
             for (idx_t i = 0; i < new_set->count; ++i) {
                 exclusion_set.insert(new_set->relations[i]);
@@ -481,30 +486,7 @@ double RLJoinOrderOptimizer::CalculateUCB(double avg, int v_p, int v_c) {
     }
 }*/
 JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
-    //printf("JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice\n");
     /*auto next = root_node_for_uct;
-    // determine the second-last node
-    while (!next->children.empty()) {
-        next->num_of_visits += 1;
-        auto max = 0;
-        NodeForUCT* chosen_next;
-        auto children = next->children; // should be vector of ptr
-        for (auto const& n : children) {
-            double avg = (n->num_of_visits==0)? 1000000: (n->reward/n->num_of_visits);
-            auto ucb = CalculateUCB(avg, n->parent->num_of_visits, n->num_of_visits);
-            if (ucb > max) {
-                max = ucb;
-                chosen_next = n;
-            }
-        }
-        next = chosen_next;      // for next iteration in this while loop
-    }
-    // determine the last node
-    next->num_of_visits += 1;
-    chosen_node = next; //the first and the only child
-    return chosen_node->join_node;*/
-
-    auto next = root_node_for_uct;
     // determine the second-last node
     while (!next->children.empty()) {
         next->num_of_visits += 1;
@@ -524,8 +506,9 @@ JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
     // determine the last node
     next->num_of_visits += 1;
     chosen_node = next; //the first and the only child
-    return chosen_node->join_node;
+    return chosen_node->join_node;*/
 
+    return join_orders.at(0);
 }
 
 bool RLJoinOrderOptimizer::ContinueJoin(JoinOrderOptimizer::JoinNode* node, std::chrono::seconds duration) {
@@ -594,7 +577,9 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<Logical
     return plan;
 }
 
+unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOperator> plan, JoinOrderOptimizer::JoinNode*) {
 
+}
 
 unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOperator> plan) {
     //printf("unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize\n");
@@ -699,6 +684,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
         std::cout << "plan size=" << plans.size()<<"\n";
     }
     auto final_plan = UCTChoice();      // returns JoinOrderOptimizer::JoinNode*
+    //JoinOrderOptimizer::JoinNode* final_plan = join_orders.at(0);
     return RewritePlan(move(plan), final_plan);   // returns EXECUTABLE of the chosen_plan unique_ptr<LogicalOperator>
 }
 

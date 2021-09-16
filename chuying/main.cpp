@@ -46,7 +46,7 @@ void addIndexes(Connection con) {
 void runJOBQuerys(Connection con) {
     //con.Query("PRAGMA enable_profiling='json'");
     con.Query("PRAGMA enable_progress_bar");
-    //con.Query("PRAGMA enable_rl_join_order_optimizer");
+    con.Query("PRAGMA enable_rl_join_order_optimizer");
 
     //TODO: delete this
     int count_sql = 0;

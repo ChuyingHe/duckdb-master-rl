@@ -15,6 +15,8 @@
 
 #include "duckdb/common/mutex.hpp"
 
+#include <iostream>
+
 namespace duckdb {
 
 //===--------------------------------------------------------------------===//
@@ -71,6 +73,7 @@ static void TableScanFunc(ClientContext &context, const FunctionData *bind_data_
 	auto &transaction = Transaction::GetTransaction(context);
 	bind_data.table->storage->Scan(transaction, output, state.scan_state, state.column_ids);
 	bind_data.chunk_count++;
+    std::cout<<"Chunk Nr."<<bind_data.chunk_count << " has progress = "<< state.scan_state.current_row<<"/"<< state.scan_state.max_row <<" \n";
 }
 
 struct ParallelTableFunctionScanState : public ParallelState {

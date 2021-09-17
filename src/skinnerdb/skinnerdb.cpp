@@ -58,10 +58,6 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
     // 4. Define node for reward update
     root_node_for_uct = new NodeForUCT{nullptr, 0, 0.0, nullptr};
 
-    // 5. Execute query with different Join-order
-    chosen_node = nullptr;
-
-
     // first simulation to get the join_orders ------------------------------------------------
     printf("----------------------- first simulation to obtain all possible join orders: ----------------------- \n");
     shared_ptr<PreparedStatementData> result = make_shared<PreparedStatementData>(statement_type);
@@ -101,6 +97,9 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
     int loop_count = 0;
     printf("----------------------- following simulation to compare: ----------------------- \n");
     for (auto &it:join_orders){
+        // chosen_node = it.second.get();
+        chosen_node = new NodeForUCT{it.second.get(), 0, 0.0, nullptr};
+
         Timer timer_prep;
         shared_ptr<PreparedStatementData> result = make_shared<PreparedStatementData>(statement_type);
         result->read_only = planner.read_only;
@@ -112,7 +111,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         result->catalog_version = Transaction::GetTransaction(context).catalog_version;
         auto copy = plan->clone();
         RLJoinOrderOptimizer rl_optimizer(context);
-        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.OptimizeForSimulation(move(copy), it.second.get());
+        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(copy));
         profiler.StartPhase("physical_planner");
         PhysicalPlanGenerator physical_planner(context);
         auto physical_plan = physical_planner.CreatePlan(move(rl_plan));
@@ -129,7 +128,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         std::string::size_type pos = query.find('.sql');
         auto job_file_sql = query.substr(2, pos-1);
         // sql,loop,join-order,prep_time,exec_time
-        std::cout<<job_file_sql<<","<<loop_count<<","<<it.second->order_of_relations<<","<<duration_prep<<","<<duration_exec<< "\n";
+
+        std::cout<<job_file_sql<<","<<loop_count<<","<<chosen_node->join_node->order_of_relations<<","<<duration_prep<<","<<duration_exec<< "\n";
 
         loop_count += 1;
     }

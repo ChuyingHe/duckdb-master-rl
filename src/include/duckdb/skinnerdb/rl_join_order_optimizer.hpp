@@ -55,7 +55,6 @@ namespace duckdb {
         }
 
         unique_ptr <LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan);
-        unique_ptr<LogicalOperator> OptimizeForSimulation(unique_ptr<LogicalOperator> plan, JoinOrderOptimizer::JoinNode* final_plan);
 
         void RewardUpdate(double reward);
         void GeneratePlans();

@@ -127,9 +127,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
         std::string::size_type pos = query.find('.sql');
         auto job_file_sql = query.substr(2, pos-1);
-        // sql,loop,join-order,prep_time,exec_time
-
-        std::cout<<job_file_sql<<","<<loop_count<<","<<chosen_node->join_node->order_of_relations<<","<<duration_prep<<","<<duration_exec<< "\n";
+        // sql,loop,join-order,prep_time,exec_time,total_execution
+        std::cout<<job_file_sql<<","<<loop_count<<","<<chosen_node->join_node->order_of_relations<<","<<duration_prep<<","<<duration_exec<<","<<(duration_prep+duration_exec)<< "\n";
 
         loop_count += 1;
     }

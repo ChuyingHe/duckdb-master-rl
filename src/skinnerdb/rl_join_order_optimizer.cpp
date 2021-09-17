@@ -555,7 +555,7 @@ void RLJoinOrderOptimizer::BackupState() {
 // node: final_plan chosen by UCTChoice()
 // (move(plan), final_plan);
 unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<LogicalOperator> plan, JoinOrderOptimizer::JoinNode *node) {
-    //printf("unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan\n");
+    printf("unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan\n");
     // now we have to rewrite the plan
     bool root_is_join = plan->children.size() > 1;
     // first we will extract all relations from the main plan

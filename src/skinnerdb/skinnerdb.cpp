@@ -36,7 +36,11 @@ void testfunc(unique_ptr<LogicalOperator> plan) {
 unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &lock, const string &query,
                                                           unique_ptr<SQLStatement> statement, bool allow_stream_result){
     //printf("unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement\n");
-    // 1. Preparation
+    // reset
+    root_node_for_uct = new NodeForUCT{nullptr, 0, 0.0, nullptr};
+    join_orders.clear();
+    chosen_node = nullptr;
+
     auto query_result = unique_ptr<QueryResult>();
     StatementType statement_type = statement->type;
 
@@ -56,7 +60,6 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
     profiler.EndPhase();
 
     // 4. Define node for reward update
-    root_node_for_uct = new NodeForUCT{nullptr, 0, 0.0, nullptr};
 
     // first simulation to get the join_orders ------------------------------------------------
     printf("----------------------- first simulation to obtain all possible join orders: ----------------------- \n");
@@ -72,11 +75,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
     auto copy = plan->clone();
 
     RLJoinOrderOptimizer rl_optimizer(context);
-
     rl_optimizer.plans.clear();
-    chosen_node = nullptr;
-
-    unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(copy));
+    unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(copy));    //🎨
 
     profiler.StartPhase("physical_planner");
     PhysicalPlanGenerator physical_planner(context);
@@ -133,7 +133,26 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         loop_count += 1;
     }
 
-    //TODO: add up all query_result
+    //Execution ---------------
+    // chosen_node = new NodeForUCT{.get(), 0, 0.0, nullptr};
+    enable_rl_join_order_optimizer = false;
+    printf("----------------------- execution ----------------------- \n");
+    result = make_shared<PreparedStatementData>(statement_type);
+    result->read_only = planner.read_only;
+    result->requires_valid_transaction = planner.requires_valid_transaction;
+    result->allow_stream_result = planner.allow_stream_result;
+    result->names = planner.names;
+    result->types = planner.types;
+    result->value_map = move(planner.value_map);
+    result->catalog_version = Transaction::GetTransaction(context).catalog_version;
+
+    physical_plan = physical_planner.CreatePlan(move(plan));
+    result->plan = move(physical_plan);
+
+    query_result = context.ExecutePreparedStatementWithRLOptimizer(lock, query, move(result), move(bound_values), allow_stream_result);
+
+
+    // --------------
     return query_result;
 }
 

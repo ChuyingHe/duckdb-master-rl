@@ -33,7 +33,6 @@ PhysicalTableScan::PhysicalTableScan(vector<LogicalType> types, TableFunction fu
       function(move(function_p)), bind_data(move(bind_data_p)), column_ids(move(column_ids_p)), names(move(names_p)),
       table_filters(move(table_filters_p)) {
     auto &test = (TableScanBindData &)*bind_data;
-    std::cout
     std::cout<<test.table->storage->info->table << ">";
 }
 

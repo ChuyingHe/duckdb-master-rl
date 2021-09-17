@@ -16,7 +16,7 @@
 namespace duckdb {
 NodeForUCT* root_node_for_uct;     //initialize the root of the tree
 NodeForUCT* chosen_node;
-vector<JoinOrderOptimizer::JoinNode*> join_orders;
+unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>, Hasher, EqualFn> join_orders;
 
 SkinnerDB::SkinnerDB(QueryProfiler &profiler, ClientContext& context): profiler(profiler), context(context) {
 }
@@ -35,7 +35,7 @@ void testfunc(unique_ptr<LogicalOperator> plan) {
 
 unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &lock, const string &query,
                                                           unique_ptr<SQLStatement> statement, bool allow_stream_result){
-    printf("unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement\n");
+    //printf("unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement\n");
     // 1. Preparation
     auto query_result = unique_ptr<QueryResult>();
     StatementType statement_type = statement->type;
@@ -63,6 +63,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
 
     // first simulation to get the join_orders ------------------------------------------------
+    printf("----------------------- first simulation to obtain all possible join orders: ----------------------- \n");
     Timer timer;
     shared_ptr<PreparedStatementData> result = make_shared<PreparedStatementData>(statement_type);
     result->read_only = planner.read_only;
@@ -92,24 +93,29 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
     query_result = context.ExecutePreparedStatementWithRLOptimizer(lock, query, move(result), move(bound_values), allow_stream_result);
     double reward = timer.check();
-    rl_optimizer.RewardUpdate((-1)*reward);
+    // rl_optimizer.RewardUpdate((-1)*reward);
 
     std::string::size_type pos = query.find('.sql');
     auto job_file_sql = query.substr(2, pos-1);
-    if (chosen_node) {
+    /*if (chosen_node) {
         // std::cout<<job_file_sql <<", optimizer = RL Optimizer, loop = "<< loop_count << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
         std::cout<<job_file_sql <<", optimizer = RL Optimizer, loop = " << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
     } else {
         std::cout<< "nothing to optimize \n";
-    }
+    }*/
+    std::cout<<job_file_sql <<", optimizer = RL Optimizer, loop = " << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
+
 
     //loop_count += 1;
     // ------------------------------------------------
 
     int loop_count = 0;
+    printf("----------------------- following simulation to compare: ----------------------- \n");
+
+    std::cout<< "join_orders size = " <<join_orders.size()<<"\n";
     //while (loop_count < 100) {
-    for (auto it:join_orders){
-        std::cout<<"simulaiton: " << it->order_of_relations<<"\n";
+    for (auto &it:join_orders){
+        std::cout<<"simulaiton: " << it.second->order_of_relations<<"\n";
         Timer timer;
         shared_ptr<PreparedStatementData> result = make_shared<PreparedStatementData>(statement_type);
         result->read_only = planner.read_only;
@@ -136,15 +142,17 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
         query_result = context.ExecutePreparedStatementWithRLOptimizer(lock, query, move(result), move(bound_values), allow_stream_result);
         double reward = timer.check();
-        rl_optimizer.RewardUpdate((-1)*reward);
+        // rl_optimizer.RewardUpdate((-1)*reward);
 
         std::string::size_type pos = query.find('.sql');
         auto job_file_sql = query.substr(2, pos-1);
-        if (chosen_node) {
+        /*if (chosen_node) {
             std::cout<<job_file_sql <<", optimizer = RL Optimizer, loop = "<< loop_count << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
         } else {
             std::cout<< "nothing to optimize \n";
         }
+*/
+        std::cout<<job_file_sql <<", optimizer = RL Optimizer, loop = "<< loop_count << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
 
         loop_count += 1;
     }

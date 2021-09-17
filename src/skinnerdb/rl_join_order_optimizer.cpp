@@ -386,22 +386,38 @@ void RLJoinOrderOptimizer::IterateTree(JoinRelationSet* union_set, unordered_set
             JoinRelationSet* new_set_copy_ptr = new JoinRelationSet(*new_set);
             auto new_plan = RL_CreateJoinTree(new_set_copy_ptr, info_copy_ptr, left.get(), right.get());
 
-            auto entry = plans.find(new_set);
-            NodeForUCT* current_node_for_uct;
-            if (entry == plans.end()) {
-                plans[new_set_copy_ptr] = move(new_plan);
-                plans[new_set_copy_ptr]->order_of_relations.append(parent_node_for_uct->join_node->order_of_relations);
-                plans[new_set_copy_ptr]->order_of_relations.append(std::to_string(neighbor));
-                plans[new_set_copy_ptr]->order_of_relations.append("-");
 
-                current_node_for_uct = new NodeForUCT{plans[new_set_copy_ptr].get(), 0, 0.0, parent_node_for_uct};
-                parent_node_for_uct->children.push_back(current_node_for_uct);
+            NodeForUCT* current_node_for_uct;
+            if (new_set_copy_ptr->count == relations.size()) {
+                auto entry = join_orders.find(new_set);
+
+                if (entry == join_orders.end()) {
+                    join_orders[new_set_copy_ptr] = move(new_plan);
+                    join_orders[new_set_copy_ptr]->order_of_relations.append(parent_node_for_uct->join_node->order_of_relations);
+                    join_orders[new_set_copy_ptr]->order_of_relations.append(std::to_string(neighbor));
+                    join_orders[new_set_copy_ptr]->order_of_relations.append("-");
+
+                    current_node_for_uct = new NodeForUCT{join_orders[new_set_copy_ptr].get(), 0, 0.0, parent_node_for_uct};
+                    parent_node_for_uct->children.push_back(current_node_for_uct);
+                }
+            } else {
+                auto entry = plans.find(new_set);
+                if (entry == plans.end()) {
+                    plans[new_set_copy_ptr] = move(new_plan);
+                    plans[new_set_copy_ptr]->order_of_relations.append(parent_node_for_uct->join_node->order_of_relations);
+                    plans[new_set_copy_ptr]->order_of_relations.append(std::to_string(neighbor));
+                    plans[new_set_copy_ptr]->order_of_relations.append("-");
+
+                    current_node_for_uct = new NodeForUCT{plans[new_set_copy_ptr].get(), 0, 0.0, parent_node_for_uct};
+                    parent_node_for_uct->children.push_back(current_node_for_uct);
+                }
             }
 
-            if (new_set_copy_ptr->count == relations.size()) {
+
+            /*if (new_set_copy_ptr->count == relations.size()) {
                 // add get() of unique_ptr to join_orders
                 join_orders.push_back(plans[new_set_copy_ptr].get());
-            }
+            }*/
 
             exclusion_set.clear();
             for (idx_t i = 0; i < new_set->count; ++i) {
@@ -486,7 +502,7 @@ double RLJoinOrderOptimizer::CalculateUCB(double avg, int v_p, int v_c) {
     }
 }*/
 JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
-    /*auto next = root_node_for_uct;
+    auto next = root_node_for_uct;
     // determine the second-last node
     while (!next->children.empty()) {
         next->num_of_visits += 1;
@@ -506,9 +522,10 @@ JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
     // determine the last node
     next->num_of_visits += 1;
     chosen_node = next; //the first and the only child
-    return chosen_node->join_node;*/
+    return chosen_node->join_node;
 
-    return join_orders.at(0);
+    /*chosen_node = join_orders.begin()->second.get();
+    return ;*/
 }
 
 bool RLJoinOrderOptimizer::ContinueJoin(JoinOrderOptimizer::JoinNode* node, std::chrono::seconds duration) {
@@ -688,6 +705,113 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOpe
     return RewritePlan(move(plan), final_plan);   // returns EXECUTABLE of the chosen_plan unique_ptr<LogicalOperator>
 }
 
+
+    unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize(unique_ptr<LogicalOperator> plan) {
+        //printf("unique_ptr<LogicalOperator> RLJoinOrderOptimizer::Optimize\n");
+        D_ASSERT(filters.empty() && relations.empty()); // assert that the RLJoinOrderOptimizer has not been used before
+        /*if (!chosen_node) {
+            plans.clear();
+        }*/
+        LogicalOperator *op = plan.get();
+        vector<LogicalOperator *> filter_operators;
+
+        //std::cout<<"current LogicalOperator = "<<op->GetName()<<"\n";
+
+        if (!ExtractJoinRelations(*op, filter_operators)) {
+            return plan;
+        }
+
+        // at most one relation, nothing to reorder
+        if (relations.size() <= 1) {
+            return plan;
+        }
+
+        /*Cases that needs the Join Order Optimizer:*/
+        // filters in the process
+        expression_set_t filter_set;    /*unordered_set<BaseExpression *, ExpressionHashFunction, ExpressionEquality>;*/
+        for (auto &op : filter_operators) { /*filter_operators is updated in function ExtractJoinRelations()*/
+            if (op->type == LogicalOperatorType::LOGICAL_COMPARISON_JOIN) {
+                /* (1) if operator == LOGICAL_COMPARISON_JOIN*/
+                auto &join = (LogicalComparisonJoin &)*op;
+                D_ASSERT(join.join_type == JoinType::INNER);
+                D_ASSERT(join.expressions.empty());
+                for (auto &cond : join.conditions) {
+                    auto comparison =
+                            make_unique<BoundComparisonExpression>(cond.comparison, move(cond.left), move(cond.right));
+                    if (filter_set.find(comparison.get()) == filter_set.end()) { /*if this comparison doesn't exist in the filter_set, then put it in. find() returns .end() if not found*/
+                        filter_set.insert(comparison.get());
+                        filters.push_back(move(comparison));
+                    }
+                }
+                join.conditions.clear();
+            } else {
+                /* (2) if no comparison_join, then add op->expressions instead op->conditions */
+                for (auto &expression : op->expressions) {
+                    if (filter_set.find(expression.get()) == filter_set.end()) {
+                        filter_set.insert(expression.get());
+                        filters.push_back(move(expression));
+                    }
+                }
+                op->expressions.clear();
+            }
+        }
+        // create potential edges from the comparisons
+        for (idx_t i = 0; i < filters.size(); i++) {
+            auto &filter = filters[i];
+            auto info = make_unique<FilterInfo>();
+            auto filter_info = info.get();  /*raw pointer of info*/
+            filter_infos.push_back(move(info));
+            // first extract the relation set for the entire filter
+            unordered_set<idx_t> bindings;
+            ExtractBindings(*filter, bindings); // Extract the set of relations referred to inside an expression
+            filter_info->set = set_manager.GetJoinRelation(bindings);
+            filter_info->filter_index = i;
+            // now check if it can be used as a join predicate
+            if (filter->GetExpressionClass() == ExpressionClass::BOUND_COMPARISON) {
+                auto comparison = (BoundComparisonExpression *)filter.get();
+                // extract the bindings that are required for the left and right side of the comparison
+                unordered_set<idx_t> left_bindings, right_bindings;
+                ExtractBindings(*comparison->left, left_bindings);
+                ExtractBindings(*comparison->right, right_bindings);
+                if (!left_bindings.empty() && !right_bindings.empty()) {
+                    // both the left and the right side have bindings
+                    // first create the relation sets, if they do not exist
+                    filter_info->left_set = set_manager.GetJoinRelation(left_bindings);
+                    filter_info->right_set = set_manager.GetJoinRelation(right_bindings);
+                    // we can only create a meaningful edge if the sets are not exactly the same -> not self connected
+                    if (filter_info->left_set != filter_info->right_set) {
+                        // check if the sets are disjoint
+                        if (RL_Disjoint(left_bindings, right_bindings)) {
+                            // they are disjoint, we only need to create one set of edges in the join graph
+                            query_graph.CreateEdge(filter_info->left_set, filter_info->right_set, filter_info);
+                            query_graph.CreateEdge(filter_info->right_set, filter_info->left_set, filter_info);
+                        } else {
+                            continue;
+                            // the sets are not disjoint, we create two sets of edges
+                            // auto left_difference = set_manager.Difference(filter_info->left_set, filter_info->right_set);
+                            // auto right_difference = set_manager.Difference(filter_info->right_set,
+                            // filter_info->left_set);
+                            // // -> LEFT <-> RIGHT \ LEFT
+                            // query_graph.CreateEdge(filter_info->left_set, right_difference, filter_info);
+                            // query_graph.CreateEdge(right_difference, filter_info->left_set, filter_info);
+                            // // -> RIGHT <-> LEFT \ RIGHT
+                            // query_graph.CreateEdge(left_difference, filter_info->right_set, filter_info);
+                            // query_graph.CreateEdge(filter_info->right_set, left_difference, filter_info);
+                        }
+                        continue;
+                    }
+                }
+            }
+        }
+
+        if (!chosen_node) {
+            GeneratePlans();
+            std::cout << "plan size=" << plans.size()<<"\n";
+        }
+        auto final_plan = UCTChoice();      // returns JoinOrderOptimizer::JoinNode*
+        //JoinOrderOptimizer::JoinNode* final_plan = join_orders.at(0);
+        return RewritePlan(move(plan), final_plan);   // returns EXECUTABLE of the chosen_plan unique_ptr<LogicalOperator>
+    }
 
 
 }

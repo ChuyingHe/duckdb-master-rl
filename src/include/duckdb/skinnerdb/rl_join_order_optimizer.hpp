@@ -45,8 +45,8 @@ namespace duckdb {
 
     extern NodeForUCT* root_node_for_uct;
     extern NodeForUCT* chosen_node; // to tranfer the reward in RewardUpdate
-    extern vector<JoinOrderOptimizer::JoinNode*> join_orders;   // includes all the relations, to return
-
+    //extern vector<JoinOrderOptimizer::JoinNode*> join_orders;   // includes all the relations, to return
+    extern unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>, Hasher, EqualFn> join_orders;   // includes all the relations, to return
 
     class RLJoinOrderOptimizer {
     public:

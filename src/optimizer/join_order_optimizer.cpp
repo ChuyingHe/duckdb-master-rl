@@ -797,8 +797,9 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 	auto final_plan = plans.find(total_relation);
 
     //std::cout<< "optimizer=DuckDB,loop=NULL,join_order=" << final_plan->second->order_of_relations<<",";
-    std::cout<< "DuckDB,NULL," << final_plan->second->order_of_relations<<",";
-	if (final_plan == plans.end()) {
+    // std::cout<< "DuckDB,NULL," << final_plan->second->order_of_relations<<",";
+    std::cout<< "DuckDB,NULL,";
+    if (final_plan == plans.end()) {
 		// could not find the final plan
 		// this should only happen in case the sets are actually disjunct
 		// in this case we need to generate cross product to connect the disjoint sets

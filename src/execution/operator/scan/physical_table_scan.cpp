@@ -5,6 +5,8 @@
 #include "duckdb/parallel/task_context.hpp"
 #include "duckdb/planner/expression/bound_conjunction_expression.hpp"
 #include "duckdb/transaction/transaction.hpp"
+#include "duckdb/function/table/table_scan.hpp"
+
 
 #include <utility>
 
@@ -30,6 +32,9 @@ PhysicalTableScan::PhysicalTableScan(vector<LogicalType> types, TableFunction fu
     : PhysicalOperator(PhysicalOperatorType::TABLE_SCAN, move(types), estimated_cardinality),
       function(move(function_p)), bind_data(move(bind_data_p)), column_ids(move(column_ids_p)), names(move(names_p)),
       table_filters(move(table_filters_p)) {
+    auto &test = (TableScanBindData &)*bind_data;
+    std::cout
+    std::cout<<test.table->storage->info->table << ">";
 }
 
 void PhysicalTableScan::GetChunkInternal(ExecutionContext &context, DataChunk &chunk, PhysicalOperatorState *state_p) {
@@ -65,10 +70,13 @@ void PhysicalTableScan::GetChunkInternal(ExecutionContext &context, DataChunk &c
 	if (!state.parallel_state) {
         //printf("PhysicalTableScan::GetChunkInternal - 2; ");
 		// sequential scan
+
 		function.function(context.client, bind_data.get(), state.operator_data.get(), nullptr, chunk);  // call TableScanFunc()
 		if (chunk.size() != 0) {
 			return;
 		}
+       // auto &test = (TableScanBindData &)*bind_data;
+       // std::cout<<test.table->storage->info->table << ", ";
 	} else {
 		// parallel scan
 		do {

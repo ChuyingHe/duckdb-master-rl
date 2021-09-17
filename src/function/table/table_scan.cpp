@@ -71,12 +71,13 @@ static void TableScanFunc(ClientContext &context, const FunctionData *bind_data_
 	auto &bind_data = (TableScanBindData &)*bind_data_p;
 	auto &state = (TableScanOperatorData &)*operator_state;
 	auto &transaction = Transaction::GetTransaction(context);
+    //std::cout<<"bind_data.table->name" << bind_data.table->name <<", bind_data.table->storage->info->table" <<bind_data.table->storage->info->table << "\n";
     //printf("TableScanFunc - 2 \n");
 	bind_data.table->storage->Scan(transaction, output, state.scan_state, state.column_ids);
     //printf("TableScanFunc - 3 \n");
 	bind_data.chunk_count++;
     //printf("TableScanFunc - 4 \n");
-    std::cout<<"Chunk Nr."<<bind_data.chunk_count << " has progress = "<< state.scan_state.current_row<<"/"<< state.scan_state.max_row <<" \n";
+    //std::cout<<"Chunk Nr."<<bind_data.chunk_count << " has progress = "<< state.scan_state.current_row<<"/"<< state.scan_state.max_row <<" \n";
 }
 
 struct ParallelTableFunctionScanState : public ParallelState {

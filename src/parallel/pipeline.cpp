@@ -98,6 +98,7 @@ void Pipeline::Execute(TaskContext &task) {	//execution of task(pipeline without
 		auto lstate = sink->GetLocalSinkState(context);
 		// incrementally process the pipeline
 		DataChunk intermediate;
+
 		child->InitializeChunkEmpty(intermediate);  //initialize intermediate with pre-defined type: TABLE_SCAN of "company_type": intermediate is initialized with 2 data [Vector, Vector]
 
 		while (true) {

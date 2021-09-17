@@ -469,7 +469,7 @@ unique_ptr<QueryResult> ClientContext::RunStatementInternal(ClientContextLock &l
         auto prepared = CreatePreparedStatement(lock, query, move(statement));  	//return PreparedStatementData which contains physical_plan - prepared.plan
         double duration_prep = timer_prep.check();
         //std::cout <<"time_preparation=" <<duration_prep <<",";
-        std::cout <<duration_prep <<",";
+        std::cout <<","<<duration_prep <<",";
 
         Timer timer_exec;
         // by default, no values are bound

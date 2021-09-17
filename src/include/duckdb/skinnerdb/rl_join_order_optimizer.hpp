@@ -55,7 +55,8 @@ namespace duckdb {
         }
 
         unique_ptr <LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan);
-        unique_ptr<LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan, JoinOrderOptimizer::JoinNode*);
+        unique_ptr<LogicalOperator> OptimizeForSimulation(unique_ptr<LogicalOperator> plan, JoinOrderOptimizer::JoinNode* final_plan);
+
         void RewardUpdate(double reward);
         void GeneratePlans();
         static unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>, Hasher, EqualFn> plans;   // includes all the relations, to return

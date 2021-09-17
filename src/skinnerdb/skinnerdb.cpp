@@ -64,7 +64,6 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
     // first simulation to get the join_orders ------------------------------------------------
     printf("----------------------- first simulation to obtain all possible join orders: ----------------------- \n");
-    Timer timer;
     shared_ptr<PreparedStatementData> result = make_shared<PreparedStatementData>(statement_type);
     result->read_only = planner.read_only;
     result->requires_valid_transaction = planner.requires_valid_transaction;
@@ -92,31 +91,17 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
     vector<Value> bound_values;
 
     query_result = context.ExecutePreparedStatementWithRLOptimizer(lock, query, move(result), move(bound_values), allow_stream_result);
-    double reward = timer.check();
-    // rl_optimizer.RewardUpdate((-1)*reward);
 
     std::string::size_type pos = query.find('.sql');
     auto job_file_sql = query.substr(2, pos-1);
-    /*if (chosen_node) {
-        // std::cout<<job_file_sql <<", optimizer = RL Optimizer, loop = "<< loop_count << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
-        std::cout<<job_file_sql <<", optimizer = RL Optimizer, loop = " << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
-    } else {
-        std::cout<< "nothing to optimize \n";
-    }*/
-    std::cout<<job_file_sql <<", optimizer = RL Optimizer, loop = " << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
+    std::cout<<job_file_sql << " has  " <<join_orders.size()<<" possible join orders.\n";
 
-
-    //loop_count += 1;
     // ------------------------------------------------
 
     int loop_count = 0;
     printf("----------------------- following simulation to compare: ----------------------- \n");
-
-    std::cout<< "join_orders size = " <<join_orders.size()<<"\n";
-    //while (loop_count < 100) {
     for (auto &it:join_orders){
-        std::cout<<"simulaiton: " << it.second->order_of_relations<<"\n";
-        Timer timer;
+        Timer timer_prep;
         shared_ptr<PreparedStatementData> result = make_shared<PreparedStatementData>(statement_type);
         result->read_only = planner.read_only;
         result->requires_valid_transaction = planner.requires_valid_transaction;
@@ -125,34 +110,26 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
         result->types = planner.types;
         result->value_map = move(planner.value_map);
         result->catalog_version = Transaction::GetTransaction(context).catalog_version;
-
         auto copy = plan->clone();
-
         RLJoinOrderOptimizer rl_optimizer(context);
-
-        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.Optimize(move(copy));
-
+        unique_ptr<LogicalOperator> rl_plan = rl_optimizer.OptimizeForSimulation(move(copy), it.second.get());
         profiler.StartPhase("physical_planner");
         PhysicalPlanGenerator physical_planner(context);
         auto physical_plan = physical_planner.CreatePlan(move(rl_plan));
         profiler.EndPhase();
-
         result->plan = move(physical_plan);
         vector<Value> bound_values;
+        double duration_prep = timer_prep.check();
 
+        Timer timer_exec;
         query_result = context.ExecutePreparedStatementWithRLOptimizer(lock, query, move(result), move(bound_values), allow_stream_result);
-        double reward = timer.check();
-        // rl_optimizer.RewardUpdate((-1)*reward);
+        double duration_exec = timer_exec.check();
+
 
         std::string::size_type pos = query.find('.sql');
         auto job_file_sql = query.substr(2, pos-1);
-        /*if (chosen_node) {
-            std::cout<<job_file_sql <<", optimizer = RL Optimizer, loop = "<< loop_count << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
-        } else {
-            std::cout<< "nothing to optimize \n";
-        }
-*/
-        std::cout<<job_file_sql <<", optimizer = RL Optimizer, loop = "<< loop_count << ", join_order = " <<chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<", duration(ms) = " <<reward<< "\n";
+        // sql,loop,join-order,prep_time,exec_time
+        std::cout<<job_file_sql<<","<<loop_count<<","<<it.second->order_of_relations<<","<<duration_prep<<","<<duration_exec<< "\n";
 
         loop_count += 1;
     }

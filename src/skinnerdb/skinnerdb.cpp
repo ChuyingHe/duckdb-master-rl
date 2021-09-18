@@ -74,7 +74,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
     //bool found_optimal_join_order = false;
     unique_ptr<LogicalOperator> rl_plan;
 
-    double prev_duration, current_duration, prev_reward, current_reward;
+    double prev_duration, current_duration, prev_reward, current_reward, max_duration, min_duration, max_min;
+    std::vector<double> duration_vec;
 
     //printf("----- simulation----- ");
     while (true){
@@ -104,8 +105,28 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         context.ContinueJoin(lock, query, result, move(bound_values), allow_stream_result, simulation_count);
         current_duration = timer_simulation.check();
 
-        if (simulation_count != 0) {
-            rl_optimizer.Backpropogation((-1)*current_duration);
+        if (simulation_count > 0) {
+            if (simulation_count < 5) {
+                duration_vec.push_back(current_duration);
+
+            } else if (simulation_count == 5){
+                duration_vec.push_back(current_duration);
+                max_duration = *max_element(duration_vec.begin(), duration_vec.end());
+                min_duration = *min_element(duration_vec.begin(), duration_vec.end());
+                max_min = max_duration-min_duration;
+
+                std::cout<<"max_min"<<max_min<<", min = "<<min_duration<<"\n";
+            }
+            else {
+                current_reward = max_min/(current_duration-min_duration);
+                // because the Min and Max are NOT necessarily accurate
+                if (current_reward<0) {
+                    rl_optimizer.Backpropogation(max_duration*2);
+                } else {
+                    rl_optimizer.Backpropogation(current_reward);
+                }
+                //rl_optimizer.Backpropogation(current_reward);
+            }
         }
 
         if (chosen_node) {

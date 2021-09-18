@@ -75,6 +75,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
     unique_ptr<LogicalOperator> rl_plan;
 
     double prev_duration, current_duration, prev_reward, current_reward;
+    double sum_duration;
 
     //printf("----- simulation----- ");
     while (true){
@@ -105,7 +106,9 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         current_duration = timer_simulation.check();
 
         if (simulation_count != 0) {
-            rl_optimizer.Backpropogation((-1)*current_duration);
+            sum_duration += current_duration;
+            //std::cout<<"sum_duration="<<sum_duration<<"simulation_count"<<simulation_count<<",avg = "<< (sum_duration/simulation_count)<<"\n";
+            rl_optimizer.Backpropogation((sum_duration/simulation_count)/current_duration);
         }
 
         if (chosen_node) {
@@ -142,8 +145,6 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
              << chosen_node->join_node->order_of_relations << "," << duration_prep << ","
              << duration_exec <<",";
 
-
-    //TODO: add up all query_result
     return query_result;
 }
 

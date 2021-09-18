@@ -149,7 +149,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
     physical_plan = physical_planner.CreatePlan(move(plan));
     result->plan = move(physical_plan);
 
-    query_result = context.ExecutePreparedStatementWithRLOptimizer(lock, query, move(result), move(bound_values), allow_stream_result);
+    //query_result = context.ExecutePreparedStatementWithRLOptimizer(lock, query, move(result), move(bound_values), allow_stream_result);
 
 
     // --------------

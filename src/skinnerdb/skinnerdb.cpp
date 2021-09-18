@@ -72,7 +72,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
     //bool found_optimal_join_order = false;
     unique_ptr<LogicalOperator> rl_plan;
 
-    double prev_duration, current_duration, prev_reward, current_reward, delta;
+    double prev_duration, current_duration, prev_reward, current_reward;
 
     //printf("----- simulation----- ");
     //while (!found_optimal_join_order) {  //️ 🐈 simulation_count = executed_chunk
@@ -201,7 +201,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
             }
         }
 
-        std::cout << "simu_nr." << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << " took " << current_duration << "ms, intermediate = " << delta << ", reward=" << chosen_node->reward << "\n";
+        std::cout << "simu_nr." << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << " took " << current_duration << "ms, reward=" << chosen_node->reward << "\n";
 
         simulation_count += 1;
     }

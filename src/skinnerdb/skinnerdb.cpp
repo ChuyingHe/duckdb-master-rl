@@ -78,7 +78,6 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
     double base;
 
     //printf("----- simulation----- ");
-    //while (!found_optimal_join_order) {  //️ 🐈 simulation_count = executed_chunk
     while (true){
         Timer timer_simulation;
 
@@ -107,12 +106,6 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         context.ContinueJoin(lock, query, result, move(bound_values), allow_stream_result, simulation_count);
         current_duration = timer_simulation.check();
 
-
-                //rl_optimizer.RewardUpdate((-1)*duration_sim);
-        //   f(x) = x / (1 + abs(x))
-        // 1 = win
-        // 0 = lose
-        // 🏆 REWARD FUNCTION C
         if (simulation_count <= 1) { //1st, 2rd simulation doesnt provide reward
             if (simulation_count ==1) {
                 base = current_duration;
@@ -124,8 +117,6 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         if (chosen_node) {
             if (same_order_count>=2 || simulation_count>=10) {
             //if (simulation_count>=1000) {
-                //found_optimal_join_order = true;
-                //break for while(true){}
                 break;
             } else {
                 if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {
@@ -138,7 +129,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         }
 
         // current_duration is total time that consumes by current simulation - backprop doesnt count
-        std::cout << job_file_sql<<",Simulation," << simulation_count << "," << chosen_node->join_node->order_of_relations << "," << current_duration << chosen_node->reward << "\n";
+        std::cout << job_file_sql<<",Simulation," << simulation_count << "," << chosen_node->join_node->order_of_relations << "," << current_duration <<","<< chosen_node->reward << "\n";
 
         simulation_count += 1;
     }
@@ -157,8 +148,6 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
               << chosen_node->join_node->order_of_relations << "," << duration_prep << ","
               << duration_exec <<",";
 
-
-    //TODO: add up all query_result
     return query_result;
 }
 

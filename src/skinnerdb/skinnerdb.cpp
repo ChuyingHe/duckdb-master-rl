@@ -110,7 +110,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         // 1 = win
         // 0 = lose
         // 🏆 REWARD FUNCTION C
-        rl_optimizer.Backpropogation((-1)*current_duration);
+        rl_optimizer.Backpropogation(1/current_duration);
         //std::cout << "simu_nr." << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << " took " << current_duration << "ms, reward=" << (-1)*current_duration << "\n";
 
         // 🏆 REWARD FUNCTION B

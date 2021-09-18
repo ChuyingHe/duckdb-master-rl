@@ -75,6 +75,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
     unique_ptr<LogicalOperator> rl_plan;
 
     double prev_duration, current_duration, prev_reward, current_reward;
+    std::vector<double> duration_vec;
 
     //printf("----- simulation----- ");
     while (true){
@@ -104,8 +105,11 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         context.ContinueJoin(lock, query, result, move(bound_values), allow_stream_result, simulation_count);
         current_duration = timer_simulation.check();
 
-        if (simulation_count != 0) {
-            rl_optimizer.Backpropogation((-1)*current_duration);
+        if (simulation_count > 0) {
+            duration_vec.push_back(current_duration);
+            double median = duration_vec[duration_vec.size() / 2];
+            rl_optimizer.Backpropogation(median/current_duration);
+            //std::cout<<median<<", "<<current_duration<<","<< median/current_duration <<"\n";
         }
 
         if (chosen_node) {

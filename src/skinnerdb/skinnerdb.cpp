@@ -110,7 +110,9 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         // 1 = win
         // 0 = lose
         // 🏆 REWARD FUNCTION C
-        rl_optimizer.Backpropogation((-1)*current_duration);
+        if (simulation_count != 0) {
+            rl_optimizer.Backpropogation((-1)*current_duration);
+        }
         //std::cout << "simu_nr." << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << " took " << current_duration << "ms, reward=" << (-1)*current_duration << "\n";
 
         // 🏆 REWARD FUNCTION B
@@ -199,7 +201,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
             }
         }
 
-        std::cout << "simu_nr." << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << " took " << current_duration << "ms, intermediate = " << delta << ", reward=" << (-1)*current_duration << "\n";
+        std::cout << "simu_nr." << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << " took " << current_duration << "ms, intermediate = " << delta << ", reward=" << chosen_node->reward << "\n";
 
         simulation_count += 1;
     }

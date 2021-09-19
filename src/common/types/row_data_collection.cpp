@@ -635,7 +635,7 @@ idx_t RowDataCollection::AppendToBlock(RowDataBlock &block, BufferHandle &handle
 	}
 	append_entries.emplace_back(dataptr, append_count);
 	block.count += append_count;
-	std::cout<<", block.count="<<block.count <<"\n";
+	//std::cout<<", block.count="<<block.count <<"\n";
 	return append_count;
 }
 

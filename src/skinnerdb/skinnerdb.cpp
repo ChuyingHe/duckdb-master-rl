@@ -115,7 +115,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
                 min_duration = *min_element(duration_vec.begin(), duration_vec.end());
                 max_min = max_duration-min_duration;
 
-                std::cout<<"max_min"<<max_min<<", min = "<<min_duration<<"\n";
+                // std::cout<<"max_min"<<max_min<<", min = "<<min_duration<<"\n";
             }
             else {
                 current_reward = max_min/(current_duration-min_duration);
@@ -144,7 +144,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         }
 
         // current_duration is total time that consumes by current simulation - backprop doesnt count
-        std::cout << job_file_sql<<",Simulation," << simulation_count << "," << chosen_node->join_node->order_of_relations << "," << current_duration <<","<< chosen_node->reward << "\n";
+        //std::cout << job_file_sql<<",Simulation," << simulation_count << "," << chosen_node->join_node->order_of_relations << "," << current_duration <<","<< chosen_node->reward << "\n";
 
         simulation_count += 1;
     }
@@ -159,12 +159,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
 
     double duration_exec = timer_execution.check();
 
-    std::cout<<job_file_sql<<",SkinnerDB," << simulation_count << ","
-             << chosen_node->join_node->order_of_relations << "," << duration_prep << ","
-             << duration_exec <<",";
+    std::cout<<"SkinnerDB," << simulation_count << ","<< chosen_node->join_node->order_of_relations << "," << duration_prep << ","<< duration_exec << ",";
 
-
-    //TODO: add up all query_result
     return query_result;
 }
 

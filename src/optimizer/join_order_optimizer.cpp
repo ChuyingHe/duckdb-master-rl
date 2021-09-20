@@ -234,7 +234,7 @@ JoinNode *JoinOrderOptimizer::EmitPair(JoinRelationSet *left, JoinRelationSet *r
         plans[new_set]->order_of_relations.append(plans[right]->order_of_relations);
         plans[new_set]->order_of_relations.append("-");
         plans[new_set]->order_of_relations.append(plans[left]->order_of_relations);
-        plans[new_set]->order_of_relations.append("-");
+        //plans[new_set]->order_of_relations.append("-");
 		return result;
 	}
 	return entry->second.get();
@@ -783,7 +783,7 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 		auto node = set_manager.GetJoinRelation(i); /*returns a JoinRelationSet*/
 		plans[node] = make_unique<JoinNode>(node, rel.op->EstimateCardinality(context));    /*add nodes to the plan*/
         plans[node]->order_of_relations.append(std::to_string(i));
-        plans[node]->order_of_relations.append("-");
+        // plans[node]->order_of_relations.append("-");
 	}
 	// now we perform the actual dynamic programming to compute the final result
 	SolveJoinOrder();    /*increase the size of this->plans from 5 to 19*/

@@ -72,7 +72,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
     unique_ptr<LogicalOperator> rl_plan;
 
     //printf("----- simulation----- \n");
-    while (!found_optimal_join_order) {  //️ 🐈 simulation_count = executed_chunk
+    while (true) {
         Timer timer_simulation;
 
         // 5.2 Optimize plan in RL-Optimizer
@@ -96,42 +96,23 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         result->plan = move(physical_plan); //only part in result that need to be update
         vector<Value> bound_values;
 
-
-        //TODO: here we need info of the Progress 🐈
         query_result = context.ContinueJoin(lock, query, result, move(bound_values), allow_stream_result, simulation_count);
         double duration_sim = timer_simulation.check();
 
         rl_optimizer.RewardUpdate((-1)*duration_sim);
 
         if (chosen_node) {
-            if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {
-                same_order_count +=1;
-                if (same_order_count>=2 || simulation_count == 10) {
-                    found_optimal_join_order = true;
-                }
-                /*
-                if (same_order_count>=5 || sample_count==99) {
-                    //std::cout<<"final plan found in loop "<< sample_count << "\n";
-                    double time_prep = duration_prep_preoptimizer + duration_prep_join_order;
-                    std::cout   << job_file_sql << ", optimizer = RL Optimizer, loop = " << sample_count << ", join_order = "
-                                << chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward << ", num_of_visits = "
-                                << chosen_node->num_of_visits << ", time_preparation = " << time_prep << ", time_execution = "
-                                << duration_execution <<", time_total = "<< duration_execution+ time_prep<<"\n";
-                    break;
-                }*/
+            if (same_order_count>=2 || simulation_count>=10) {
+                //if (simulation_count>=1000) {
+                break;
             } else {
-                same_order_count = 1;
-                previous_order_of_relations = chosen_node->join_node->order_of_relations;
+                if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {
+                    same_order_count +=1;
+                } else {
+                    same_order_count = 1;
+                    previous_order_of_relations = chosen_node->join_node->order_of_relations;
+                }
             }
-            //double time_prep = duration_prep_preoptimizer + duration_prep_join_order;
-            /*double time_prep =  duration_prep_join_order;
-            std::cout << "optimizer = RL Optimizer, loop = " << simulation_count << ", join_order = "
-                        << chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward << ", num_of_visits = "
-                        << chosen_node->num_of_visits << ", time_preparation = " << time_prep << ", time_execution = "
-                        << duration_execution <<", time_total = "<< duration_execution+ time_prep<<"\n";*/
-            //std::cout << "optimizer = RL Optimizer, loop = " << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<"\n";
-        } else {
-            std::cout<< "nothing to optimize \n";
         }
 
         simulation_count += 1;

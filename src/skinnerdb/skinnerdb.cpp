@@ -128,6 +128,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
 
         // current_duration is total time that consumes by current simulation - backprop doesnt count
         //std::cout << job_file_sql<<",Simulation," << simulation_count << "," << chosen_node->join_node->order_of_relations << "," << current_duration <<","<< chosen_node->reward << "\n";
+        std::cout << job_file_sql<<",Simulation," << simulation_count << "," << chosen_node->join_node->order_of_relations
+                  << "," << current_duration <<","<< chosen_node->reward<<", visit="<< chosen_node->num_of_visits<< ", avg="<< chosen_node->reward/chosen_node->num_of_visits << "\n";
 
         simulation_count += 1;
     }

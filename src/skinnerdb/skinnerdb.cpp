@@ -96,8 +96,9 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
 
         context.ContinueJoin(lock, query, result, move(bound_values), allow_stream_result, simulation_count);
         current_duration = timer_simulation.check();
-
-        rl_optimizer.Backpropogation((-1)*current_duration);
+	if (simulation_count > 0) {
+	        rl_optimizer.Backpropogation((-1)*current_duration);
+	}
 
         if (chosen_node) {
             if (same_order_count>=2 || simulation_count>=10) {

@@ -129,7 +129,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
                         << chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward << ", num_of_visits = "
                         << chosen_node->num_of_visits << ", time_preparation = " << time_prep << ", time_execution = "
                         << duration_execution <<", time_total = "<< duration_execution+ time_prep<<"\n";*/
-            //std::cout << "optimizer = RL Optimizer, loop = " << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<"\n";
+            std::cout << "optimizer = SkinnerDB, loop = " << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << ", reward = " << chosen_node->reward <<"\n";
         } else {
             std::cout<< "nothing to optimize \n";
         }

@@ -46,7 +46,7 @@ void Executor::InitializeForRL(PhysicalOperator *plan, int simulation_count) {
         //printf("Executor::InitializeForRL - 9; ");           // 1 time
         unique_ptr<Task> task;
         while (scheduler.GetTaskFromProducer(*producer, task)) {
-            printf("\n 🐱 Executor::InitializeForRL - a pipeline: \n");     // 4 times
+            //printf("\n 🐱 Executor::InitializeForRL - a pipeline: \n");     // 4 times
             task->Execute();    // get tasks from pipelines  = pipeline which doesn't have dependencies
             task.reset();
         }

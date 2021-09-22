@@ -100,7 +100,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         rl_optimizer.Backpropogation((-1)*current_duration);
 
         if (chosen_node) {
-            if (same_order_count>=2 || simulation_count>=10) {
+            if (same_order_count>=2 || simulation_count>=20) {
                 break;
             } else {
                 if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {

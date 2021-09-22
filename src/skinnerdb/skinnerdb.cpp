@@ -105,7 +105,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         context.ContinueJoin(lock, query, result, move(bound_values), allow_stream_result, simulation_count);
         current_duration = timer_simulation.check();
 
-        if (simulation_count != 0) {
+        if (simulation_count > 0) {
             sum_duration += current_duration;
             //std::cout<<"sum_duration="<<sum_duration<<"simulation_count"<<simulation_count<<",avg = "<< (sum_duration/simulation_count)<<"\n";
             rl_optimizer.Backpropogation((sum_duration/simulation_count)/current_duration);

@@ -98,8 +98,11 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
 
 
         double duration_sim = timer_simulation.check();
-        rl_optimizer.RewardUpdate((-1)*duration_sim);
-        std::cout<<"simulation nr."<<same_order_count  <<" takes "<<duration_sim<<", join order = "<<chosen_node->join_node->order_of_relations<<";\n";;
+	if (simulation_count > 0) {
+	        rl_optimizer.RewardUpdate((-1)*duration_sim);
+        }
+
+	std::cout<<"simulation nr."<<same_order_count  <<" takes "<<duration_sim<<", join order = "<<chosen_node->join_node->order_of_relations<<";\n";;
 
         if (chosen_node) {
             if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {

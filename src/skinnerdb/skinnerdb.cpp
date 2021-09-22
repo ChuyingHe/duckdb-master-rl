@@ -105,12 +105,12 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         context.ContinueJoin(lock, query, result, move(bound_values), allow_stream_result, simulation_count);
         current_duration = timer_simulation.check();
 
-        if (simulation_count != 0) {
+        if (simulation_count > 0) {
             rl_optimizer.Backpropogation(1/current_duration);
         }
 
         if (chosen_node) {
-            if (same_order_count>=2 || simulation_count>=10) {
+            if (same_order_count>=5 || simulation_count>=10) {
             //if (simulation_count>=1000) {
                 break;
             } else {
@@ -124,7 +124,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         }
 
         // current_duration is total time that consumes by current simulation - backprop doesnt count
-        //std::cout << job_file_sql<<",Simulation," << simulation_count << "," << chosen_node->join_node->order_of_relations << "," << current_duration <<","<< chosen_node->reward << "\n";
+        std::cout << job_file_sql<<",Simulation," << simulation_count << "," << chosen_node->join_node->order_of_relations
+		 << "," << current_duration <<","<< chosen_node->reward<<", visit="<< chosen_node->num_of_visits<< ", avg="<< chosen_node->reward/chosen_node->num_of_visits << "\n";
 
         simulation_count += 1;
     }

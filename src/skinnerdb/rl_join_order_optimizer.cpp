@@ -485,6 +485,7 @@ void RLJoinOrderOptimizer::Expansion(JoinRelationSet* union_set, unordered_set<i
 
 NodeForUCT* RLJoinOrderOptimizer::GetNodeWithMaxUCT(NodeForUCT* node) { //case "node->children.empty()" has been eliminated
     NodeForUCT* result;
+
     double max = -1000000000000;
 
     for (auto const& child:node->children) {

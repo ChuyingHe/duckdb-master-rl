@@ -112,7 +112,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
             }
         }
 
-        std::cout << "simu_nr." << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << " took " << current_duration << ", reward=" << (-1)*current_duration << "\n";
+        std::cout << "simu_nr." << simulation_count << ", join_order = " << chosen_node->join_node->order_of_relations << " took " << current_duration << ", reward=" << chosen_node->reward<<
+                    ", visit = "<<chosen_node->num_of_visits<< ", avg_rw=" <<chosen_node->reward/chosen_node->num_of_visits << "\n";
         simulation_count += 1;
     }
     double duration_prep = timer_prep.check();

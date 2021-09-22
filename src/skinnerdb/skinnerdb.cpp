@@ -105,7 +105,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         context.ContinueJoin(lock, query, result, move(bound_values), allow_stream_result, simulation_count);
         current_duration = timer_simulation.check();
 
-        if (simulation_count != 0) {
+        if (simulation_count > 0) {
             rl_optimizer.Backpropogation(1/current_duration);
         }
 

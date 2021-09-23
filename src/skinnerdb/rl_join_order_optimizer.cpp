@@ -495,28 +495,19 @@ NodeForUCT* RLJoinOrderOptimizer::GetNodeWithMaxUCT(NodeForUCT* node) { //case "
             result = child;
         }
     }
-    result->num_of_visits+=1;
     return result;
 }
 
 void RLJoinOrderOptimizer::Selection(NodeForUCT* node) {
     //printf("Selection \n");
     if (node->children.empty()) {   //[3] current node is a LEAF// node.joinedTable.size() == node.total_table_amo
-        //[4] Simulation/Rollout
-        //node->num_of_visits+=1;
-       // std::cout<< "size of plan = "<<plans.size() << ", join order of final_plan="<< node->join_node->order_of_relations <<"\n";
-
-        //[5] Reward update (did in skinnerdb.cpp)
-        //[6] Progress Tracker
-        //[7] final_plan
         chosen_node = node;
     } else {                        //current node still has child
         //[1.1] unexplored node exist
         for (auto const& child:node->children) {
             if (child->num_of_visits == 0) {
-                child->num_of_visits+=1;
+                // child->num_of_visits+=1;
                 child->total_table_amount = node->total_table_amount;
-                //child->parent = node;
 
                 child->unjoinedTables = node->unjoinedTables;
                 auto pos = find(child->unjoinedTables.begin(), child->unjoinedTables.end(), child->current_table);
@@ -592,11 +583,12 @@ void RLJoinOrderOptimizer::Backpropogation(double reward) {
     // update the current leaf-node
     if (chosen_node) {
         chosen_node->reward += reward;
+        chosen_node->num_of_visits += 1;
 
-        // update node's parent - until the root note
         NodeForUCT* parent_ptr = chosen_node->parent;
         while (parent_ptr) {
             parent_ptr->reward +=reward;
+            parent_ptr->num_of_visits += 1;
             parent_ptr = parent_ptr->parent;
         }
     }
@@ -610,11 +602,12 @@ void RLJoinOrderOptimizer::Backpropogation(double reward) {
  * node->num_of_visits = Vc, num_of_visits for itself
  * */
 double RLJoinOrderOptimizer::CalculateUCB(double avg, int v_p, int v_c) {
-    double weight = sqrt(2);
+    //double weight = sqrt(2);
     if (v_c == 0) {
         return avg;
     }
-    return ( avg + weight * sqrt(log(v_p)/v_c) );
+    // double exploration = sqrt( log(v_p)/v_c );
+    return ( avg + sqrt(2) * sqrt( log(v_p)/v_c ) );
 }
 
 /*void RLJoinOrderOptimizer::pseudoCode() {
@@ -630,32 +623,10 @@ double RLJoinOrderOptimizer::CalculateUCB(double avg, int v_p, int v_c) {
 }*/
 JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
     //printf("JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice\n");
-    /*auto next = root_node_for_uct;
-    // determine the second-last node
-    while (!next->children.empty()) {
-        next->num_of_visits += 1;
-        auto max = 0;
-        NodeForUCT* chosen_next;
-        auto children = next->children; // should be vector of ptr
-        for (auto const& n : children) {
-            double avg = (n->num_of_visits==0)? 1000000: (n->reward/n->num_of_visits);
-            auto ucb = CalculateUCB(avg, n->parent->num_of_visits, n->num_of_visits);
-            if (ucb > max) {
-                max = ucb;
-                chosen_next = n;
-            }
-        }
-        next = chosen_next;      // for next iteration in this while loop
-    }
-    // determine the last node
-    next->num_of_visits += 1;
-    chosen_node = next; //the first and the only child
-    return chosen_node->join_node;*/
-
     auto next = root_node_for_uct;
     // determine the second-last node
     while (!next->children.empty()) {
-        next->num_of_visits += 1;
+        // next->num_of_visits += 1;
         auto max = -1000000000000;
         NodeForUCT* chosen_next;
         auto children = next->children; // should be vector of ptr
@@ -670,7 +641,7 @@ JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
         next = chosen_next;      // for next iteration in this while loop
     }
     // determine the last node
-    next->num_of_visits += 1;
+    // next->num_of_visits += 1;
     chosen_node = next; //the first and the only child
     return chosen_node->join_node;
 
@@ -741,70 +712,6 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::RewritePlan(unique_ptr<Logical
     parent->children[0] = move(join_tree.second);
     return plan;
 }
-
-
-/*
-
-void RLJoinOrderOptimizer::sample(NodeForUCT& node) {
-    node.num_of_visits+=1;
-
-    if (!node.join_node) {     //root
-
-        //current possibility
-        for (idx_t i = 0; i < relations.size(); i++) {
-            auto& rel = *relations[i];
-            auto rel_set = set_manager.GetJoinRelation(i);
-            JoinRelationSet* copy_node_ptr = new JoinRelationSet(*rel_set);
-
-            auto join_node = JoinOrderOptimizer::JoinNode(move(copy_node_ptr), rel.op->EstimateCardinality(context));
-            NodeForUCT* node_for_uct = new NodeForUCT{&join_node, 0, 0.0, root_node_for_uct};
-            node_for_uct->join_node->order_of_relations.append(std::to_string(i));
-            node_for_uct->parent = &node;
-            node_for_uct->current_rel = i;
-            //因为是root所以children的数量=unjoinedTables的数量
-
-            node.unjoinedTables.push_back(i);   //joinedTables=NULL
-            node.children.push_back(move(node_for_uct));
-        }
-
-        //choose next one - 1
-        for (auto const& elem : node.children) {
-            if (elem->num_of_visits==0) {
-                //chose current elem
-                elem->num_of_visits+=1;
-                elem->unjoinedTables.insert(elem->unjoinedTables.end(), node.unjoinedTables.begin(), node.unjoinedTables.end());
-                //elem->unjoinedTables.erase(elem->current_rel);
-
-                std::vector<idx_t>::iterator position = std::find(elem->unjoinedTables.begin(), elem->unjoinedTables.end(), elem->current_rel);
-                if (position != elem->unjoinedTables.end()) // == myVector.end() means the element was not found
-                    elem->unjoinedTables.erase(position);
-
-                elem->joinedTables.insert(elem->joinedTables.end(), node.joinedTables.begin(), node.joinedTables.end());
-                elem->joinedTables.push_back(elem->current_rel);
-
-                unordered_set<idx_t> exclusion_set;
-                for (auto const& jt:elem->joinedTables) {
-                    exclusion_set.insert(jt);
-                }
-                //auto new_set = elem->join_node->set;
-                // auto neighbors = query_graph.GetNeighbors(new_set, exclusion_set);    // returns vector<idx_t>
-                IterateTree(elem->join_node->set, exclusion_set, elem);
-                */
-/*for (auto const& neighbor:neighbors) {
-
-                }*//*
-
-                sample(*elem);
-                break;
-            }
-        }
-        //choose next one - 2 - all the children has been visited
-        for (auto const& elem : node.children) {
-
-        }
-    }
-}
-*/
 
 
 unique_ptr<LogicalOperator> RLJoinOrderOptimizer::SelectJoinOrder(unique_ptr<LogicalOperator> plan, idx_t sample_count) {
@@ -905,7 +812,7 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::SelectJoinOrder(unique_ptr<Log
     if (sample_count==0) {
         Initialization();
     }
-    root_node_for_uct->num_of_visits+=1;
+    //root_node_for_uct->num_of_visits+=1;
     Selection(root_node_for_uct);
 
     // GeneratePlans();
@@ -915,56 +822,9 @@ unique_ptr<LogicalOperator> RLJoinOrderOptimizer::SelectJoinOrder(unique_ptr<Log
             test_count_complete += 1;
         }
     }
-    // std::cout <<"relations_amount = " << 4 << ", plan size=" << test_count_complete<<"\n";
 
-    //sample(*root_node_for_uct);
-
-   //auto final_plan = UCTChoice();      // returns JoinOrderOptimizer::JoinNode*
+    //auto final_plan = UCTChoice();      // returns JoinOrderOptimizer::JoinNode*
     return RewritePlan(move(plan), chosen_node->join_node);   // returns EXECUTABLE of the chosen_plan unique_ptr<LogicalOperator>
 }
-
-// Simulation = Execution
-/*unique_ptr<QueryResult> RLJoinOrderOptimizer::TestContinueJoin(ClientContextLock &lock, const string &query,
-                                             shared_ptr<PreparedStatementData> statement_p,
-                                             vector<Value> bound_values, bool allow_stream_result) {
-    auto &statement = *statement_p;
-    if (context.transaction.ActiveTransaction().IsInvalidated() && statement.requires_valid_transaction) {
-        throw Exception("Current transaction is aborted (please ROLLBACK)");
-    }
-
-    auto &config = DBConfig::GetConfig(context);
-    if (config.access_mode == AccessMode::READ_ONLY && !statement.read_only) {
-        throw Exception(StringUtil::Format("Cannot execute statement of type \"%s\" in read-only mode!",
-                                           StatementTypeToString(statement.statement_type)));
-    }
-
-    statement.Bind(move(bound_values));
-
-    bool create_stream_result = statement.allow_stream_result && allow_stream_result;
-    if (context.enable_progress_bar) {  //progress runs in another thread, parallel to the main thread
-        if (!context.progress_bar) {
-            context.progress_bar = make_shared<ProgressBar>(&context.executor, context.wait_time);
-        }
-        context.progress_bar->Start();
-    }
-
-    context.executor.Initialize(statement.plan.get());
-
-    auto types = context.executor.GetTypes();
-    D_ASSERT(types == statement.types);
-
-    if (create_stream_result) {
-        if (context.progress_bar) {
-            context.progress_bar->Stop();
-        }
-        return make_unique<StreamQueryResult>(statement.statement_type, shared_ptr<ClientContext>(*context), statement.types,
-                                              statement.names, move(statement_p));
-    }
-
-    auto result = make_unique<MaterializedQueryResult>(statement.statement_type, statement.types, statement.names);
-
-    while (true) {}
-
-}*/
 
 }

@@ -63,7 +63,6 @@ namespace duckdb {
         void Backpropogation(double reward);
         void GeneratePlans();
         static unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>, Hasher, EqualFn> plans;   // includes all the relations, to return
-        void sample(NodeForUCT& node);
         void Selection(NodeForUCT* node);   //choose the next among potential nodes
         void Expansion(JoinRelationSet* union_set, unordered_set<idx_t> exclusion_set, NodeForUCT* parent_node_for_uct);   //find out potential nodes
         void Simulation();  //rollout

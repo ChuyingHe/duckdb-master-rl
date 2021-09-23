@@ -108,9 +108,12 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         if (simulation_count > 0) {
             if (simulation_count < 5) {
                 duration_vec.push_back(current_duration);
+                rl_optimizer.Backpropogation(current_duration);
 
             } else if (simulation_count == 5){
                 duration_vec.push_back(current_duration);
+                rl_optimizer.Backpropogation(current_duration);
+
                 max_duration = *max_element(duration_vec.begin(), duration_vec.end());
                 min_duration = *min_element(duration_vec.begin(), duration_vec.end());
                 max_min = max_duration-min_duration;
@@ -125,7 +128,6 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
                 } else {
                     rl_optimizer.Backpropogation(current_reward);
                 }
-                //rl_optimizer.Backpropogation(current_reward);
             }
         }
 
@@ -145,8 +147,8 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
 
         // current_duration is total time that consumes by current simulation - backprop doesnt count
         //std::cout << job_file_sql<<",Simulation," << simulation_count << "," << chosen_node->join_node->order_of_relations << "," << current_duration <<","<< chosen_node->reward << "\n";
-        std::cout << job_file_sql<<",Simulation," << simulation_count << "," << chosen_node->join_node->order_of_relations
-                  << "," << current_duration <<","<< chosen_node->reward<<", visit="<< chosen_node->num_of_visits<< ", avg="<< chosen_node->reward/chosen_node->num_of_visits << "\n";
+        std::cout << job_file_sql<<", Simulation," << simulation_count << ", " << chosen_node->join_node->order_of_relations
+                  << ", current_duration = " << current_duration <<", reward = "<< chosen_node->reward<<", visit="<< chosen_node->num_of_visits<< ", avg="<< chosen_node->reward/chosen_node->num_of_visits << "\n";
 
         simulation_count += 1;
     }

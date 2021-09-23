@@ -71,14 +71,10 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
     result->value_map = move(planner.value_map);
     result->catalog_version = Transaction::GetTransaction(context).catalog_version;
 
-    //bool found_optimal_join_order = false;
     unique_ptr<LogicalOperator> rl_plan;
 
-<<<<<<< HEAD
     double prev_duration, current_duration, prev_reward, current_reward;
-=======
-    double prev_duration, current_duration, prev_reward, current_reward, max_duration, min_duration, max_min;
->>>>>>> 6a637f91b70e16ed50a8b6fecddaa3d53c815a16
+
     std::vector<double> duration_vec;
 
     //printf("----- simulation----- ");
@@ -110,34 +106,10 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         current_duration = timer_simulation.check();
 
         if (simulation_count > 0) {
-<<<<<<< HEAD
             duration_vec.push_back(current_duration);
             double median = duration_vec[duration_vec.size() / 2];
             rl_optimizer.Backpropogation(median/current_duration);
-            //std::cout<<median<<", "<<current_duration<<","<< median/current_duration <<"\n";
-=======
-            if (simulation_count < 5) {
-                duration_vec.push_back(current_duration);
-
-            } else if (simulation_count == 5){
-                duration_vec.push_back(current_duration);
-                max_duration = *max_element(duration_vec.begin(), duration_vec.end());
-                min_duration = *min_element(duration_vec.begin(), duration_vec.end());
-                max_min = max_duration-min_duration;
-
-                // std::cout<<"max_min"<<max_min<<", min = "<<min_duration<<"\n";
-            }
-            else {
-                current_reward = max_min/(current_duration-min_duration);
-                // because the Min and Max are NOT necessarily accurate
-                if (current_reward<0) {
-                    rl_optimizer.Backpropogation(max_duration*2);
-                } else {
-                    rl_optimizer.Backpropogation(current_reward);
-                }
-                //rl_optimizer.Backpropogation(current_reward);
-            }
->>>>>>> 6a637f91b70e16ed50a8b6fecddaa3d53c815a16
+            //std::cout<<"median = "<<median<<", current = "<<current_duration<<", median/current_duration = "<< median/current_duration <<"\n";
         }
 
         if (chosen_node) {
@@ -154,13 +126,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
             }
         }
 
-        // current_duration is total time that consumes by current simulation - backprop doesnt count
-        //std::cout << job_file_sql<<",Simulation," << simulation_count << "," << chosen_node->join_node->order_of_relations << "," << current_duration <<","<< chosen_node->reward << "\n";
-<<<<<<< HEAD
-        std::cout << job_file_sql<<",Simulation," << simulation_count << "," << chosen_node->join_node->order_of_relations
-                  << "," << current_duration <<","<< chosen_node->reward<<", visit="<< chosen_node->num_of_visits<< ", avg="<< chosen_node->reward/chosen_node->num_of_visits << "\n";
-=======
->>>>>>> 6a637f91b70e16ed50a8b6fecddaa3d53c815a16
+        std::cout <<"Simulation," << simulation_count << "," << chosen_node->join_node->order_of_relations <<", current_duration = " <<current_duration<< ", reward = "<< chosen_node->reward<<", visit="<< chosen_node->num_of_visits<< ", avg="<< chosen_node->reward/chosen_node->num_of_visits << "\n";
 
         simulation_count += 1;
     }

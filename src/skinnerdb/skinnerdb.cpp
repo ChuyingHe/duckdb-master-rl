@@ -101,7 +101,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         }
 
         if (chosen_node) {
-            if (same_order_count>=3 || simulation_count>=10) {
+            if (same_order_count>=5 || simulation_count>=10) {
                 break;
             } else {
                 if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {
@@ -113,7 +113,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
             }
         }
 
-        // std::cout <<"Simulation," << simulation_count << "," << chosen_node->join_node->order_of_relations <<","<< chosen_node->reward<<", visit="<< chosen_node->num_of_visits<< ", avg="<< chosen_node->reward/chosen_node->num_of_visits << "\n";
+        std::cout <<"Simulation," << simulation_count << "," << chosen_node->join_node->order_of_relations <<", reward = "<< chosen_node->reward<<", visit = "<< chosen_node->num_of_visits<< ", avg="<< chosen_node->reward/chosen_node->num_of_visits << "\n";
 
         simulation_count += 1;
     }

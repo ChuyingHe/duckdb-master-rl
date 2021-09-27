@@ -110,7 +110,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         }
 
         if (chosen_node) {
-            if (same_order_count>=5 || simulation_count>=20) {
+            if (same_order_count>=5 || simulation_count>=30) {
             //if (simulation_count>=1000) {
                 break;
             } else {

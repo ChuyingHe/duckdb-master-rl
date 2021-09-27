@@ -135,7 +135,7 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(ClientContextLock &
 
     //Execution ---------------
     // chosen_node = new NodeForUCT{.get(), 0, 0.0, nullptr};
-    enable_rl_join_order_optimizer = false;
+    // enable_rl_join_order_optimizer = false;
     printf("----------------------- execution ----------------------- \n");
     result = make_shared<PreparedStatementData>(statement_type);
     result->read_only = planner.read_only;

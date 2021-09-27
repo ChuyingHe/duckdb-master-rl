@@ -784,6 +784,7 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 		plans[node] = make_unique<JoinNode>(node, rel.op->EstimateCardinality(context));    /*add nodes to the plan*/
         plans[node]->order_of_relations.append(std::to_string(i));
         plans[node]->order_of_relations.append("-");
+        std::cout<< "table "<< i<<": " << plans[node]->cardinality <<"\n";
 	}
 	// now we perform the actual dynamic programming to compute the final result
 	SolveJoinOrder();    /*increase the size of this->plans from 5 to 19*/

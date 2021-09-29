@@ -607,7 +607,8 @@ namespace duckdb {
             return avg;
         }
         // double exploration = sqrt( log(v_p)/v_c );
-        return ( avg + sqrt(2) * sqrt( log(v_p)/v_c ) );
+        //return ( avg + sqrt(2) * sqrt( log(v_p)/v_c ) );
+        return ( avg + 1 * sqrt( log(v_p)/v_c ) );
     }
 
 /*void RLJoinOrderOptimizer::pseudoCode() {

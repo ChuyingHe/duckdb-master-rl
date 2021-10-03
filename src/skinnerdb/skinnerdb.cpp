@@ -79,8 +79,6 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
     //printf("----- simulation----- ");
     //while (!found_optimal_join_order) {  //️ 🐈 simulation_count = executed_chunk
     while (true){
-        Timer timer_simulation;
-
         // 5.2 Optimize plan in RL-Optimizer
         auto copy = plan->clone();  // Clone plan for next iteration
 
@@ -98,10 +96,11 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         auto physical_plan = physical_planner.CreatePlan(move(rl_plan));
         profiler.EndPhase();
 
-        // 5.4 Execute optimized plan + Update reward
+        // 5.4 Execute optimized plan
         result->plan = move(physical_plan); //only part in result that need to be update
         vector<Value> bound_values;
 
+        Timer timer_simulation;
         context.ContinueJoin(lock, query, result, move(bound_values), allow_stream_result, simulation_count);
         current_duration = timer_simulation.check();
 

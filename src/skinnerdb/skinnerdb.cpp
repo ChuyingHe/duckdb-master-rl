@@ -105,13 +105,14 @@ unique_ptr<QueryResult> SkinnerDB::CreateAndExecuteStatement(){
         current_duration = timer_simulation.check();
 
         if (simulation_count > 0) {
-            rl_optimizer.Backpropogation(1/current_duration);
+//            rl_optimizer.Backpropogation(1/current_duration);
+	      rl_optimizer.Backpropogation( exp(1/current_duration) );
         }
 
         if (chosen_node) {
 //            if (chosen_node->num_of_visits >= 2 || simulation_count>=20) {
 //            if (simulation_count>=1000) {
-            if (chosen_node->num_of_visits >= 2 || simulation_count>=100) {
+            if (chosen_node->num_of_visits >= 5 || simulation_count>=1000) {
                 break;
             } else {
                 if (previous_order_of_relations == chosen_node->join_node->order_of_relations) {

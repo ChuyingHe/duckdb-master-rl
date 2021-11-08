@@ -70,10 +70,6 @@ namespace duckdb {
         void Initialization();
         NodeForUCT* GetNodeWithMaxUCT(NodeForUCT* node);
 
-/*        unique_ptr<QueryResult> TestContinueJoin(ClientContextLock &lock, const string &query,
-                                                 shared_ptr<PreparedStatementData> statement_p,
-                                                 vector<Value> bound_values, bool allow_stream_result);*/
-
     private:
         ClientContext &context;
         idx_t pairs = 0;
@@ -93,45 +89,11 @@ namespace duckdb {
         bool ExtractJoinRelations(idx_t sample_count, LogicalOperator &input_op, vector<LogicalOperator *> &filter_operators,
                                   LogicalOperator *parent = nullptr);
 
-        // for JoinRelationSet
-        unique_ptr<JoinOrderOptimizer::JoinNode> findInPlans(unordered_map<JoinRelationSet *, unique_ptr<JoinOrderOptimizer::JoinNode>> plans, JoinRelationSet* relation_set);
-
-        JoinOrderOptimizer::JoinNode *EmitPair(JoinRelationSet *left, JoinRelationSet *right, NeighborInfo *info);
-
-        bool TryEmitPair(JoinRelationSet *left, JoinRelationSet *right, NeighborInfo *info);
-
-        bool EnumerateCmpRecursive(JoinRelationSet *left, JoinRelationSet *right, unordered_set <idx_t> exclusion_set);
-
-        bool EmitCSG(JoinRelationSet *node);
-
-        bool EnumerateCSGRecursive(JoinRelationSet *node, unordered_set <idx_t> &exclusion_set);
-
         unique_ptr <LogicalOperator> RewritePlan(unique_ptr <LogicalOperator> plan, JoinOrderOptimizer::JoinNode *node);
-        // LogicalOperator* RewritePlan(LogicalOperator* plan, JoinOrderOptimizer::JoinNode *node);
-
-        void GenerateCrossProducts();
-
-        void SolveJoinOrder();
-
-        bool SolveJoinOrderExactly();
-
-        void SolveJoinOrderApproximately();
 
         double CalculateUCB(double avg, int v_p, int v_c);
 
-        void pseudoCode();
-
-        JoinOrderOptimizer::JoinNode* UCTChoice();
-
-        bool ContinueJoin(JoinOrderOptimizer::JoinNode *node, std::chrono::seconds duration);
-
-        void RestoreState();
-
-        void BackupState();
-
         void IterateTree(JoinRelationSet *union_set, unordered_set <idx_t> exclusion_set, NodeForUCT* parent_node_for_uct);
-
-        unique_ptr <LogicalOperator> ResolveJoinConditions(unique_ptr <LogicalOperator> op);
 
         std::pair<JoinRelationSet *, unique_ptr < LogicalOperator>>
         GenerateJoins(

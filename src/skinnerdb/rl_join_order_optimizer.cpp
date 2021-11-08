@@ -488,22 +488,25 @@ NodeForUCT* RLJoinOrderOptimizer::GetNodeWithMaxUCT(NodeForUCT* node) { //case "
     double max = -1000000000000;
 
     // (1) finding the next node use UCT
-    for (auto const& child:node->children) {
-        double avg = child->reward/(child->num_of_visits);
-        double ucb = CalculateUCB(avg, node->num_of_visits, child->num_of_visits);
-        if (ucb > max) {
-            max = ucb;
-            //std::cout<<"max="<<max<<", ";
-            result = child;
-        }
-    }
-    // (2) finding the next node use the shortest execution time
 //    for (auto const& child:node->children) {
-//        if (child->reward > max) {
-//            max = child->reward;
+//        double avg = child->reward/(child->num_of_visits);
+//        double ucb = CalculateUCB(avg, node->num_of_visits, child->num_of_visits);
+//        if (ucb > max) {
+//            max = ucb;
+//            //std::cout<<"max="<<max<<", ";
 //            result = child;
 //        }
 //    }
+
+    // (2) finding the next node use the shortest execution time
+    for (auto const& child:node->children) {
+        if (child->reward > max) {
+            max = child->reward;
+            result = child;
+        }
+    }
+
+//    std::cout<< "\n chosen node = " << result->join_node->order_of_relations << ", reward = " << result->reward;
 
     result->num_of_visits+=1;
     return result;
@@ -598,15 +601,16 @@ void RLJoinOrderOptimizer::GeneratePlans() {
 // 2) use input parameter
 // are they the same? maybe yes, because chosen_node is updated
 void RLJoinOrderOptimizer::Backpropogation(double reward) {
-    //printf("void RLJoinOrderOptimizer::RewardUpdate\n");
-    // update the current leaf-node
     if (chosen_node) {
-        chosen_node->reward += reward;
+//        chosen_node->reward += reward;
+        chosen_node->reward = reward; // (2) Update instead accumulate
 
         // update node's parent - until the root note
         NodeForUCT* parent_ptr = chosen_node->parent;
         while (parent_ptr) {
-            parent_ptr->reward +=reward;
+//            parent_ptr->reward +=reward;
+            // (2) Update instead accumulate
+            parent_ptr->reward = reward;
             parent_ptr = parent_ptr->parent;
         }
     }
@@ -627,87 +631,6 @@ double RLJoinOrderOptimizer::CalculateUCB(double avg, int v_p, int v_c) {
     return ( avg + weight * sqrt(log(v_p)/v_c) );
 }
 
-/*void RLJoinOrderOptimizer::pseudoCode() {
-    bool finished = false;  //indicator: whether the whole query has been executed or not
-    // auto state = 0;             //恢复执行状态?
-
-    while (!finished) {
-        auto chosen_plan = UCTChoice();
-        RestoreState();
-        finished = ContinueJoin(chosen_plan, std::chrono::seconds(5));  // (1) Rollout/SIMULATION
-        BackupState();  // (2) BACKPROPAGATION
-    }
-}*/
-JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice() {
-    //printf("JoinOrderOptimizer::JoinNode* RLJoinOrderOptimizer::UCTChoice\n");
-    /*auto next = root_node_for_uct;
-    // determine the second-last node
-    while (!next->children.empty()) {
-        next->num_of_visits += 1;
-        auto max = 0;
-        NodeForUCT* chosen_next;
-        auto children = next->children; // should be vector of ptr
-        for (auto const& n : children) {
-            double avg = (n->num_of_visits==0)? 1000000: (n->reward/n->num_of_visits);
-            auto ucb = CalculateUCB(avg, n->parent->num_of_visits, n->num_of_visits);
-            if (ucb > max) {
-                max = ucb;
-                chosen_next = n;
-            }
-        }
-        next = chosen_next;      // for next iteration in this while loop
-    }
-    // determine the last node
-    next->num_of_visits += 1;
-    chosen_node = next; //the first and the only child
-    return chosen_node->join_node;*/
-
-    auto next = root_node_for_uct;
-    // determine the second-last node
-    while (!next->children.empty()) {
-        next->num_of_visits += 1;
-        auto max = -1000000000000;
-        NodeForUCT* chosen_next;
-        auto children = next->children; // should be vector of ptr
-        for (auto const& n : children) {
-            double avg = (n->num_of_visits==0)? 0: (n->reward/n->num_of_visits);
-            auto ucb = CalculateUCB(avg, n->parent->num_of_visits, n->num_of_visits);
-            if (ucb > max) {
-                max = ucb;
-                chosen_next = n;
-            }
-        }
-        next = chosen_next;      // for next iteration in this while loop
-    }
-    // determine the last node
-    next->num_of_visits += 1;
-    chosen_node = next; //the first and the only child
-    return chosen_node->join_node;
-
-}
-
-bool RLJoinOrderOptimizer::ContinueJoin(JoinOrderOptimizer::JoinNode* node, std::chrono::seconds duration) {
-    //execute join order during time budget
-    return false;
-}
-
-void RLJoinOrderOptimizer::RestoreState() {
-    /*
-     * Goal:
-     * 1) restore execution state for this join order
-     * 2) share as much progress as possible among different join orders
-     *
-     * TODO:
-     * 1) offset counters: to count tuples for each table, record how many tuples have been executed
-     * 2) check whether partial join-order has been executed or not, if yes, fast-forward it, use the generated result instead of executing it again
-     * */
-
-}
-
-void RLJoinOrderOptimizer::BackupState() {
-    //backup execution state for join order
-    // RewardUpdate(node's parent node)
-}
 
 // plan: from previous optimizer
 // node: final_plan chosen by UCTChoice()

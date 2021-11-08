@@ -488,22 +488,22 @@ NodeForUCT* RLJoinOrderOptimizer::GetNodeWithMaxUCT(NodeForUCT* node) { //case "
     double max = -1000000000000;
 
     // (1) finding the next node use UCT
-//    for (auto const& child:node->children) {
-//        double avg = child->reward/(child->num_of_visits);
-//        double ucb = CalculateUCB(avg, node->num_of_visits, child->num_of_visits);
-//        if (ucb > max) {
-//            max = ucb;
-//            //std::cout<<"max="<<max<<", ";
-//            result = child;
-//        }
-//    }
-    // (2) finding the next node use the shortest execution time
     for (auto const& child:node->children) {
-        if (child->reward > max) {
-            max = child->reward;
+        double avg = child->reward/(child->num_of_visits);
+        double ucb = CalculateUCB(avg, node->num_of_visits, child->num_of_visits);
+        if (ucb > max) {
+            max = ucb;
+            //std::cout<<"max="<<max<<", ";
             result = child;
         }
     }
+    // (2) finding the next node use the shortest execution time
+//    for (auto const& child:node->children) {
+//        if (child->reward > max) {
+//            max = child->reward;
+//            result = child;
+//        }
+//    }
 
     result->num_of_visits+=1;
     return result;
